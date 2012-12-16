@@ -1,5 +1,7 @@
 import scipy.misc
 
+ALMOST_ZERO = 1e-200
+
 def n_choose_k(n,k):
     assert n > 0, "%d %d" % (n, k)
     return int(scipy.misc.comb(n, k))

@@ -8,7 +8,7 @@ from palm.blink_target_data import BlinkTargetData
 from palm.scipy_optimizer import ScipyOptimizer
 
 @nose.tools.istest
-class TestFitOneFoldRate(object):
+class TestOptimizeBlinkModel(object):
     def setup(self):
         self.task_manager = LocalManager()
         self.task_manager.start()

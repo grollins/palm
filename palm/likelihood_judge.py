@@ -6,8 +6,8 @@ class LikelihoodJudge(Judge):
         super(LikelihoodJudge, self).__init__()
 
     def judge_prediction(self, model, data_predictor, target_data):
-        feature_array = None
-        prediction = data_predictor.predict_data(model, feature_array)
+        feature = target_data.get_feature()
+        prediction = data_predictor.predict_data(model, feature)
         prediction_array = prediction.as_array()
-        likelihood = prediction_array[0]
-        return likelihood, likelihood
+        log_likelihood = prediction_array[0]
+        return log_likelihood, prediction
