@@ -10,4 +10,4 @@ class LikelihoodJudge(Judge):
         prediction = data_predictor.predict_data(model, feature)
         prediction_array = prediction.as_array()
         log_likelihood = prediction_array[0]
-        return log_likelihood, prediction
+        return -log_likelihood, prediction

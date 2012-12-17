@@ -7,6 +7,9 @@ class LikelihoodPrediction(Prediction):
         super(LikelihoodPrediction, self).__init__()
         self.likelihood = likelihood
 
+    def __str__(self):
+        return str(self.as_array()[0])
+
     def as_array(self):
         return numpy.array([self.likelihood])
 

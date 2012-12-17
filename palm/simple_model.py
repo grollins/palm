@@ -1,4 +1,5 @@
 import numpy
+import pandas
 import base.parameter_set
 import base.model_factory
 import base.model
@@ -91,12 +92,10 @@ class SimpleModelFactory(base.model_factory.ModelFactory):
 
     def route_mapper_factory(self):
         def map_routes(states, state_index_dict):
-            A = state_index_dict['A']
-            B = state_index_dict['B']
             log_k1_fcn = self.log_k1_factory()
             log_k2_fcn = self.log_k2_factory()
-            A_to_B = self.route_factory(A, B, log_k1_fcn)
-            B_to_A = self.route_factory(B, A, log_k2_fcn)
+            A_to_B = self.route_factory('A', 'B', log_k1_fcn)
+            B_to_A = self.route_factory('B', 'A', log_k2_fcn)
             route_list = []
             route_list.append(A_to_B)
             route_list.append(B_to_A)
@@ -116,18 +115,30 @@ class SimpleModel(AggregatedKineticModel):
         return initial_population_array
 
 class SimpleTargetData(base.target_data.TargetData):
-    """docstring for SimpleTargetData"""
+    """ Expected format
+        class,dwell time
+        green,1.5
+        orange,0.3
+        green,1.2
+        orange,0.1
+        .
+        .
+        .
+    """
     def __init__(self):
         super(SimpleTargetData, self).__init__()
         self.trajectory_factory = DiscreteStateTrajectory
         self.segment_factory = DiscreteDwellSegment
 
-    def load_data(self):
+    def load_data(self, data_file):
+        data_table = pandas.read_csv(data_file, header=0)
         self.trajectory = self.trajectory_factory()
-        self.trajectory.add_segment( self.segment_factory('green', 1.5) )
-        self.trajectory.add_segment( self.segment_factory('orange', 0.3) )
-        self.trajectory.add_segment( self.segment_factory('green', 1.2) )
-        self.trajectory.add_segment( self.segment_factory('orange', 0.1) )
+        for segment_data in data_table.itertuples():
+            segment_class = str(segment_data[1])
+            segment_dwell_time = float(segment_data[2])
+            new_segment = self.segment_factory(segment_class,
+                                               segment_dwell_time)
+            self.trajectory.add_segment(new_segment)
 
     def get_feature(self):
         return self.trajectory

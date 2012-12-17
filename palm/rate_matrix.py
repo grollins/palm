@@ -7,12 +7,12 @@ class RateMatrixFactory(object):
         self.rate_matrix_class = rate_matrix_class
 
     def create_rate_matrix(self, model_size, model_routes,
-                           class_indices_dict, time):
+                           state_index_dict, class_indices_dict, time):
         size_list = [model_size, model_size]
         rate_matrix = self.rate_matrix_class( size_list, class_indices_dict )
         for r in model_routes:
-            start_index = r.start_state
-            end_index = r.end_state
+            start_index = state_index_dict[r.start_state]
+            end_index = state_index_dict[r.end_state]
             this_log_rate = r.compute_log_rate(t=time)
             this_rate = 10**(this_log_rate)
             rate_matrix.set_rate(start_index, end_index, this_rate)

@@ -99,6 +99,7 @@ class AggregatedKineticModel(base.model.Model):
     def build_rate_matrix(self, time=0.):
         rate_matrix = self.rate_matrix_factory.create_rate_matrix(self.get_num_states(),
                                                                   self.routes,
+                                                                  self.state_index_dict,
                                                                   self.class_indices_dict,
                                                                   time)
         self.rate_matrix = rate_matrix

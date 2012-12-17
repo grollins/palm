@@ -76,7 +76,7 @@ class LikelihoodPredictor(DataPredictor):
         else:
             Q_ab = model.get_numpy_submatrix(start_class, end_class)
             assert type(Q_ab) is numpy.matrix, "Got %s" % (type(Q_ab))
-            G *= Q_ab
+            G = G * Q_ab
         return G
 
 

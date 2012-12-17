@@ -35,12 +35,12 @@ class TestOptimizeBlinkModel(object):
         self.setup()
         model_factory = BlinkModelFactory()
         initial_parameters = BlinkParameterSet()
-        initial_parameters.set_parameter('N', 3)
+        initial_parameters.set_parameter('N', 10)
         initial_parameters.set_parameter_bounds('log_kd', -2.0, 0.0)
         judge = LikelihoodJudge()
         data_predictor = LikelihoodPredictor()
         target_data = BlinkTargetData()
-        target_data.load_data('some_file.txt')
+        target_data.load_data('palm/tests/test_data/stochpy_blink10_traj.csv')
         score_fcn = self.make_score_fcn(model_factory, initial_parameters,
                                         judge, data_predictor, target_data)
         optimizer = ScipyOptimizer()
@@ -48,7 +48,8 @@ class TestOptimizeBlinkModel(object):
         optimized_model = model_factory.create_model(new_params)
         score, prediction = judge.judge_prediction(optimized_model, data_predictor,
                                                    target_data)
-
+        print new_params
+        print score, prediction
         # archiver = FileArchiver()
         # archiver.save_results(target_data, prediction, "test_one_markov_results.txt")
         self.teardown()
