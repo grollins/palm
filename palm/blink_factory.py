@@ -86,6 +86,8 @@ class BlinkModelFactory(base.model_factory.ModelFactory):
                     id_str = "%d_%d_%d_%d" % (I, A, D, B)
                     this_state = self.state_factory(id_str, I, A, D, B,
                                                     obs_class)
+                    if I == N:
+                        this_state.set_initial_state_flag()
                     state_list.append(this_state)
                     i += 1
             return state_list

@@ -19,10 +19,5 @@ def ModelHasCorrectNumberOfStatesAndRoutes():
     nose.tools.eq_(num_states, expected_num_states,
                    error_message)
 
-    # num_routes = model.get_num_routes()
-    # expected_num_routes = N * 4
-    # error_message = "Got model with %d routes, " \
-    #                 "expected model with %d routes.\n %s" % \
-    #                  (num_routes, expected_num_routes, str(model))
-    # nose.tools.eq_(num_routes, expected_num_routes,
-    #                error_message)
+    num_routes = model.get_num_routes()
+    nose.tools.ok_(num_routes > 0, "Model doesn't have routes.")

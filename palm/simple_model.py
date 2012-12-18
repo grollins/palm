@@ -72,6 +72,7 @@ class SimpleModelFactory(base.model_factory.ModelFactory):
         def enumerate_states():
             state_list = []
             A = self.state_factory('A', 'green')
+            A.set_initial_state_flag()
             B = self.state_factory('B', 'orange')
             state_list.append(A)
             state_list.append(B)

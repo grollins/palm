@@ -1,6 +1,7 @@
 import scipy.misc
+import numpy
 
-ALMOST_ZERO = 1e-300
+ALMOST_ZERO = numpy.float64(1e-300)
 
 def n_choose_k(n,k):
     assert n > 0, "%d %d" % (n, k)

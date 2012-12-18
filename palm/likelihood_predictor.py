@@ -20,24 +20,30 @@ class LikelihoodPredictor(DataPredictor):
         likelihood = 1./(c_set.compute_product())
         if likelihood < ALMOST_ZERO:
             likelihood = ALMOST_ZERO
+        if numpy.isnan(likelihood):
+            print c_set
         return likelihood
+
+    def scale_vector(self, vector, cumulative_scaling_factor):
+        this_c = 1./vector.sum()
+        scaled_vector = cumulative_scaling_factor * this_c * vector
+        return scaled_vector, this_c
 
     def compute_forward_vectors(self, model, trajectory):
         alpha_set = VectorSet()
         c_set = ScalingCoefficients()
-        for segment_number, segment in enumerate(trajectory):
-            if segment_number == 0:
-                model.build_rate_matrix(time=0.0)
-                alpha_0_T = numpy.matrix(model.get_initial_population_array())
-                assert alpha_0_T.shape[0] == 1, "Expected a row vector."
-                assert type(alpha_0_T) is numpy.matrix
-                c_0 = 1./numpy.sum(alpha_0_T)
-                c_set.add_coef(segment_number, c_0)
-                scaled_alpha_0_T = alpha_0_T * c_0
-                scaled_alpha_0 = scaled_alpha_0_T.T
-                alpha_set.add_vector(segment_number, scaled_alpha_0)
-                prev_alpha_T = scaled_alpha_0_T
 
+        model.build_rate_matrix(time=0.0)
+        alpha_0_T = numpy.matrix(model.get_initial_population_array())
+        assert alpha_0_T.shape[0] == 1, "Expected a row vector."
+        assert type(alpha_0_T) is numpy.matrix
+        scaled_alpha_0_T, c_0 = self.scale_vector(alpha_0_T)
+        c_set.set_coef(-1, c_0)
+        scaled_alpha_0 = scaled_alpha_0_T.T
+        alpha_set.add_vector(-1, scaled_alpha_0)
+        prev_alpha_T = scaled_alpha_0_T
+
+        for segment_number, segment in enumerate(trajectory):
             cumulative_time = trajectory.get_cumulative_time(segment_number)
             model.build_rate_matrix(time=cumulative_time)
             segment_duration = segment.get_duration()
@@ -50,17 +56,13 @@ class LikelihoodPredictor(DataPredictor):
             G = self.get_G_matrix(model, segment_duration,
                                   start_class, end_class)
             assert type(G) is numpy.matrix, "Got %s" % (type(G))
-            alpha_k_T = prev_alpha_T * G
-            assert type(alpha_k_T) is numpy.matrix
-            inv_c = numpy.sum(alpha_k_T)
-            if inv_c < ALMOST_ZERO:
-                inv_c = ALMOST_ZERO
-            this_c = 1./inv_c
-            c_set.add_coef(segment_number, this_c)
-            scaled_alpha_k_T = alpha_k_T * this_c
-            scaled_alpha_k = scaled_alpha_k_T.T
-            alpha_set.add_vector(segment_number, scaled_alpha_k)
-            prev_alpha_T = scaled_alpha_k_T
+            alpha_T = prev_alpha_T * G
+            assert type(alpha_T) is numpy.matrix
+            scaled_alpha_T, this_c = self.scale_vector(alpha_T)
+            c_set.set_coef(segment_number, this_c)
+            scaled_alpha = scaled_alpha_T.T
+            alpha_set.add_vector(segment_number, scaled_alpha)
+            prev_alpha_T = scaled_alpha_T
         return alpha_set, c_set
 
     def get_G_matrix(self, model, segment_duration, start_class, end_class):
@@ -83,6 +85,8 @@ class LikelihoodPredictor(DataPredictor):
 class VectorSet(object):
     def __init__(self):
         self.vector_dict = {}
+    def __str__(self):
+        return str(self.vector_dict)
     def add_vector(self, key, vec):
         assert vec.shape[1] == 1
         self.vector_dict[key] = vec
@@ -95,7 +99,9 @@ class ScalingCoefficients(object):
         self.coef_dict = {}
     def __len__(self):
         return len(self.coef_dict)
-    def add_coef(self, key, coef):
+    def __str__(self):
+        return str(self.coef_dict)
+    def set_coef(self, key, coef):
         self.coef_dict[key] = coef
     def get_coef(self, key):
         return self.coef_dict[key]

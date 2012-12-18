@@ -7,6 +7,7 @@ class State(object):
     def __init__(self, id_str, observation_class):
         self.id = id_str
         self.observation_class = observation_class
+        self.initial_state_flag = False
 
     def __str__(self):
         return "%s %s" % (self.id, self.observation_class)
@@ -17,6 +18,11 @@ class State(object):
     def get_class(self):
         return self.observation_class
 
+    def set_initial_state_flag(self):
+        self.initial_state_flag = True
+
+    def is_initial_state(self):
+        return self.initial_state_flag
 
 class Route(object):
     def __init__(self, start_state, end_state, log_rate_function):
@@ -79,6 +85,11 @@ class AggregatedKineticModel(base.model.Model):
         # store sorted state indices by class name and by state id
         for this_index, this_state in enumerate(sorted_state_list):
             sorted_state_index_dict[this_state.get_id()] = this_index
+
+        # save index of initial state
+        for this_index, this_state in enumerate(sorted_state_list):
+            if this_state.is_initial_state():
+                self.initial_state_index = this_index
 
         # return sorted states
         return sorted_state_list, sorted_state_index_dict,\
