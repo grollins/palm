@@ -2,7 +2,7 @@ import nose.tools
 import mock
 import numpy
 from palm.scipy_likelihood_predictor import LikelihoodPredictor
-from palm.blink_factory import BlinkModelFactory
+from palm.blink_factory import SingleDarkBlinkFactory
 from palm.blink_parameter_set import BlinkParameterSet
 from palm.util import ALMOST_ZERO
 
@@ -70,7 +70,7 @@ def test_G_calculation_with_various_rates():
 
 @nose.tools.istest
 def test_blink_model_G_calculation():
-    model_factory = BlinkModelFactory()
+    model_factory = SingleDarkBlinkFactory()
     model_parameters = BlinkParameterSet()
     model_parameters.set_parameter('N', 10)
     model_parameters.set_parameter('log_ka', 0.55)

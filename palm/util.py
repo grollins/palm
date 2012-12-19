@@ -5,7 +5,7 @@ ALMOST_ZERO = numpy.float64(1e-300)
 
 def n_choose_k(n,k):
     assert n > 0, "%d %d" % (n, k)
-    return int(scipy.misc.comb(n, k))
+    return int( round(scipy.misc.comb(n, k)) )
     # return scipy.misc.factorial(n) / (scipy.misc.factorial(k) * scipy.misc.factorial(n-k))
 
 def multichoose(n,k):

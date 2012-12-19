@@ -1,7 +1,7 @@
 import numpy
 import aggregated_kinetic_model
 
-class BlinkState(object):
+class SingleDarkState(object):
     def __init__(self, id_str, I, A, D, B, observation_class):
         self.id = id_str
         self.I = I
@@ -16,6 +16,36 @@ class BlinkState(object):
 
     def as_array(self):
         return numpy.array([self.I, self.A, self.D, self.B])
+
+    def get_id(self):
+        return self.id
+
+    def get_class(self):
+        return self.observation_class
+
+    def is_initial_state(self):
+        return self.initial_state_flag
+
+    def set_initial_state_flag(self):
+        self.initial_state_flag = True
+
+
+class DoubleDarkState(object):
+    def __init__(self, id_str, I, A, D1, D2, B, observation_class):
+        self.id = id_str
+        self.I = I
+        self.A = A
+        self.D1 = D1
+        self.D2 = D2
+        self.B = B
+        self.observation_class = observation_class
+        self.initial_state_flag = False
+
+    def __str__(self):
+        return "%s %s" % (self.id, self.observation_class)
+
+    def as_array(self):
+        return numpy.array([self.I, self.A, self.D1, self.D2, self.B])
 
     def get_id(self):
         return self.id
