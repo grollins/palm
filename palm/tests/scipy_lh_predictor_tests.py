@@ -1,7 +1,7 @@
 import nose.tools
 import mock
 import numpy
-from palm.likelihood_predictor import LikelihoodPredictor
+from palm.scipy_likelihood_predictor import LikelihoodPredictor
 from palm.blink_factory import BlinkModelFactory
 from palm.blink_parameter_set import BlinkParameterSet
 from palm.util import ALMOST_ZERO

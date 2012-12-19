@@ -5,7 +5,7 @@ import aggregated_kinetic_model
 import base.model_factory
 from types import IntType
 
-MAX_A = 1e6
+MAX_A = 10
 
 class Transition(object):
     def __init__(self, dI, dA, dD, dB, label, reacting_species_dict,

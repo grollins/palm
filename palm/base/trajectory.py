@@ -24,3 +24,7 @@ class Trajectory(object):
     @abc.abstractmethod
     def get_segment(self, segment_number):
         return
+
+    @abc.abstractmethod
+    def reverse_iter(self):
+        return

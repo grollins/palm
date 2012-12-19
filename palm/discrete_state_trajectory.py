@@ -57,3 +57,8 @@ class DiscreteStateTrajectory(base.trajectory.Trajectory):
         else:
             return None
 
+    def reverse_iter(self):
+        reverse_range = range(len(self.segment_list))
+        reverse_range.reverse()
+        for i in reverse_range:
+            yield (i, self.segment_list[i])

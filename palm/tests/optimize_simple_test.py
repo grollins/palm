@@ -4,7 +4,7 @@ import pandas
 from palm.simple_model import SimpleParameterSet, SimpleModelFactory,\
                               SimpleModel, SimpleTargetData
 from palm.likelihood_judge import LikelihoodJudge
-from palm.likelihood_predictor import LikelihoodPredictor
+from palm.qit_likelihood_predictor import LikelihoodPredictor
 from palm.scipy_optimizer import ScipyOptimizer
 
 EPSILON = 0.1
@@ -80,7 +80,6 @@ class TestComputeLikelihoodOfSimpleModelWithLongTrajectory(object):
                     likelihood *= numpy.exp(-k1 * t) * k1
                 elif class_label == 'orange':
                     likelihood *= numpy.exp(-k2 * t) * k2
-            print i, likelihood, class_label, t
         log_likelihood = numpy.log10(likelihood)
         return log_likelihood
 
@@ -144,13 +143,5 @@ class TestOptimizeSimpleModel(object):
         print new_params
         optimized_model = model_factory.create_model(new_params)
         score, prediction = judge.judge_prediction(optimized_model, data_predictor,
-                                                   target_data)
-        print score, prediction
-        fake_params = SimpleParameterSet()
-        fake_params.set_parameter('log_k1', 1.0)
-        fake_params.set_parameter('log_k2', 1.0)
-        print fake_params
-        fake_model = model_factory.create_model(fake_params)
-        score, prediction = judge.judge_prediction(fake_model, data_predictor,
                                                    target_data)
         print score, prediction

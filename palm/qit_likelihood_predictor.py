@@ -2,7 +2,7 @@ from base.data_predictor import DataPredictor
 from likelihood_prediction import LikelihoodPrediction
 from util import ALMOST_ZERO
 import numpy
-import scipy.linalg
+import qit.utils
 
 class LikelihoodPredictor(DataPredictor):
     """docstring for LikelihoodPredictor"""
@@ -16,7 +16,7 @@ class LikelihoodPredictor(DataPredictor):
         return self.prediction_factory(log_likelihood)
 
     def compute_likelihood(self, model, trajectory):
-        alpha_set, c_set = self.compute_forward_vectors(model, trajectory)
+        beta_set, c_set = self.compute_backward_vectors(model, trajectory)
         likelihood = 1./(c_set.compute_product())
         if likelihood < ALMOST_ZERO:
             likelihood = ALMOST_ZERO
@@ -24,26 +24,17 @@ class LikelihoodPredictor(DataPredictor):
             print c_set
         return likelihood
 
-    def scale_vector(self, vector, cumulative_scaling_factor):
+    def scale_vector(self, vector):
         this_c = 1./vector.sum()
-        scaled_vector = cumulative_scaling_factor * this_c * vector
+        scaled_vector = this_c * vector
         return scaled_vector, this_c
 
-    def compute_forward_vectors(self, model, trajectory):
-        alpha_set = VectorSet()
+    def compute_backward_vectors(self, model, trajectory):
+        beta_set = VectorSet()
         c_set = ScalingCoefficients()
+        prev_beta_col_vec = None
 
-        model.build_rate_matrix(time=0.0)
-        alpha_0_T = numpy.matrix(model.get_initial_population_array())
-        assert alpha_0_T.shape[0] == 1, "Expected a row vector."
-        assert type(alpha_0_T) is numpy.matrix
-        scaled_alpha_0_T, c_0 = self.scale_vector(alpha_0_T)
-        c_set.set_coef(-1, c_0)
-        scaled_alpha_0 = scaled_alpha_0_T.T
-        alpha_set.add_vector(-1, scaled_alpha_0)
-        prev_alpha_T = scaled_alpha_0_T
-
-        for segment_number, segment in enumerate(trajectory):
+        for segment_number, segment in trajectory.reverse_iter():
             cumulative_time = trajectory.get_cumulative_time(segment_number)
             model.build_rate_matrix(time=cumulative_time)
             segment_duration = segment.get_duration()
@@ -53,33 +44,45 @@ class LikelihoodPredictor(DataPredictor):
                 end_class = next_segment.get_class()
             else:
                 end_class = None
-            G = self.get_G_matrix(model, segment_duration,
-                                  start_class, end_class)
-            assert type(G) is numpy.matrix, "Got %s" % (type(G))
-            alpha_T = prev_alpha_T * G
-            assert type(alpha_T) is numpy.matrix
-            scaled_alpha_T, this_c = self.scale_vector(alpha_T)
+            beta_col_vec = self.compute_beta(model, segment_duration, start_class,
+                                             end_class, prev_beta_col_vec)
+            assert type(beta_col_vec) is numpy.matrix
+            scaled_beta_col_vec, this_c = self.scale_vector(beta_col_vec)
             c_set.set_coef(segment_number, this_c)
-            scaled_alpha = scaled_alpha_T.T
-            alpha_set.add_vector(segment_number, scaled_alpha)
-            prev_alpha_T = scaled_alpha_T
-        return alpha_set, c_set
+            beta_set.add_vector(segment_number, beta_col_vec)
+            prev_beta_col_vec = scaled_beta_col_vec
 
-    def get_G_matrix(self, model, segment_duration, start_class, end_class):
-        '''
-        Eqn 4 in Qin et al
-        '''
+        model.build_rate_matrix(time=0.0)
+        init_pop_row_vec = numpy.matrix(model.get_initial_population_array())
+        assert init_pop_row_vec.shape[0] == 1, "Expected a row vector."
+        assert type(init_pop_row_vec) is numpy.matrix
+        final_beta = init_pop_row_vec * prev_beta_col_vec
+        scaled_final_beta, final_c = self.scale_vector(final_beta)
+        beta_set.add_vector(-1, final_beta)
+        c_set.set_coef(-1, final_c)
+
+        return beta_set, c_set
+
+    def compute_beta(self, model, segment_duration, start_class,
+                     end_class, prev_beta):
         Q_aa = model.get_numpy_submatrix(start_class, start_class)
         assert type(Q_aa) is numpy.matrix, "Got %s" % (type(Q_aa))
-        G = scipy.linalg.expm(Q_aa * segment_duration)
-        G = numpy.asmatrix(G)
         if end_class is None:
             Q_ab = None
+            ones_col_vec = numpy.asmatrix(numpy.ones([len(Q_aa),1]))
+            ab_vector = ones_col_vec
         else:
             Q_ab = model.get_numpy_submatrix(start_class, end_class)
             assert type(Q_ab) is numpy.matrix, "Got %s" % (type(Q_ab))
-            G = G * Q_ab
-        return G
+            ab_vector = Q_ab * prev_beta
+
+        Q_aa_array = numpy.asarray(Q_aa)
+        ab_vector_as_1d_array = numpy.asarray(ab_vector)[:,0]
+        qit_results = qit.utils.expv( segment_duration, Q_aa_array,
+                                      ab_vector_as_1d_array )
+        this_beta_row_vec = qit_results[0].real
+        this_beta_col_vec = this_beta_row_vec.T
+        return numpy.asmatrix(this_beta_col_vec)
 
 
 class VectorSet(object):
@@ -88,7 +91,6 @@ class VectorSet(object):
     def __str__(self):
         return str(self.vector_dict)
     def add_vector(self, key, vec):
-        assert vec.shape[1] == 1
         self.vector_dict[key] = vec
     def get_vector(self, key):
         return self.vector_dict[key]

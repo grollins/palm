@@ -5,7 +5,7 @@ import pandas
 from palm.blink_factory import BlinkModelFactory
 from palm.blink_parameter_set import BlinkParameterSet
 from palm.likelihood_judge import LikelihoodJudge
-from palm.likelihood_predictor import LikelihoodPredictor
+from palm.qit_likelihood_predictor import LikelihoodPredictor
 from palm.blink_target_data import BlinkTargetData
 from palm.scipy_optimizer import ScipyOptimizer
 
@@ -62,6 +62,7 @@ class TestComputeLikelihoodOfBlinkModelWithShortTrajectory(object):
                 elif class_label == 'bright':
                     G = scipy.linalg.expm(Q_bb * t) * Q_bd
             total_G = total_G * G
+            # print i, class_label, t, total_G
         likelihood = total_G.sum()
         log_likelihood = numpy.log10(likelihood)
         return log_likelihood
@@ -114,7 +115,7 @@ class TestOptimizeBlinkModel(object):
         '''
         model_factory = BlinkModelFactory()
         initial_parameters = BlinkParameterSet()
-        initial_parameters.set_parameter('N', 10)
+        initial_parameters.set_parameter('N', 20)
         initial_parameters.set_parameter_bounds('log_ka', -3.0, 2.0)
         initial_parameters.set_parameter_bounds('log_kd', -3.0, 2.0)
         initial_parameters.set_parameter_bounds('log_kr', -3.0, 2.0)
