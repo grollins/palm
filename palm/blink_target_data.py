@@ -37,3 +37,35 @@ class BlinkTargetData(base.target_data.TargetData):
 
     def get_notes(self):
         return []
+
+class BlinkCollectionTargetData(base.target_data.TargetData):
+    """docstring for BlinkCollectionTargetData"""
+    def __init__(self):
+        super(BlinkCollectionTargetData, self).__init__()
+        self.trajectory_data_factory = BlinkTargetData
+        self.target_data_collection = None
+
+    def __len__(self):
+        return len(self.target_data_collection)
+
+    def iter_trajectories(self):
+        for blink_target in self.target_data_collection:
+            trajectory = blink_target.get_feature()
+            yield trajectory
+
+    def load_data(self, data_file):
+        self.target_data_collection = []
+        for traj_path in open(data_file, 'r'):
+            traj_path = traj_path.strip()
+            trajectory_data = self.trajectory_data_factory()
+            trajectory_data.load_data(traj_path)
+            self.target_data_collection.append(trajectory_data)
+
+    def get_feature(self):
+        return self.target_data_collection
+
+    def get_target(self):
+        return None
+
+    def get_notes(self):
+        return []

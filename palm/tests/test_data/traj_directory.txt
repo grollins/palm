@@ -1,0 +1,5 @@
+./palm/tests/test_data/short_blink_traj.csv
+./palm/tests/test_data/short_blink_traj.csv
+./palm/tests/test_data/short_blink_traj.csv
+./palm/tests/test_data/short_blink_traj.csv
+./palm/tests/test_data/short_blink_traj.csv
