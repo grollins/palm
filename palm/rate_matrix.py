@@ -15,6 +15,7 @@ class RateMatrixFactory(object):
             end_index = state_index_dict[r.end_state]
             this_log_rate = r.compute_log_rate(t=time)
             this_rate = 10**(this_log_rate)
+            assert this_rate >= 0.0, "%d %d %s" % (start_index, end_index, str(this_rate))
             rate_matrix.set_rate(start_index, end_index, this_rate)
         rate_matrix.finalize_matrix()
         return rate_matrix

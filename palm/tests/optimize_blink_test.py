@@ -3,9 +3,10 @@ import numpy
 import scipy.linalg
 import pandas
 from palm.blink_factory import SingleDarkBlinkFactory
-from palm.blink_parameter_set import BlinkParameterSet
+from palm.blink_parameter_set import SingleDarkParameterSet
 from palm.likelihood_judge import LikelihoodJudge
 from palm.qit_likelihood_predictor import LikelihoodPredictor
+from palm.viterbi_predictor import ViterbiPredictor
 from palm.blink_target_data import BlinkTargetData
 from palm.scipy_optimizer import ScipyOptimizer
 
@@ -73,7 +74,7 @@ class TestComputeLikelihoodOfBlinkModelWithShortTrajectory(object):
            for a blink model.
         '''
         model_factory = SingleDarkBlinkFactory()
-        model_parameters = BlinkParameterSet()
+        model_parameters = SingleDarkParameterSet()
         model_parameters.set_parameter('N', 1)
         model_parameters.set_parameter('log_ka', -0.5)
         model_parameters.set_parameter('log_kd', -0.5)
@@ -108,28 +109,54 @@ class TestOptimizeBlinkModel(object):
             return score
         return f
 
-    # @nose.tools.istest
-    # def optimize_parameters_end_to_end_test(self):
-    #     '''This example optimizes the parameters
-    #        of a blink model to maximize the likelihood.
-    #     '''
-    #     model_factory = SingleDarkBlinkFactory()
-    #     initial_parameters = BlinkParameterSet()
-    #     initial_parameters.set_parameter('N', 10)
-    #     initial_parameters.set_parameter_bounds('log_ka', -3.0, 2.0)
-    #     initial_parameters.set_parameter_bounds('log_kd', -3.0, 2.0)
-    #     initial_parameters.set_parameter_bounds('log_kr', -3.0, 2.0)
-    #     initial_parameters.set_parameter_bounds('log_kb', -3.0, 2.0)
-    #     judge = LikelihoodJudge()
-    #     data_predictor = LikelihoodPredictor()
-    #     target_data = BlinkTargetData()
-    #     target_data.load_data('palm/tests/test_data/stochpy_blink10_traj.csv')
-    #     score_fcn = self.make_score_fcn(model_factory, initial_parameters,
-    #                                     judge, data_predictor, target_data)
-    #     optimizer = ScipyOptimizer()
-    #     new_params, score = optimizer.optimize_parameters(score_fcn, initial_parameters)
-    #     optimized_model = model_factory.create_model(new_params)
-    #     score, prediction = judge.judge_prediction(optimized_model, data_predictor,
-    #                                                target_data)
-    #     print new_params
-    #     print score, prediction
+    @nose.tools.istest
+    def optimize_parameters_forward_backward_algorithm_test(self):
+        '''This example optimizes the parameters
+           of a blink model to maximize the likelihood.
+        '''
+        model_factory = SingleDarkBlinkFactory()
+        initial_parameters = SingleDarkParameterSet()
+        initial_parameters.set_parameter('N', 10)
+        initial_parameters.set_parameter_bounds('log_ka', -3.0, 2.0)
+        initial_parameters.set_parameter_bounds('log_kd', -3.0, 2.0)
+        initial_parameters.set_parameter_bounds('log_kr', -3.0, 2.0)
+        initial_parameters.set_parameter_bounds('log_kb', -3.0, 2.0)
+        judge = LikelihoodJudge()
+        data_predictor = LikelihoodPredictor()
+        target_data = BlinkTargetData()
+        target_data.load_data('palm/tests/test_data/short_blink_traj.csv')
+        score_fcn = self.make_score_fcn(model_factory, initial_parameters,
+                                        judge, data_predictor, target_data)
+        optimizer = ScipyOptimizer()
+        new_params, score = optimizer.optimize_parameters(score_fcn, initial_parameters)
+        optimized_model = model_factory.create_model(new_params)
+        score, prediction = judge.judge_prediction(optimized_model, data_predictor,
+                                                   target_data)
+        print new_params
+        print score, prediction
+
+    @nose.tools.istest
+    def optimize_parameters_viterbi_test(self):
+        '''This example optimizes the parameters
+           of a blink model to maximize the likelihood.
+        '''
+        model_factory = SingleDarkBlinkFactory()
+        initial_parameters = SingleDarkParameterSet()
+        initial_parameters.set_parameter('N', 10)
+        initial_parameters.set_parameter_bounds('log_ka', -3.0, 2.0)
+        initial_parameters.set_parameter_bounds('log_kd', -3.0, 2.0)
+        initial_parameters.set_parameter_bounds('log_kr', -3.0, 2.0)
+        initial_parameters.set_parameter_bounds('log_kb', -3.0, 2.0)
+        judge = LikelihoodJudge()
+        data_predictor = ViterbiPredictor()
+        target_data = BlinkTargetData()
+        target_data.load_data('palm/tests/test_data/short_blink_traj.csv')
+        score_fcn = self.make_score_fcn(model_factory, initial_parameters,
+                                        judge, data_predictor, target_data)
+        optimizer = ScipyOptimizer()
+        new_params, score = optimizer.optimize_parameters(score_fcn, initial_parameters)
+        optimized_model = model_factory.create_model(new_params)
+        score, prediction = judge.judge_prediction(optimized_model, data_predictor,
+                                                   target_data)
+        print new_params
+        print score, prediction
