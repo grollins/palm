@@ -45,6 +45,7 @@ class BlinkCollectionTargetData(base.target_data.TargetData):
         super(BlinkCollectionTargetData, self).__init__()
         self.trajectory_data_factory = BlinkTargetData
         self.target_data_collection = None
+        self.paths = None
 
     def __len__(self):
         return len(self.target_data_collection)
@@ -60,11 +61,13 @@ class BlinkCollectionTargetData(base.target_data.TargetData):
 
     def load_data(self, data_file):
         self.target_data_collection = []
+        self.paths = []
         for traj_path in open(data_file, 'r'):
             traj_path = traj_path.strip()
             trajectory_data = self.trajectory_data_factory()
             trajectory_data.load_data(traj_path)
             self.target_data_collection.append(trajectory_data)
+            self.paths.append(traj_path)
 
     def get_feature(self):
         return self.target_data_collection
@@ -75,13 +78,20 @@ class BlinkCollectionTargetData(base.target_data.TargetData):
     def get_notes(self):
         return []
 
+    def get_paths(self):
+        return self.paths
+
     def make_copy_from_selection(self, inds):
         my_clone = deepcopy(self)
         new_data_collection = []
+        new_paths = []
         for i in inds:
             this_traj = my_clone.target_data_collection[i]
+            this_path = my_clone.paths[i]
             new_data_collection.append(this_traj)
+            new_paths.append(this_path)
         my_clone.target_data_collection = new_data_collection
+        my_clone.paths = new_paths
         return my_clone
 
     def has_element(self, trajectory_to_search_for):

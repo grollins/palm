@@ -9,39 +9,6 @@ from palm.util import ALMOST_ZERO
 EPSILON = 1e-3
 
 @nose.tools.istest
-def vector_scaled_to_correct_value():
-    predictor = ViterbiPredictor()
-    vector = numpy.matrix([0.1, 0.1, 0.1])
-    expected_c = 1./numpy.sum(vector)
-    expected_scaled_vector = expected_c * vector
-    scaled_vector, c = predictor.scale_vector(vector)
-    error_args = (scaled_vector, expected_scaled_vector)
-    error_message = "Vectors don't match got %s, instead of %s" % error_args
-    nose.tools.ok_( numpy.array_equal(scaled_vector, expected_scaled_vector),
-                    error_message )
-    nose.tools.ok_((c - expected_c) < EPSILON)
-
-@nose.tools.istest
-def computes_correct_alpha():
-    ka = 0.1
-    kb = 0.1
-    prev_alpha = numpy.matrix([1.0])
-    mock_model = mock.Mock()
-    mock_model.get_numpy_submatrix = submatrix_fcn_factory(ka, kb)
-    segment_duration = 1.0 # a reasonable dwell time
-    start_class = 'start'
-    end_class = 'end'
-    predictor = ViterbiPredictor()
-    viterbi_alpha = predictor.compute_alpha(mock_model, segment_duration,
-                                            start_class, end_class, prev_alpha)
-
-    Q_aa = mock_model.get_numpy_submatrix(start_class, start_class)
-    Q_ab = mock_model.get_numpy_submatrix(start_class, end_class)
-    expected_alpha = numpy.exp(Q_aa[0,0] * segment_duration) * Q_ab[0,0] * prev_alpha
-    error_message = "Expected %s,\ngot %s" % (str(expected_alpha), str(viterbi_alpha))
-    nose.tools.ok_( numpy.allclose(viterbi_alpha, expected_alpha), error_message )
-
-@nose.tools.istest
 def computes_correct_log_alpha():
     ka = 0.1
     kb = 0.1

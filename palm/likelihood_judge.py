@@ -20,7 +20,7 @@ class CollectionLikelihoodJudge(Judge):
 
     def judge_prediction(self, model, data_predictor, target_data):
         total_log_likelihood = 0.0
-        for trajectory in target_data.iter_trajectories():
+        for trajectory in target_data:
             prediction = data_predictor.predict_data(model, trajectory)
             prediction_array = prediction.as_array()
             log_likelihood = prediction_array[0]
