@@ -2,6 +2,7 @@ import pandas
 import base.target_data
 from discrete_state_trajectory import DiscreteStateTrajectory,\
                                       DiscreteDwellSegment
+from copy import deepcopy
 
 class BlinkTargetData(base.target_data.TargetData):
     """ Expected format
@@ -48,7 +49,11 @@ class BlinkCollectionTargetData(base.target_data.TargetData):
     def __len__(self):
         return len(self.target_data_collection)
 
-    def iter_trajectories(self):
+    def __iter__(self):
+        for trajectory in self.iter_feature():
+            yield trajectory
+
+    def iter_feature(self):
         for blink_target in self.target_data_collection:
             trajectory = blink_target.get_feature()
             yield trajectory
@@ -69,3 +74,23 @@ class BlinkCollectionTargetData(base.target_data.TargetData):
 
     def get_notes(self):
         return []
+
+    def make_copy_from_selection(self, inds):
+        my_clone = deepcopy(self)
+        new_data_collection = []
+        for i in inds:
+            this_traj = my_clone.target_data_collection[i]
+            new_data_collection.append(this_traj)
+        my_clone.target_data_collection = new_data_collection
+        return my_clone
+
+    def has_element(self, trajectory_to_search_for):
+        is_found = False
+        for i, trajectory in enumerate(self):
+            stop_condition = (trajectory == trajectory_to_search_for)
+            if stop_condition:
+               is_found = True
+               break
+            else:
+                continue
+        return is_found

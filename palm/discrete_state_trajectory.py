@@ -7,6 +7,11 @@ class DiscreteDwellSegment(base.trajectory.TrajectorySegment):
         self.segment_class = segment_class
         self.segment_duration = segment_duration
 
+    def __eq__(self, other_segment):
+        condition1 = (self.segment_class == other_segment.segment_class)
+        condition2 = (self.segment_duration == other_segment.segment_duration)
+        return condition1 and condition2
+
     def get_class(self):
         return self.segment_class
 
@@ -35,6 +40,16 @@ class DiscreteStateTrajectory(base.trajectory.Trajectory):
     def __iter__(self):
         for segment in self.segment_list:
             yield segment
+
+    def __eq__(self, other_trajectory):
+        is_equal = True
+        for my_segment, other_segment in zip(self, other_trajectory):
+            if my_segment == other_segment:
+                continue
+            else:
+                is_equal = False
+                break
+        return is_equal
 
     def add_segment(self, segment):
         self.segment_list.append(segment)
