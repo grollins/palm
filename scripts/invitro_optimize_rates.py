@@ -6,6 +6,7 @@ from palm.blink_target_data import BlinkCollectionTargetData
 from palm.scipy_optimizer import ScipyOptimizer
 from palm.bootstrap_selector import BootstrapSelector
 from palm.local_manager import LocalManager
+from palm.parameter_set_distribution import ParameterSetDistribution
 
 DIRECTORY_FILE = './palm/tests/test_data/traj_directory.txt'
 BOOTSTRAP_SIZE = 2
@@ -45,7 +46,7 @@ def optimize_parameters(directory_file):
     optimizer = ScipyOptimizer()
     new_params, score = optimizer.optimize_parameters(score_fcn,
                                                 initial_parameters)
-    return directory_file, new_params
+    return directory_file, new_params, score
 
 def paths_to_file(paths, filename):
     f = open(filename, 'w')
@@ -72,11 +73,20 @@ def main():
         task_manager.add_task(optimize_parameters, filename)
 
     results = task_manager.collect_results_from_completed_tasks()
-
-    for filename, optimized_params in results:
-        print filename, optimized_params
-
     task_manager.stop()
+
+    param_dist = ParameterSetDistribution()
+    for filename, optimized_params, score in results:
+        print filename, optimized_params, score
+        param_dist.add_parameter_set(optimized_params, score)
+    param_dist.save_to_file("parameter_distribution_from_curve_fit.pkl")
+
+    reloaded_param_dist = ParameterSetDistribution()
+    reloaded_param_dist.load_from_file("parameter_distribution_from_curve_fit.pkl")
+    print reloaded_param_dist.single_parameter_distribution_as_array('log_ka')
+    print reloaded_param_dist.single_parameter_distribution_as_array('log_kd')
+    print reloaded_param_dist.single_parameter_distribution_as_array('log_kr')
+    print reloaded_param_dist.single_parameter_distribution_as_array('log_kb')
 
 if __name__ == '__main__':
     main()
