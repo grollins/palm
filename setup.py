@@ -25,7 +25,6 @@ def configuration(parent_package='', top_path=None):
                        quiet=False)
 
     config.add_subpackage('palm')
-    config.add_data_dir('scripts')
 
     return config
 

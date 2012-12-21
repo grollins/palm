@@ -5,6 +5,7 @@ def configuration(parent_package='', top_path=None):
     config.add_subpackage('base')
     config.add_data_dir('tests')
     config.add_data_dir('tests/test_data')
+    config.add_data_dir('scripts')
     return config
 
 if __name__ == '__main__':
