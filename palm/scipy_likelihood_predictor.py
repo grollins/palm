@@ -11,25 +11,33 @@ class LikelihoodPredictor(DataPredictor):
         self.prediction_factory = LikelihoodPrediction
 
     def predict_data(self, model, trajectory):
-        likelihood = self.compute_likelihood(model, trajectory)
+        likelihood, has_failed = self.compute_likelihood(model, trajectory)
         log_likelihood = numpy.log10(likelihood)
-        return self.prediction_factory(log_likelihood)
+        return self.prediction_factory(log_likelihood, has_failed)
 
     def compute_likelihood(self, model, trajectory):
-        alpha_set, c_set = self.compute_forward_vectors(model, trajectory)
+        alpha_set, c_set, has_failed = self.compute_forward_vectors(model,
+                                                                trajectory)
         likelihood = 1./(c_set.compute_product())
         if likelihood < ALMOST_ZERO:
             likelihood = ALMOST_ZERO
-        if numpy.isnan(likelihood):
+        if has_failed:
             print c_set
-        return likelihood
+            print trajectory
+        return likelihood, has_failed
 
     def scale_vector(self, vector):
-        this_c = 1./vector.sum()
-        scaled_vector = this_c * vector
+        vector_sum = vector.sum()
+        if vector_sum < ALMOST_ZERO:
+            this_c = 1./ALMOST_ZERO
+            scaled_vector = numpy.ones_like(vector)
+        else:
+            this_c = 1./vector_sum
+            scaled_vector = this_c * vector
         return scaled_vector, this_c
 
     def compute_forward_vectors(self, model, trajectory):
+        has_failed = False
         alpha_set = VectorSet()
         c_set = ScalingCoefficients()
 
@@ -59,11 +67,13 @@ class LikelihoodPredictor(DataPredictor):
             alpha_T = prev_alpha_T * G
             assert type(alpha_T) is numpy.matrix
             scaled_alpha_T, this_c = self.scale_vector(alpha_T)
+            if numpy.isnan(this_c):
+                has_failed = True
             c_set.set_coef(segment_number, this_c)
             scaled_alpha = scaled_alpha_T.T
             alpha_set.add_vector(segment_number, scaled_alpha)
             prev_alpha_T = scaled_alpha_T
-        return alpha_set, c_set
+        return alpha_set, c_set, has_failed
 
     def get_G_matrix(self, model, segment_duration, start_class, end_class):
         '''

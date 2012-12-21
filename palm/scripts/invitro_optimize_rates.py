@@ -21,6 +21,8 @@ def optimize_parameters(directory_file):
             score, prediction = judge.judge_prediction(current_model,
                                                        data_predictor,
                                                        target_data)
+            if prediction.failed():
+                print "failure in likelihood calculation"
             # print score, parameter_set
             return score
         return f

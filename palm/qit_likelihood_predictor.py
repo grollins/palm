@@ -11,25 +11,32 @@ class LikelihoodPredictor(DataPredictor):
         self.prediction_factory = LikelihoodPrediction
 
     def predict_data(self, model, trajectory):
-        likelihood = self.compute_likelihood(model, trajectory)
+        likelihood, has_failed = self.compute_likelihood(model, trajectory)
         log_likelihood = numpy.log10(likelihood)
-        return self.prediction_factory(log_likelihood)
+        return self.prediction_factory(log_likelihood, has_failed)
 
     def compute_likelihood(self, model, trajectory):
-        beta_set, c_set = self.compute_backward_vectors(model, trajectory)
+        beta_set, c_set, has_failed = self.compute_backward_vectors(model, trajectory)
         likelihood = 1./(c_set.compute_product())
         if likelihood < ALMOST_ZERO:
             likelihood = ALMOST_ZERO
-        if numpy.isnan(likelihood):
+        if has_failed:
             print c_set
-        return likelihood
+            print trajectory
+        return likelihood, has_failed
 
     def scale_vector(self, vector):
-        this_c = 1./vector.sum()
-        scaled_vector = this_c * vector
+        vector_sum = vector.sum()
+        if vector_sum < ALMOST_ZERO:
+            this_c = 1./ALMOST_ZERO
+            scaled_vector = numpy.ones_like(vector)
+        else:
+            this_c = 1./vector_sum
+            scaled_vector = this_c * vector
         return scaled_vector, this_c
 
     def compute_backward_vectors(self, model, trajectory):
+        has_failed = False
         beta_set = VectorSet()
         c_set = ScalingCoefficients()
         prev_beta_col_vec = None
@@ -48,6 +55,8 @@ class LikelihoodPredictor(DataPredictor):
                                              end_class, prev_beta_col_vec)
             assert type(beta_col_vec) is numpy.matrix
             scaled_beta_col_vec, this_c = self.scale_vector(beta_col_vec)
+            if numpy.isnan(this_c):
+                has_failed = True
             c_set.set_coef(segment_number, this_c)
             beta_set.add_vector(segment_number, beta_col_vec)
             prev_beta_col_vec = scaled_beta_col_vec
@@ -61,7 +70,7 @@ class LikelihoodPredictor(DataPredictor):
         beta_set.add_vector(-1, final_beta)
         c_set.set_coef(-1, final_c)
 
-        return beta_set, c_set
+        return beta_set, c_set, has_failed
 
     def compute_beta(self, model, segment_duration, start_class,
                      end_class, prev_beta):

@@ -11,13 +11,15 @@ class LocalManager(TaskManager):
         pass
     def add_task(self, task, args):
         self.task_queue.append((task, args))
-    def collect_results_from_completed_tasks(self):
+    def collect_results_from_completed_tasks(self, noisy=False):
         results = []
-        for t in self.task_queue:
+        for i, t in enumerate(self.task_queue):
             task = t[0]
             args = t[1]
             result = task(args)
             results.append(result)
+            if noisy:
+                print i
         self.task_queue = []
         return results
     def count_unfinished_tasks(self):
