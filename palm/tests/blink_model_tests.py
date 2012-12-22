@@ -29,6 +29,7 @@ def SingleDarkModelHasCorrectNumberOfStatesAndRoutes():
 def DoubleDarkModelHasCorrectNumberOfStatesAndRoutes():
     parameter_set = DoubleDarkParameterSet()
     parameter_set.set_parameter('N', 5)
+    parameter_set.set_parameter('log_kr_diff', -1.0)
     model_factory = DoubleDarkBlinkFactory()
     model = model_factory.create_model(parameter_set)
 
@@ -43,3 +44,7 @@ def DoubleDarkModelHasCorrectNumberOfStatesAndRoutes():
 
     num_routes = model.get_num_routes()
     nose.tools.ok_(num_routes > 0, "Model doesn't have routes.")
+    for s in model.states:
+        print s
+    for r in model.routes:
+        print r

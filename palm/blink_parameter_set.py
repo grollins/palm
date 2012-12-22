@@ -67,13 +67,13 @@ class DoubleDarkParameterSet(ParameterSet):
     def __init__(self):
         super(DoubleDarkParameterSet, self).__init__()
         self.parameter_dict = {'log_ka':-1.0, 'log_kd1':-1.0,
-                               'log_kr1':-1.0, 'log_kd2':-1.0,
-                               'log_kr2':-1.0, 'log_kb':-1.0, 'N':5}
+                               'log_kr1':-1.0, 'log_kd2':-2.0,
+                               'log_kr_diff':-2.0, 'log_kb':-1.0, 'N':5}
         self.bounds_dict = {'log_ka':(None, None),
                             'log_kd1':(None, None),
                             'log_kr1':(None, None),
                             'log_kd2':(None, None),
-                            'log_kr2':(None, None),
+                            'log_kr_diff':(None, None),
                             'log_kb':(None, None)}
 
     def __str__(self):
@@ -85,7 +85,10 @@ class DoubleDarkParameterSet(ParameterSet):
             yield param_name, param_value
 
     def set_parameter(self, param_name, param_value):
-        self.parameter_dict[param_name] = param_value
+        if param_name in self.parameter_dict.keys():
+            self.parameter_dict[param_name] = param_value
+        else:
+            assert False, "No such parameter: %s" % param_name
 
     def get_parameter(self, param_name):
         return self.parameter_dict[param_name]
@@ -95,22 +98,22 @@ class DoubleDarkParameterSet(ParameterSet):
         log_kd1 = self.get_parameter('log_kd1')
         log_kr1 = self.get_parameter('log_kr1')
         log_kd2 = self.get_parameter('log_kd2')
-        log_kr2 = self.get_parameter('log_kr2')
+        log_kr_diff = self.get_parameter('log_kr_diff')
         log_kb = self.get_parameter('log_kb')
         N = self.get_parameter('N')
-        return numpy.array([log_ka, log_kd1, log_kr1, log_kd2, log_kr2,
+        return numpy.array([log_ka, log_kd1, log_kr1, log_kd2, log_kr_diff,
                             log_kb, N])
 
     def update_from_array(self, parameter_array):
         """Expected order of parameters in array:
-           log_ka, log_kd1, log_kr1, log_kd2, log_kr2, log_kb, N
+           log_ka, log_kd1, log_kr1, log_kd2, log_kr_diff, log_kb, N
         """
         parameter_array = numpy.atleast_1d(parameter_array)
         self.set_parameter('log_ka', parameter_array[0])
         self.set_parameter('log_kd1', parameter_array[1])
         self.set_parameter('log_kr1', parameter_array[2])
         self.set_parameter('log_kd2', parameter_array[3])
-        self.set_parameter('log_kr2', parameter_array[4])
+        self.set_parameter('log_kr_diff', parameter_array[4])
         self.set_parameter('log_kb', parameter_array[5])
         self.set_parameter('N', int(parameter_array[6]))
 
@@ -122,11 +125,11 @@ class DoubleDarkParameterSet(ParameterSet):
         log_kd1_bounds = self.bounds_dict['log_kd1']
         log_kr1_bounds = self.bounds_dict['log_kr1']
         log_kd2_bounds = self.bounds_dict['log_kd2']
-        log_kr2_bounds = self.bounds_dict['log_kr2']
+        log_kr_diff_bounds = self.bounds_dict['log_kr_diff']
         log_kb_bounds = self.bounds_dict['log_kb']
         N = self.get_parameter('N')
         N_bounds = (N, N)
         bounds = [log_ka_bounds, log_kd1_bounds,
                   log_kr1_bounds, log_kd2_bounds,
-                  log_kr2_bounds, log_kb_bounds,
+                  log_kr_diff_bounds, log_kb_bounds,
                   N_bounds]

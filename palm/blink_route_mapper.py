@@ -189,7 +189,9 @@ class DoubleDarkRouteMapperFactory(object):
         return log_kd2_fcn
 
     def log_kr2_factory(self, log_combinatoric_factor):
-        log_kr2 = self.parameter_set.get_parameter('log_kr2')
+        log_kr_diff = self.parameter_set.get_parameter('log_kr_diff')
+        log_kr1 = self.parameter_set.get_parameter('log_kr1')
+        log_kr2 = log_kr1 + log_kr_diff
         def log_kr2_fcn(t):
             return log_kr2 + log_combinatoric_factor
         return log_kr2_fcn

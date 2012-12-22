@@ -9,10 +9,10 @@ def resampled_target_data_has_expected_size():
     bs_selector = BootstrapSelector()
     bs_size = 2
     resampled_target_data = bs_selector.select_data(target_data, size=bs_size)
-    original_length = len(target_data)
+    expected_length = bs_size
     resampled_length = len(resampled_target_data)
-    error_message = "Expected %d, got %d" % (original_length, resampled_length)
-    nose.tools.eq_(original_length, resampled_length, error_message)
+    error_message = "Expected %d, got %d" % (expected_length, resampled_length)
+    nose.tools.eq_(expected_length, resampled_length, error_message)
 
 @nose.tools.istest
 def all_elements_of_resampled_data_are_elements_of_original_data():
