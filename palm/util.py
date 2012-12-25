@@ -1,7 +1,9 @@
 import scipy.misc
 import numpy
+import logging
 
 ALMOST_ZERO = numpy.float64(1e-300)
+PORT = 26 * 26**2 + 1 * 26**1 + 13 * 26**0
 
 def n_choose_k(n,k):
     assert n > 0, "%d %d" % (n, k)
@@ -19,3 +21,9 @@ def multichoose(n,k):
     if n == 1: return [[k]]
     return [[0]+val for val in multichoose(n-1,k)] + \
         [[val[0]+1]+val[1:] for val in multichoose(n,k-1)]
+
+def SetupLogging(Name):
+    Logger = logging.getLogger(Name)
+    Logger.debug("Module loaded")
+    
+    return Logger

@@ -9,7 +9,7 @@ class LocalManager(TaskManager):
         pass
     def stop(self):
         pass
-    def add_task(self, task, args):
+    def add_task(self, task, *args,**kwargs):
         self.task_queue.append((task, args))
     def collect_results_from_completed_tasks(self, noisy=False):
         results = []

@@ -1,11 +1,10 @@
-import abc
 import nose.tools
 from palm.local_manager import LocalManager
 
-def remote_work_stub(args):
+def remote_work_stub(*args, **kwargs):
     return 0.0
 
-def remote_work_with_args_stub(args):
+def remote_work_with_args_stub(*args, **kwargs):
     my_work = args[0] + args[1]
     return my_work
 
@@ -26,7 +25,7 @@ class LocalNetworkTest(object):
         self.setup()
         args = ()
         for i in xrange(self.num_tasks):
-            self.task_manager.add_task(self.remote_work, args)
+            self.task_manager.add_task(self.remote_work)
         unfinished_tasks = self.task_manager.count_unfinished_tasks()
         nose.tools.eq_(unfinished_tasks, self.num_tasks,
                        msg="%d tasks sent to task manager." % unfinished_tasks)
@@ -43,7 +42,7 @@ class LocalNetworkTest(object):
             arg1 = i
             arg2 = i+1
             args = (arg1, arg2)
-            self.task_manager.add_task(self.remote_work, args)
+            self.task_manager.add_task(self.remote_work, arg1, arg2)
         unfinished_tasks = self.task_manager.count_unfinished_tasks()
         nose.tools.eq_(unfinished_tasks, self.num_tasks,
                        msg="%d tasks sent to task manager." % unfinished_tasks)

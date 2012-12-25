@@ -20,6 +20,12 @@ class SingleDarkParameterSet(ParameterSet):
         for param_name, param_value in self.parameter_dict.iteritems():
             yield param_name, param_value
 
+    def __eq__(self, other_param_set):
+        if type(self) is type(other_param_set):
+            return numpy.array_equal(self.as_array(), other_param_set.as_array())
+        else:
+            return False
+
     def set_parameter(self, param_name, param_value):
         self.parameter_dict[param_name] = param_value
 
@@ -83,6 +89,12 @@ class DoubleDarkParameterSet(ParameterSet):
     def __iter__(self):
         for param_name, param_value in self.parameter_dict.iteritems():
             yield param_name, param_value
+
+    def __eq__(self, other_param_set):
+        if type(self) is type(other_param_set):
+            return numpy.array_equal(self.as_array(), other_param_set.as_array())
+        else:
+            return False
 
     def set_parameter(self, param_name, param_value):
         if param_name in self.parameter_dict.keys():
