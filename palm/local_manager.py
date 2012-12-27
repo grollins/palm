@@ -10,13 +10,14 @@ class LocalManager(TaskManager):
     def stop(self):
         pass
     def add_task(self, task, *args,**kwargs):
-        self.task_queue.append((task, args))
+        self.task_queue.append((task, args, kwargs))
     def collect_results_from_completed_tasks(self, noisy=False):
         results = []
         for i, t in enumerate(self.task_queue):
             task = t[0]
             args = t[1]
-            result = task(args)
+            kwargs = t[2]
+            result = task(*args, **kwargs)
             results.append(result)
             if noisy:
                 print i
