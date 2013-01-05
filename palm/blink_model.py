@@ -2,6 +2,10 @@ import numpy
 import aggregated_kinetic_model
 
 class SingleDarkState(object):
+    '''
+    A state class for use with an aggregated kinetic model.
+    The available microstates are I, A, D, and B.
+    '''
     def __init__(self, id_str, I, A, D, B, observation_class):
         self.id = id_str
         self.I = I
@@ -31,6 +35,10 @@ class SingleDarkState(object):
 
 
 class DoubleDarkState(object):
+    '''
+    A state class for use with an aggregated kinetic model.
+    The available microstates are I, A, D1, D2, and B.
+    '''
     def __init__(self, id_str, I, A, D1, D2, B, observation_class):
         self.id = id_str
         self.I = I
@@ -61,6 +69,12 @@ class DoubleDarkState(object):
 
 
 class BlinkModel(aggregated_kinetic_model.AggregatedKineticModel):
+    '''
+    BlinkModel is an AggregatedKineticModel. Two observation classes
+    are expected:
+    1. dark (no fluorescence detected)
+    2. bright (fluorescence detected)
+    '''
     def __init__(self, state_enumerator, route_mapper, parameter_set):
         super(BlinkModel, self).__init__(state_enumerator, route_mapper,
                                           parameter_set)

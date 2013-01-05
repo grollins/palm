@@ -2,6 +2,9 @@ from util import multichoose
 from types import IntType
 
 class SingleDarkStateEnumeratorFactory(object):
+    """
+    Creates a state enumerator for a blink model with one dark state.
+    """
     def __init__(self, N, state_factory, max_A):
         assert type(N) is IntType
         self.N = N
@@ -36,6 +39,9 @@ class SingleDarkStateEnumeratorFactory(object):
         return enumerate_states
 
 class DoubleDarkStateEnumeratorFactory(object):
+    """
+    Creates a state enumerator for a blink model with two dark states.
+    """
     def __init__(self, N, state_factory, max_A):
         assert type(N) is IntType
         self.N = N

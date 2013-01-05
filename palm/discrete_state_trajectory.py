@@ -1,7 +1,7 @@
 import base.trajectory
 
 class DiscreteDwellSegment(base.trajectory.TrajectorySegment):
-    """docstring for DiscreteDwellSegment"""
+    """Dwells consist of an observation class and a dwell duration."""
     def __init__(self, segment_class, segment_duration):
         super(DiscreteDwellSegment, self).__init__()
         self.segment_class = segment_class
@@ -20,7 +20,10 @@ class DiscreteDwellSegment(base.trajectory.TrajectorySegment):
 
 
 class DiscreteStateTrajectory(base.trajectory.Trajectory):
-    """docstring for DiscreteStateTrajectory"""
+    """
+    Each segment of the trajectory corresponds to a
+    discrete observation class (e.g. dark or bright).
+    """
     def __init__(self):
         super(DiscreteStateTrajectory, self).__init__()
         self.segment_list = []

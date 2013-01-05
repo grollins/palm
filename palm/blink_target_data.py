@@ -5,7 +5,11 @@ from discrete_state_trajectory import DiscreteStateTrajectory,\
 from copy import deepcopy
 
 class BlinkTargetData(base.target_data.TargetData):
-    """ Expected format
+    """
+    One dwell trajectory loaded from a file. The trajectory
+    should be a series of dark and bright observations and
+    the duration of each observation.
+    Expected format:
         class,dwell time
         dark,1.5
         bright,0.3
@@ -40,7 +44,10 @@ class BlinkTargetData(base.target_data.TargetData):
         return []
 
 class BlinkCollectionTargetData(base.target_data.TargetData):
-    """docstring for BlinkCollectionTargetData"""
+    """
+    An ensemble of trajectories. Each trajectory is expected
+    to be in the format described for BlinkTargetData.
+    """
     def __init__(self):
         super(BlinkCollectionTargetData, self).__init__()
         self.trajectory_data_factory = BlinkTargetData

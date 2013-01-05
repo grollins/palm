@@ -1,7 +1,11 @@
 import numpy
 
 class RateMatrixFactory(object):
-    """docstring for RateMatrixFactory"""
+    """
+    This factory class creates a rate matrix for an
+    aggregated kinetic model. States and routes must
+    be defined in order to create the matrix.
+    """
     def __init__(self, rate_matrix_class):
         super(RateMatrixFactory, self).__init__()
         self.rate_matrix_class = rate_matrix_class
@@ -22,7 +26,14 @@ class RateMatrixFactory(object):
 
 
 class AggregatedRateMatrix(object):
-    """docstring for AggregatedRateMatrix"""
+    """
+    A rate matrix for a model with discrete observation classes.
+    The states are grouped by observation class to give the matrix
+    the following sub-matrix structure:
+           Q_dd | Q_db
+     Q =   -----------
+           Q_bd | Q_bb
+    """
     def __init__(self, size_list, class_indices_dict):
         super(AggregatedRateMatrix, self).__init__()
         self.rate_matrix = numpy.zeros(size_list)

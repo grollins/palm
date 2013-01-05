@@ -3,7 +3,10 @@ import cPickle
 from collections import defaultdict
 
 class ParameterSetDistribution(object):
-    """docstring for ParameterSetDistribution"""
+    """
+    A distribution of parameter values, probably from
+    repeated bootstrap fittings of data.
+    """
     def __init__(self):
         super(ParameterSetDistribution, self).__init__()
         self.distribution = defaultdict(list)

@@ -2,7 +2,7 @@ import numpy
 from base.parameter_set import ParameterSet
 
 class SingleDarkParameterSet(ParameterSet):
-    """docstring for SingleDarkParameterSet"""
+    """Parameters for a blink model with one dark state."""
     def __init__(self):
         super(SingleDarkParameterSet, self).__init__()
         self.parameter_dict = {'log_ka':-1.0, 'log_kd':-1.0,
@@ -69,7 +69,7 @@ class SingleDarkParameterSet(ParameterSet):
 
 
 class DoubleDarkParameterSet(ParameterSet):
-    """docstring for DoubleDarkParameterSet"""
+    """Parameters for a blink model with two dark states."""
     def __init__(self):
         super(DoubleDarkParameterSet, self).__init__()
         self.parameter_dict = {'log_ka':-1.0, 'log_kd1':-1.0,

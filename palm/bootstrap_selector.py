@@ -2,7 +2,7 @@ import base.data_selector
 from sklearn.cross_validation import Bootstrap
 
 class BootstrapSelector(base.data_selector.DataSelector):
-    """docstring for BootstrapSelector"""
+    """Randomly samples a data set with replacement."""
     def __init__(self):
         super(BootstrapSelector, self).__init__()
 

@@ -5,7 +5,11 @@ import numpy
 import scipy.linalg
 
 class LikelihoodPredictor(DataPredictor):
-    """docstring for LikelihoodPredictor"""
+    """
+    Predicts the log likelihood of a dwell trajectory, given
+    an aggregated kinetic model. This class utilizes a matrix
+    exponential routine from Scipy.
+    """
     def __init__(self):
         super(LikelihoodPredictor, self).__init__()
         self.prediction_factory = LikelihoodPrediction
@@ -93,6 +97,9 @@ class LikelihoodPredictor(DataPredictor):
 
 
 class VectorSet(object):
+    """
+    Helper class for the likelihood predictor.
+    """
     def __init__(self):
         self.vector_dict = {}
     def __str__(self):
@@ -105,6 +112,9 @@ class VectorSet(object):
 
 
 class ScalingCoefficients(object):
+    """
+    Helper class for the likelihood predictor.
+    """
     def __init__(self):
         self.coef_dict = {}
     def __len__(self):

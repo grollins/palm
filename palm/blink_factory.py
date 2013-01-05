@@ -11,6 +11,13 @@ from blink_route_mapper import SingleDarkRouteMapperFactory,\
 MAX_A = 1000
 
 class SingleDarkBlinkFactory(base.model_factory.ModelFactory):
+    '''
+    This factory class creates an aggregated kinetic model with
+    the following microstate topology:
+    I --> A
+    A <--> D
+    A --> B
+    '''
     def __init__(self):
         self.state_factory = blink_model.SingleDarkState
         self.route_factory = aggregated_kinetic_model.Route
@@ -32,6 +39,14 @@ class SingleDarkBlinkFactory(base.model_factory.ModelFactory):
 
 
 class DoubleDarkBlinkFactory(base.model_factory.ModelFactory):
+    '''
+    This factory class creates an aggregated kinetic model with
+    the following microstate topology:
+    I --> A
+    A <--> D1
+    A <--> D2
+    A --> B
+    '''
     def __init__(self):
         self.state_factory = blink_model.DoubleDarkState
         self.route_factory = aggregated_kinetic_model.Route

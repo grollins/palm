@@ -5,7 +5,13 @@ import numpy
 import scipy.linalg
 
 class ViterbiPredictor(DataPredictor):
-    """docstring for ViterbiPredictor"""
+    """
+    Predicts the log likelihood of a dwell trajectory, given
+    an aggregated kinetic model. Here we use the Viterbi
+    algorithm, so the log likelihood is actually that of
+    the most likely path within the state space of the given
+    model.
+    """
     def __init__(self):
         super(ViterbiPredictor, self).__init__()
         self.prediction_factory = LikelihoodPrediction
@@ -102,6 +108,9 @@ class ViterbiPredictor(DataPredictor):
 
 
 class VectorSet(object):
+    """
+    Helper class for the likelihood predictor.
+    """
     def __init__(self):
         self.vector_dict = {}
     def __str__(self):
@@ -113,6 +122,9 @@ class VectorSet(object):
 
 
 class ScalingCoefficients(object):
+    """
+    Helper class for the likelihood predictor.
+    """
     def __init__(self):
         self.coef_dict = {}
     def __len__(self):

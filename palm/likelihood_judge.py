@@ -1,7 +1,11 @@
 from base.judge import Judge
 
 class LikelihoodJudge(Judge):
-    """docstring for LikelihoodJudge"""
+    """
+    Judges how well a model fits data on the basis
+    of log likelihood. This class delegates the
+    calculation of the likelihood to the data predictor.
+    """
     def __init__(self):
         super(LikelihoodJudge, self).__init__()
 
@@ -14,7 +18,11 @@ class LikelihoodJudge(Judge):
 
 
 class CollectionLikelihoodJudge(Judge):
-    """docstring for CollectionLikelihoodJudge"""
+    """
+    Judges how well a model fits a collection of data on the basis
+    of log likelihood. This class delegates the calculation of the 
+    likelihood to the data predictor.
+    """
     def __init__(self):
         super(CollectionLikelihoodJudge, self).__init__()
 

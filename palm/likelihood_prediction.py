@@ -2,7 +2,10 @@ import numpy
 from base.prediction import Prediction
 
 class LikelihoodPrediction(Prediction):
-    """docstring for LikelihoodPrediction"""
+    """
+    A prediction that consists only of a likelihood,
+    which is probably calculated by a predictor class.
+    """
     def __init__(self, likelihood, has_failed):
         super(LikelihoodPrediction, self).__init__()
         self.likelihood = likelihood

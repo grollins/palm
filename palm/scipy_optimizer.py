@@ -2,7 +2,11 @@ import scipy.optimize
 import base.parameter_optimizer
 
 class ScipyOptimizer(base.parameter_optimizer.ParameterOptimizer):
-    """docstring for ScipyOptimizer"""
+    """
+    Optimizes an objective function to determine optimal
+    parameter values. Uses Scipy optimization routines.
+    Currently using a bounded BFGS routine.
+    """
     def __init__(self):
         super(ScipyOptimizer, self).__init__()
         self.optimization_fcn = scipy.optimize.fmin_l_bfgs_b

@@ -9,7 +9,9 @@ from discrete_state_trajectory import DiscreteStateTrajectory,\
 from aggregated_kinetic_model import State, Route, AggregatedKineticModel
 
 class SimpleParameterSet(base.parameter_set.ParameterSet):
-    """docstring for SimpleParameterSet"""
+    """
+    Parameters for a simple two-state model.
+    """
     def __init__(self):
         super(SimpleParameterSet, self).__init__()
         self.parameter_dict = {'log_k1':-1.0, 'log_k2':-1.0}
@@ -54,7 +56,10 @@ class SimpleParameterSet(base.parameter_set.ParameterSet):
 
 
 class SimpleModelFactory(base.model_factory.ModelFactory):
-    """docstring for SimpleModelFactory"""
+    """
+    This factory class creates a simple two-state aggregated
+    kinetic model.
+    """
     def __init__(self):
         super(SimpleModelFactory, self).__init__()
         self.state_factory = State
@@ -105,7 +110,9 @@ class SimpleModelFactory(base.model_factory.ModelFactory):
 
 
 class SimpleModel(AggregatedKineticModel):
-    """docstring for SimpleModel"""
+    """
+    A simple two-state model with green and orange observation classes.
+    """
     def __init__(self, state_enumerator, route_mapper, parameter_set):
         super(SimpleModel, self).__init__(state_enumerator, route_mapper,
                                           parameter_set)
@@ -116,7 +123,12 @@ class SimpleModel(AggregatedKineticModel):
         return initial_population_array
 
 class SimpleTargetData(base.target_data.TargetData):
-    """ Expected format
+    """
+    One dwell trajectory loaded from a file. The trajectory
+    should be a series of green and orange observations and
+    the duration of each observation.
+    
+    Expected format:
         class,dwell time
         green,1.5
         orange,0.3

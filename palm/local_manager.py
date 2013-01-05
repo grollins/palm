@@ -1,7 +1,10 @@
 from base.task_manager import TaskManager
 
 class LocalManager(TaskManager):
-    """docstring for LocalManager"""
+    """
+    A task manager that runs tasks on the local machine
+    (rather coordinating a task queue across a network).
+    """
     def __init__(self):
         super(LocalManager, self).__init__()
         self.task_queue = []

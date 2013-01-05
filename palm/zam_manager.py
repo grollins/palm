@@ -3,7 +3,11 @@ from base.task_manager import TaskManager
 import network.master
 
 class ZamManager(TaskManager):
-    """docstring for ZamManager"""
+    """
+    A task manager that runs tasks across a network using
+    a Twisted-based module previously implemented in Zam
+    by JL MacCallum.
+    """
     def __init__(self, queue_name, waiting_time=100):
         super(ZamManager, self).__init__()
         self.task_queue = None

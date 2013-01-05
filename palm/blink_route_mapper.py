@@ -2,7 +2,10 @@ import numpy
 import util
 
 class SingleDarkRouteMapperFactory(object):
-    """docstring for SingleDarkRouteMapperFactory"""
+    """
+    This factory class creates a route mapper for
+    a blink model with one dark state.
+    """
     def __init__(self, parameter_set, route_factory, max_A):
         super(SingleDarkRouteMapperFactory, self).__init__()
         self.parameter_set = parameter_set
@@ -73,6 +76,9 @@ class SingleDarkRouteMapperFactory(object):
 
 
 class SingleDarkTransition(object):
+    """
+    A helper class for SingleDarkRouteMapperFactory.
+    """
     def __init__(self, dI, dA, dD, dB, label, reacting_species_dict,
                  log_rate_fcn_factory):
         self.dPop_dict = {'I':dI, 'A':dA, 'D':dD, 'B':dB}
@@ -122,7 +128,10 @@ class SingleDarkTransition(object):
 
 
 class DoubleDarkRouteMapperFactory(object):
-    """docstring for DoubleDarkRouteMapperFactory"""
+    """
+    This factory class creates a route mapper for
+    a blink model with two dark states.
+    """
     def __init__(self, parameter_set, route_factory, max_A):
         super(DoubleDarkRouteMapperFactory, self).__init__()
         self.parameter_set = parameter_set
@@ -217,6 +226,9 @@ class DoubleDarkRouteMapperFactory(object):
 
 
 class DoubleDarkTransition(object):
+    """
+    A helper class for DoubleDarkRouteMapperFactory.
+    """
     def __init__(self, dI, dA, dD1, dD2, dB, label, reacting_species_dict,
                  log_rate_fcn_factory):
         self.dPop_dict = {'I':dI, 'A':dA, 'D1':dD1, 'D2':dD2, 'B':dB}

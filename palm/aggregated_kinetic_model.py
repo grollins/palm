@@ -4,6 +4,9 @@ from collections import defaultdict
 from rate_matrix import RateMatrixFactory, AggregatedRateMatrix
 
 class State(object):
+    '''
+    A generic state class for aggregated kinetic models.
+    '''
     def __init__(self, id_str, observation_class):
         self.id = id_str
         self.observation_class = observation_class
@@ -25,6 +28,9 @@ class State(object):
         return self.initial_state_flag
 
 class Route(object):
+    '''
+    A generic route class for aggregated kinetic models.
+    '''
     def __init__(self, start_state, end_state, log_rate_function):
         self.start_state = start_state
         self.end_state = end_state
@@ -40,7 +46,11 @@ class Route(object):
 
 
 class AggregatedKineticModel(base.model.Model):
-    """docstring for AggregatedKineticModel"""
+    """An AggregatedKineticModel consists of states and routes.
+       The routes are transitions between states. The model is
+       aggregated in the sense that each state belongs to one
+       of several discrete observation classes (e.g. 'dark' or 'bright').
+    """
     def __init__(self, state_enumerator, route_mapper, parameter_set):
         super(AggregatedKineticModel, self).__init__()
         self.state_enumerator = state_enumerator
