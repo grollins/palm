@@ -31,15 +31,21 @@ class Route(object):
     '''
     A generic route class for aggregated kinetic models.
     '''
-    def __init__(self, start_state, end_state, log_rate_function):
+    def __init__(self, start_state, end_state, log_rate_function,
+                 label=''):
         self.start_state = start_state
         self.end_state = end_state
         self.log_rate_function = log_rate_function
+        self.label = label
 
     def __str__(self):
-        my_str = "%s %s %.3e" % (self.start_state, self.end_state,
-                                 self.log_rate_function(t=0.0))
+        my_str = "%s %s %s %.3e" % (self.label, self.start_state,
+                                    self.end_state,
+                                    self.log_rate_function(t=0.0))
         return my_str
+
+    def get_label(self):
+        return self.label
 
     def compute_log_rate(self, t):
         return self.log_rate_function(t)
@@ -104,6 +110,10 @@ class AggregatedKineticModel(base.model.Model):
         # return sorted states
         return sorted_state_list, sorted_state_index_dict,\
                sorted_class_indices_dict
+
+    def iter_routes(self):
+        for r in self.routes:
+            yield r
 
     def get_parameter(self, parameter_name):
         return self.parameter_set.get_parameter(parameter_name)

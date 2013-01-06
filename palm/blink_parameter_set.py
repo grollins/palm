@@ -6,11 +6,12 @@ class SingleDarkParameterSet(ParameterSet):
     def __init__(self):
         super(SingleDarkParameterSet, self).__init__()
         self.parameter_dict = {'log_ka':-1.0, 'log_kd':-1.0,
-                               'log_kr':-1.0, 'log_kb':-1.0, 'N':5}
+                               'log_kr':-1.0, 'log_kb':-1.0, 'N':5,
+                               'fermi_T':5.0, 'fermi_tf':192.}
         self.bounds_dict = {'log_ka':(None, None),
                             'log_kd':(None, None),
                             'log_kr':(None, None),
-                            'log_kb':(None, None)}
+                            'log_kb':(None, None) }
 
     def __str__(self):
         my_array = self.as_array()
@@ -27,7 +28,10 @@ class SingleDarkParameterSet(ParameterSet):
             return False
 
     def set_parameter(self, param_name, param_value):
-        self.parameter_dict[param_name] = param_value
+        if param_name in self.parameter_dict.keys():
+            self.parameter_dict[param_name] = param_value
+        else:
+            assert False, "No such parameter: %s" % param_name
 
     def get_parameter(self, param_name):
         return self.parameter_dict[param_name]
@@ -38,11 +42,14 @@ class SingleDarkParameterSet(ParameterSet):
         log_kr = self.get_parameter('log_kr')
         log_kb = self.get_parameter('log_kb')
         N = self.get_parameter('N')
-        return numpy.array([log_ka, log_kd, log_kr, log_kb, N])
+        fermi_T = self.get_parameter('fermi_T')
+        fermi_tf = self.get_parameter('fermi_tf')
+        return numpy.array([log_ka, log_kd, log_kr, log_kb, N,
+                            fermi_T, fermi_tf])
 
     def update_from_array(self, parameter_array):
         """Expected order of parameters in array:
-           log_ka, log_kd, log_kr, log_kb, N
+           log_ka, log_kd, log_kr, log_kb, N, fermi_T, fermi_tf
         """
         parameter_array = numpy.atleast_1d(parameter_array)
         self.set_parameter('log_ka', parameter_array[0])
@@ -50,6 +57,8 @@ class SingleDarkParameterSet(ParameterSet):
         self.set_parameter('log_kr', parameter_array[2])
         self.set_parameter('log_kb', parameter_array[3])
         self.set_parameter('N', int(parameter_array[4]))
+        self.set_parameter('fermi_T', parameter_array[5])
+        self.set_parameter('fermi_tf', parameter_array[6])
 
     def set_parameter_bounds(self, parameter_name, min_value, max_value):
         self.bounds_dict[parameter_name] = (min_value, max_value)
@@ -61,10 +70,13 @@ class SingleDarkParameterSet(ParameterSet):
         log_kb_bounds = self.bounds_dict['log_kb']
         N = self.get_parameter('N')
         N_bounds = (N, N)
+        fermi_T = self.get_parameter('fermi_T')
+        fermi_T_bounds = (fermi_T, fermi_T)
+        fermi_tf = self.get_parameter('fermi_tf')
+        fermi_tf_bounds = (fermi_tf, fermi_tf)
         bounds = [log_ka_bounds, log_kd_bounds,
                   log_kr_bounds, log_kb_bounds,
-                  N_bounds]
-
+                  N_bounds, fermi_T_bounds, fermi_tf_bounds]
         return bounds
 
 
@@ -74,7 +86,8 @@ class DoubleDarkParameterSet(ParameterSet):
         super(DoubleDarkParameterSet, self).__init__()
         self.parameter_dict = {'log_ka':-1.0, 'log_kd1':-1.0,
                                'log_kr1':-1.0, 'log_kd2':-2.0,
-                               'log_kr_diff':-2.0, 'log_kb':-1.0, 'N':5}
+                               'log_kr_diff':-2.0, 'log_kb':-1.0, 'N':5,
+                               'fermi_T':5.0, 'fermi_tf':192.}
         self.bounds_dict = {'log_ka':(None, None),
                             'log_kd1':(None, None),
                             'log_kr1':(None, None),
@@ -113,12 +126,15 @@ class DoubleDarkParameterSet(ParameterSet):
         log_kr_diff = self.get_parameter('log_kr_diff')
         log_kb = self.get_parameter('log_kb')
         N = self.get_parameter('N')
+        fermi_T = self.get_parameter('fermi_T')
+        fermi_tf = self.get_parameter('fermi_tf')
         return numpy.array([log_ka, log_kd1, log_kr1, log_kd2, log_kr_diff,
-                            log_kb, N])
+                            log_kb, N, fermi_T, fermi_tf])
 
     def update_from_array(self, parameter_array):
         """Expected order of parameters in array:
-           log_ka, log_kd1, log_kr1, log_kd2, log_kr_diff, log_kb, N
+           log_ka, log_kd1, log_kr1, log_kd2, log_kr_diff, log_kb, N,
+           fermi_T, fermi_tf
         """
         parameter_array = numpy.atleast_1d(parameter_array)
         self.set_parameter('log_ka', parameter_array[0])
@@ -128,6 +144,8 @@ class DoubleDarkParameterSet(ParameterSet):
         self.set_parameter('log_kr_diff', parameter_array[4])
         self.set_parameter('log_kb', parameter_array[5])
         self.set_parameter('N', int(parameter_array[6]))
+        self.set_parameter('fermi_T', parameter_array[7])
+        self.set_parameter('fermi_tf', parameter_array[8])
 
     def set_parameter_bounds(self, parameter_name, min_value, max_value):
         self.bounds_dict[parameter_name] = (min_value, max_value)
@@ -141,7 +159,11 @@ class DoubleDarkParameterSet(ParameterSet):
         log_kb_bounds = self.bounds_dict['log_kb']
         N = self.get_parameter('N')
         N_bounds = (N, N)
+        fermi_T = self.get_parameter('fermi_T')
+        fermi_T_bounds = (fermi_T, fermi_T)
+        fermi_tf = self.get_parameter('fermi_tf')
+        fermi_tf_bounds = (fermi_tf, fermi_tf)
         bounds = [log_ka_bounds, log_kd1_bounds,
                   log_kr1_bounds, log_kd2_bounds,
                   log_kr_diff_bounds, log_kb_bounds,
-                  N_bounds]
+                  N_bounds, fermi_T_bounds, fermi_tf_bounds]

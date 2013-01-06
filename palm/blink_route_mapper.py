@@ -6,16 +6,22 @@ class SingleDarkRouteMapperFactory(object):
     This factory class creates a route mapper for
     a blink model with one dark state.
     """
-    def __init__(self, parameter_set, route_factory, max_A):
+    def __init__(self, parameter_set, route_factory, max_A,
+                 fermi_activation=False):
         super(SingleDarkRouteMapperFactory, self).__init__()
         self.parameter_set = parameter_set
         self.route_factory = route_factory
         self.max_A = max_A
         self.transition_factory = SingleDarkTransition
+        self.fermi_activation = fermi_activation
 
     def create_route_mapper(self):
-        activation = self.transition_factory(-1, 1, 0, 0, 'I->A', {'I':1},
-                                             self.log_ka_factory)
+        if self.fermi_activation:
+            activation = self.transition_factory(-1, 1, 0, 0, 'I->A', {'I':1},
+                                                 self.fermi_log_ka_factory)
+        else:
+            activation = self.transition_factory(-1, 1, 0, 0, 'I->A', {'I':1},
+                                                 self.log_ka_factory)            
         blinking = self.transition_factory(0, -1, 1, 0, 'A->D', {'A':1},
                                            self.log_kd_factory)
         recovery = self.transition_factory(0, 1, -1, 0, 'D->A', {'D':1},
@@ -34,7 +40,9 @@ class SingleDarkRouteMapperFactory(object):
                     end_id = "%d_%d_%d_%d" % (s2_array[0], s2_array[1],
                                               s2_array[2], s2_array[3])
                     log_rate_fcn = transition.get_log_rate_fcn(current_population_dict)
-                    new_route = self.route_factory(start_id, end_id, log_rate_fcn)
+                    new_route = self.route_factory(start_id, end_id,
+                                                   log_rate_fcn,
+                                                   transition.label)
                     route_list.append(new_route)
             return route_list
         return map_routes
@@ -44,6 +52,20 @@ class SingleDarkRouteMapperFactory(object):
         def log_ka_fcn(t):
             return log_ka + log_combinatoric_factor
         return log_ka_fcn
+
+    def fermi_log_ka_factory(self, log_combinatoric_factor):
+        T = self.parameter_set.get_parameter('fermi_T')
+        tf = self.parameter_set.get_parameter('fermi_tf')
+        def fermi_fcn(t):
+            numerator = numpy.exp(-(t - tf) / T)
+            denominator = ((1 + numerator) * numpy.log(1 + numerator)) * T
+            # if denominator < 1e-10:
+            #     ka = 0.2
+            # else:
+            ka = numerator/denominator
+            log_ka = numpy.log10(ka)
+            return log_ka + log_combinatoric_factor
+        return fermi_fcn
 
     def log_kd_factory(self, log_combinatoric_factor):
         log_kd = self.parameter_set.get_parameter('log_kd')
@@ -132,16 +154,22 @@ class DoubleDarkRouteMapperFactory(object):
     This factory class creates a route mapper for
     a blink model with two dark states.
     """
-    def __init__(self, parameter_set, route_factory, max_A):
+    def __init__(self, parameter_set, route_factory, max_A,
+                 fermi_activation=False):
         super(DoubleDarkRouteMapperFactory, self).__init__()
         self.parameter_set = parameter_set
         self.route_factory = route_factory
         self.max_A = max_A
         self.transition_factory = DoubleDarkTransition
+        self.fermi_activation = fermi_activation
 
     def create_route_mapper(self):
-        activation = self.transition_factory(-1, 1, 0, 0, 0, 'I->A', {'I':1},
-                                             self.log_ka_factory)
+        if self.fermi_activation:
+            activation = self.transition_factory(-1, 1, 0, 0, 0, 'I->A', {'I':1},
+                                                 self.fermi_log_ka_factory)
+        else:
+            activation = self.transition_factory(-1, 1, 0, 0, 0, 'I->A', {'I':1},
+                                                 self.log_ka_factory)            
         blinking1 = self.transition_factory(0, -1, 1, 0, 0, 'A->D1', {'A':1},
                                            self.log_kd1_factory)
         recovery1 = self.transition_factory(0, 1, -1, 0, 0, 'D1->A', {'D1':1},
@@ -168,7 +196,7 @@ class DoubleDarkRouteMapperFactory(object):
                                                  s2_array[4])
                     log_rate_fcn = transition.get_log_rate_fcn(current_population_dict)
                     new_route = self.route_factory(start_id, end_id,
-                                                   log_rate_fcn)
+                                                   log_rate_fcn, transition.label)
                     route_list.append(new_route)
             return route_list
         return map_routes
@@ -178,6 +206,17 @@ class DoubleDarkRouteMapperFactory(object):
         def log_ka_fcn(t):
             return log_ka + log_combinatoric_factor
         return log_ka_fcn
+
+    def fermi_log_ka_factory(self, log_combinatoric_factor):
+        T = self.parameter_set.get_parameter('fermi_T')
+        tf = self.parameter_set.get_parameter('fermi_tf')
+        def fermi_fcn(t):
+            numerator = numpy.exp(-(t - tf) / T)
+            denominator = ((1 + numerator) * numpy.log(1 + numerator)) * T
+            ka = numerator/denominator
+            log_ka = numpy.log10(ka)
+            return log_ka + log_combinatoric_factor
+        return fermi_fcn
 
     def log_kd1_factory(self, log_combinatoric_factor):
         log_kd1 = self.parameter_set.get_parameter('log_kd1')
