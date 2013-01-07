@@ -57,13 +57,12 @@ class SingleDarkRouteMapperFactory(object):
         T = self.parameter_set.get_parameter('fermi_T')
         tf = self.parameter_set.get_parameter('fermi_tf')
         def fermi_fcn(t):
+            stability_limit = tf + tf/T
+            if t > stability_limit:
+                t = stability_limit
             numerator = numpy.exp(-(t - tf) / T)
             denominator = ((1 + numerator) * numpy.log(1 + numerator)) * T
-            # if denominator < 1e-10:
-            #     ka = 0.2
-            # else:
-            ka = numerator/denominator
-            log_ka = numpy.log10(ka)
+            log_ka = numpy.log10(numerator) - numpy.log10(denominator)
             return log_ka + log_combinatoric_factor
         return fermi_fcn
 
@@ -211,10 +210,12 @@ class DoubleDarkRouteMapperFactory(object):
         T = self.parameter_set.get_parameter('fermi_T')
         tf = self.parameter_set.get_parameter('fermi_tf')
         def fermi_fcn(t):
+            stability_limit = tf + tf/T
+            if t > stability_limit:
+                t = stability_limit
             numerator = numpy.exp(-(t - tf) / T)
             denominator = ((1 + numerator) * numpy.log(1 + numerator)) * T
-            ka = numerator/denominator
-            log_ka = numpy.log10(ka)
+            log_ka = numpy.log10(numerator) - numpy.log10(denominator)
             return log_ka + log_combinatoric_factor
         return fermi_fcn
 
