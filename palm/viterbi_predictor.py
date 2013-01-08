@@ -18,11 +18,10 @@ class ViterbiPredictor(DataPredictor):
 
     def predict_data(self, model, trajectory):
         log_likelihood = self.compute_log_likelihood(model, trajectory)
-        return self.prediction_factory(log_likelihood)
+        return self.prediction_factory(log_likelihood, has_failed=False)
 
     def compute_log_likelihood(self, model, trajectory):
         log_alpha_set = self.compute_log_viterbi_vectors(model, trajectory)
-        # print log_alpha_set.get_vector(len(trajectory)-1)
         log_likelihood = max(log_alpha_set.get_vector(len(trajectory)-1))
         return log_likelihood
 
@@ -66,9 +65,10 @@ class ViterbiPredictor(DataPredictor):
 
     def compute_log_alpha(self, model, segment_duration, start_class,
                           end_class, prev_log_alpha_col_vec):
-        assert prev_log_alpha_col_vec.shape[1] == 1, str(prev_log_alpha_col_vec)
+        prev_log_alpha_col_vec = numpy.array(prev_log_alpha_col_vec)
+        assert prev_log_alpha_col_vec.shape[1] == 1, prev_log_alpha_col_vec.shape
         Q_aa = model.get_numpy_submatrix(start_class, start_class)
-        assert type(Q_aa) is numpy.matrix, "Got %s" % (type(Q_aa))
+        Q_aa = numpy.array(Q_aa)
         if end_class is None:
             Q_ab = None
             next_log_alpha_col_vec = numpy.zeros( [Q_aa.shape[1], 1] )
@@ -76,35 +76,16 @@ class ViterbiPredictor(DataPredictor):
             Q_ab = model.get_numpy_submatrix(start_class, end_class)
             rows,cols = numpy.where(Q_ab == 0.0)
             Q_ab[rows,cols] = ALMOST_ZERO
-            assert type(Q_ab) is numpy.matrix, "Got %s" % (type(Q_ab))
+            Q_ab = numpy.array(Q_ab)
+            assert type(Q_ab) is numpy.ndarray, "Got %s" % (type(Q_ab))
             next_log_alpha_col_vec = numpy.zeros( [Q_ab.shape[1], 1] )
-
-        for j in xrange(next_log_alpha_col_vec.shape[0]):
-            log_prob_list = []
-            for i in xrange(len(Q_aa)):
-                log_prob = prev_log_alpha_col_vec[i,0] + Q_aa[i,i] * segment_duration
-                if end_class is None:
-                    pass
-                else:
-                    ij_transition_prob = Q_ab[i,j]
-                    log_prob = log_prob + numpy.log(ij_transition_prob)
-                if numpy.isnan(log_prob):
-                    error_msg = "%d %d %s %s %s\n%s" % (i, j, 
-                                                        str(prev_log_alpha_col_vec[i,0]),
-                                                        str(numpy.log(ij_transition_prob)),
-                                                        str(Q_ab[i,j]),
-                                                        str(Q_ab))
-                    print error_msg
-                    print start_class, end_class
-                    print model.class_indices_dict
-                    assert False
-                assert numpy.isscalar(log_prob)
-                log_prob_list.append( (log_prob, i) )
-            sorted_log_prob_list = sorted(log_prob_list) # lowest to highest
-            max_log_prob = sorted_log_prob_list[-1][0]
-            max_i = sorted_log_prob_list[-1][1]
-            next_log_alpha_col_vec[j,0] = max_log_prob
-        return numpy.asmatrix(next_log_alpha_col_vec)
+        next_array = prev_log_alpha_col_vec + numpy.atleast_2d((Q_aa.diagonal() * segment_duration)).T
+        if end_class is None:
+            pass
+        else:
+            next_array = next_array + numpy.log(Q_ab)
+        next_log_alpha_col_vec = numpy.atleast_2d(next_array.max(axis=0))
+        return numpy.matrix(next_log_alpha_col_vec).T
 
 
 class VectorSet(object):
