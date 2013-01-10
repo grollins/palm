@@ -1,5 +1,5 @@
 import numpy
-import util
+from palm.util import n_choose_k
 
 class SingleDarkRouteMapperFactory(object):
     """
@@ -139,7 +139,7 @@ class SingleDarkTransition(object):
         rs = self.reacting_species_dict.keys()[0]
         n = current_pop_dict[rs]
         k = abs(self.reacting_species_dict[rs])
-        combinatoric_factor = util.n_choose_k(n,k)
+        combinatoric_factor = n_choose_k(n,k)
         return numpy.log10(combinatoric_factor)
 
     def get_log_rate_fcn(self, current_pop_dict):
@@ -311,7 +311,7 @@ class DoubleDarkTransition(object):
         rs = self.reacting_species_dict.keys()[0]
         n = current_pop_dict[rs]
         k = abs(self.reacting_species_dict[rs])
-        combinatoric_factor = util.n_choose_k(n,k)
+        combinatoric_factor = n_choose_k(n,k)
         return numpy.log10(combinatoric_factor)
 
     def get_log_rate_fcn(self, current_pop_dict):

@@ -5,7 +5,7 @@ from palm.bootstrap_selector import BootstrapSelector
 @nose.tools.istest
 def resampled_target_data_has_expected_size():
     target_data = BlinkCollectionTargetData()
-    target_data.load_data('./palm/tests/test_data/traj_directory.txt')
+    target_data.load_data('./palm/test/test_data/traj_directory.txt')
     bs_selector = BootstrapSelector()
     bs_size = 2
     resampled_target_data = bs_selector.select_data(target_data, size=bs_size)
@@ -17,7 +17,7 @@ def resampled_target_data_has_expected_size():
 @nose.tools.istest
 def all_elements_of_resampled_data_are_elements_of_original_data():
     target_data = BlinkCollectionTargetData()
-    target_data.load_data('./palm/tests/test_data/traj_directory.txt')
+    target_data.load_data('./palm/test/test_data/traj_directory.txt')
     bs_selector = BootstrapSelector()
     bs_size = 2
     resampled_target_data = bs_selector.select_data(target_data, size=bs_size)

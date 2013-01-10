@@ -1,6 +1,6 @@
 import time
-from base.task_manager import TaskManager
-import network.master
+from palm.base.task_manager import TaskManager
+from palm.network.master import TaskQueue
 
 class ZamManager(TaskManager):
     """
@@ -17,7 +17,7 @@ class ZamManager(TaskManager):
         self.time_to_wait_before_checking_for_completed_tasks = waiting_time
 
     def start(self, main_fcn):
-        self.task_queue = network.master.TaskQueue(self.queue_name)
+        self.task_queue = TaskQueue(self.queue_name)
         self.task_queue.set_main(main_fcn, self.task_queue)
 
     def stop(self):

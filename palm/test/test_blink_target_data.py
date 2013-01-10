@@ -12,7 +12,7 @@ def loads_single_trajectory_with_correct_number_of_segments():
         dark,0.00519
     '''
     target_data = BlinkTargetData()
-    data_file="./palm/tests/test_data/short_blink_traj.csv"
+    data_file="./palm/test/test_data/short_blink_traj.csv"
     target_data.load_data(data_file)
     trajectory = target_data.get_feature()
     length_of_trajectory = len(trajectory)
@@ -40,7 +40,7 @@ def loads_many_trajectories_with_correct_number_of_trajectories():
         dark,0.00519
     '''
     target_data = BlinkCollectionTargetData()
-    dir_file="./palm/tests/test_data/traj_directory.txt"
+    dir_file="./palm/test/test_data/traj_directory.txt"
     target_data.load_data(dir_file)
     trajectory_collection = target_data.get_feature()
     length_of_collection = len(trajectory_collection)

@@ -82,14 +82,14 @@ class TestComputeLikelihoodOfBlinkModelWithShortTrajectory(object):
         model_parameters.set_parameter('log_kb', -0.5)
         data_predictor = LikelihoodPredictor()
         target_data = BlinkTargetData()
-        target_data.load_data(data_file="./palm/tests/test_data/short_blink_traj.csv")
+        target_data.load_data(data_file="./palm/test/test_data/short_blink_traj.csv")
         model = model_factory.create_model(model_parameters)
         trajectory = target_data.get_feature()
         prediction = data_predictor.predict_data(model, trajectory)
         prediction_array = prediction.as_array()
         log_likelihood = prediction_array[0]
         expected_log_likelihood = self.compute_log_likelihood(model_parameters,
-                                    "./palm/tests/test_data/short_blink_traj.csv")
+                                    "./palm/test/test_data/short_blink_traj.csv")
         delta_LL = expected_log_likelihood - log_likelihood
         error_message = "Expected %.2f, got %.2f" % (expected_log_likelihood,
                                                     log_likelihood)
@@ -125,7 +125,7 @@ class TestOptimizeBlinkModel(object):
     #     judge = LikelihoodJudge()
     #     data_predictor = LikelihoodPredictor()
     #     target_data = BlinkTargetData()
-    #     target_data.load_data('palm/tests/test_data/stochpy_blink10_traj.csv')
+    #     target_data.load_data('palm/test/test_data/stochpy_blink10_traj.csv')
     #     score_fcn = self.make_score_fcn(model_factory, initial_parameters,
     #                                     judge, data_predictor, target_data)
     #     optimizer = ScipyOptimizer()
@@ -151,7 +151,7 @@ class TestOptimizeBlinkModel(object):
     #     judge = LikelihoodJudge()
     #     data_predictor = ViterbiPredictor()
     #     target_data = BlinkTargetData()
-    #     target_data.load_data('palm/tests/test_data/stochpy_blink10_traj.csv')
+    #     target_data.load_data('palm/test/test_data/stochpy_blink10_traj.csv')
     #     score_fcn = self.make_score_fcn(model_factory, initial_parameters,
     #                                     judge, data_predictor, target_data)
     #     optimizer = ScipyOptimizer()

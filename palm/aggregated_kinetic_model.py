@@ -1,7 +1,7 @@
 import numpy
-import base.model
 from collections import defaultdict
-from rate_matrix import RateMatrixFactory, AggregatedRateMatrix
+from palm.base.model import Model
+from palm.rate_matrix import RateMatrixFactory, AggregatedRateMatrix
 
 class State(object):
     '''
@@ -51,7 +51,7 @@ class Route(object):
         return self.log_rate_function(t)
 
 
-class AggregatedKineticModel(base.model.Model):
+class AggregatedKineticModel(Model):
     """An AggregatedKineticModel consists of states and routes.
        The routes are transitions between states. The model is
        aggregated in the sense that each state belongs to one

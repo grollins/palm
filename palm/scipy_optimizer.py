@@ -1,7 +1,7 @@
 import scipy.optimize
-import base.parameter_optimizer
+from palm.base.parameter_optimizer import ParameterOptimizer
 
-class ScipyOptimizer(base.parameter_optimizer.ParameterOptimizer):
+class ScipyOptimizer(ParameterOptimizer):
     """
     Optimizes an objective function to determine optimal
     parameter values. Uses Scipy optimization routines.

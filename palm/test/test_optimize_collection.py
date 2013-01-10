@@ -81,7 +81,7 @@ class TestComputeLikelihoodOfBlinkCollectionWithShortTrajectories(object):
         model_parameters.set_parameter('log_kb', -0.5)
         data_predictor = LikelihoodPredictor()
         target_data = BlinkCollectionTargetData()
-        target_data.load_data(data_file="./palm/tests/test_data/traj_directory.txt")
+        target_data.load_data(data_file="./palm/test/test_data/traj_directory.txt")
         model = model_factory.create_model(model_parameters)
         judge = CollectionLikelihoodJudge()
         score, prediction = judge.judge_prediction(model, data_predictor,
@@ -89,7 +89,7 @@ class TestComputeLikelihoodOfBlinkCollectionWithShortTrajectories(object):
         log_likelihood = -score
         num_trajs = len(target_data)
         expected_log_likelihood = self.compute_log_likelihood(model_parameters,
-                                    "./palm/tests/test_data/short_blink_traj.csv")
+                                    "./palm/test/test_data/short_blink_traj.csv")
         expected_log_likelihood *= num_trajs
         delta_LL = expected_log_likelihood - log_likelihood
         error_message = "Expected %.2f, got %.2f" % (expected_log_likelihood,

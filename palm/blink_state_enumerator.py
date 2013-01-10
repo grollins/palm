@@ -1,5 +1,5 @@
-from util import multichoose
 from types import IntType
+from palm.util import multichoose
 
 class SingleDarkStateEnumeratorFactory(object):
     """

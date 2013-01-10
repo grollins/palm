@@ -1,4 +1,4 @@
-from base.judge import Judge
+from palm.base.judge import Judge
 
 class LikelihoodJudge(Judge):
     """

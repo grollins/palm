@@ -1,8 +1,10 @@
-from base.data_predictor import DataPredictor
-from likelihood_prediction import LikelihoodPrediction
-from util import ALMOST_ZERO
 import numpy
 import scipy.linalg
+
+from palm.base.data_predictor import DataPredictor
+from palm.likelihood_prediction import LikelihoodPrediction
+from palm.util import ALMOST_ZERO
+
 
 class ViterbiPredictor(DataPredictor):
     """

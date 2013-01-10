@@ -1,6 +1,6 @@
-import base.trajectory
+from palm.base.trajectory import TrajectorySegment, Trajectory
 
-class DiscreteDwellSegment(base.trajectory.TrajectorySegment):
+class DiscreteDwellSegment(TrajectorySegment):
     """Dwells consist of an observation class and a dwell duration."""
     def __init__(self, segment_class, segment_duration):
         super(DiscreteDwellSegment, self).__init__()
@@ -19,7 +19,7 @@ class DiscreteDwellSegment(base.trajectory.TrajectorySegment):
         return self.segment_duration
 
 
-class DiscreteStateTrajectory(base.trajectory.Trajectory):
+class DiscreteStateTrajectory(Trajectory):
     """
     Each segment of the trajectory corresponds to a
     discrete observation class (e.g. dark or bright).

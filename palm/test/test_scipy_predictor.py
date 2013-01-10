@@ -106,7 +106,7 @@ def test_likelihood_calculation():
     predictor = LikelihoodPredictor()
     target_data = BlinkTargetData()
     # data_file = os.path.expanduser("~/Documents/blink_data_stochpy/converted_results/blink_model.psc_TimeSim6.csv")
-    data_file = "./palm/tests/test_data/test_traj.csv"
+    data_file = "./palm/test/test_data/test_traj.csv"
     target_data.load_data(data_file)
     trajectory = target_data.get_feature()
     prediction = predictor.predict_data(model, trajectory)

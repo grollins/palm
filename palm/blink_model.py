@@ -1,5 +1,5 @@
 import numpy
-import aggregated_kinetic_model
+from palm.aggregated_kinetic_model import AggregatedKineticModel
 
 class SingleDarkState(object):
     '''
@@ -68,7 +68,7 @@ class DoubleDarkState(object):
         self.initial_state_flag = True
 
 
-class BlinkModel(aggregated_kinetic_model.AggregatedKineticModel):
+class BlinkModel(AggregatedKineticModel):
     '''
     BlinkModel is an AggregatedKineticModel. Two observation classes
     are expected:

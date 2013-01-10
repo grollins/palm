@@ -1,4 +1,4 @@
-from base.task_manager import TaskManager
+from palm.base.task_manager import TaskManager
 
 class LocalManager(TaskManager):
     """

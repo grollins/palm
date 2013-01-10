@@ -1,16 +1,15 @@
 import numpy
-import blink_model
-import aggregated_kinetic_model
-import base.model_factory
-import util
-from blink_state_enumerator import SingleDarkStateEnumeratorFactory,\
-                                   DoubleDarkStateEnumeratorFactory
-from blink_route_mapper import SingleDarkRouteMapperFactory,\
-                               DoubleDarkRouteMapperFactory
+from palm.base.model_factory import ModelFactory
+from palm.aggregated_kinetic_model import Route
+from palm.blink_model import SingleDarkState, DoubleDarkState, BlinkModel
+from palm.blink_route_mapper import SingleDarkRouteMapperFactory,\
+                                    DoubleDarkRouteMapperFactory
+from palm.blink_state_enumerator import SingleDarkStateEnumeratorFactory,\
+                                        DoubleDarkStateEnumeratorFactory
 
 MAX_A = 1000
 
-class SingleDarkBlinkFactory(base.model_factory.ModelFactory):
+class SingleDarkBlinkFactory(ModelFactory):
     '''
     This factory class creates an aggregated kinetic model with
     the following microstate topology:
@@ -19,8 +18,8 @@ class SingleDarkBlinkFactory(base.model_factory.ModelFactory):
     A --> B
     '''
     def __init__(self, fermi_activation=False):
-        self.state_factory = blink_model.SingleDarkState
-        self.route_factory = aggregated_kinetic_model.Route
+        self.state_factory = SingleDarkState
+        self.route_factory = Route
         self.fermi_activation = fermi_activation
 
     def create_model(self, parameter_set):
@@ -35,12 +34,12 @@ class SingleDarkBlinkFactory(base.model_factory.ModelFactory):
                                                             MAX_A,
                                                             self.fermi_activation)
         route_mapper = route_mapper_factory.create_route_mapper()
-        new_model = blink_model.BlinkModel(state_enumerator, route_mapper,
-                                           self.parameter_set)
+        new_model = BlinkModel(state_enumerator, route_mapper,
+                               self.parameter_set)
         return new_model
 
 
-class DoubleDarkBlinkFactory(base.model_factory.ModelFactory):
+class DoubleDarkBlinkFactory(ModelFactory):
     '''
     This factory class creates an aggregated kinetic model with
     the following microstate topology:
@@ -50,8 +49,8 @@ class DoubleDarkBlinkFactory(base.model_factory.ModelFactory):
     A --> B
     '''
     def __init__(self, fermi_activation=False):
-        self.state_factory = blink_model.DoubleDarkState
-        self.route_factory = aggregated_kinetic_model.Route
+        self.state_factory = DoubleDarkState
+        self.route_factory = Route
         self.fermi_activation = fermi_activation
 
     def create_model(self, parameter_set):
@@ -66,6 +65,6 @@ class DoubleDarkBlinkFactory(base.model_factory.ModelFactory):
                                                             MAX_A,
                                                             self.fermi_activation)
         route_mapper = route_mapper_factory.create_route_mapper()
-        new_model = blink_model.BlinkModel(state_enumerator, route_mapper,
+        new_model = BlinkModel(state_enumerator, route_mapper,
                                            self.parameter_set)
         return new_model

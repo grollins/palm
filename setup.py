@@ -1,6 +1,6 @@
 import os, sys
 
-DISTNAME = 'palm'
+DISTNAME = 'Palm'
 MAINTAINER = 'Geoff Rollins'
 MAINTAINER_EMAIL = 'grollins@gmail.com'
 VERSION = '1.0'

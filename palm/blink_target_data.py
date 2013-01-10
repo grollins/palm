@@ -1,10 +1,10 @@
 import pandas
-import base.target_data
-from discrete_state_trajectory import DiscreteStateTrajectory,\
-                                      DiscreteDwellSegment
 from copy import deepcopy
+from palm.base.target_data import TargetData
+from palm.discrete_state_trajectory import DiscreteStateTrajectory,\
+                                           DiscreteDwellSegment
 
-class BlinkTargetData(base.target_data.TargetData):
+class BlinkTargetData(TargetData):
     """
     One dwell trajectory loaded from a file. The trajectory
     should be a series of dark and bright observations and
@@ -43,7 +43,7 @@ class BlinkTargetData(base.target_data.TargetData):
     def get_notes(self):
         return []
 
-class BlinkCollectionTargetData(base.target_data.TargetData):
+class BlinkCollectionTargetData(TargetData):
     """
     An ensemble of trajectories. Each trajectory is expected
     to be in the format described for BlinkTargetData.

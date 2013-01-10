@@ -43,7 +43,7 @@ class TestComputeLikelihoodOfSimpleModelWithShortTrajectory(object):
         model_parameters.set_parameter('log_k2', 0.0)
         data_predictor = LikelihoodPredictor()
         target_data = SimpleTargetData()
-        target_data.load_data(data_file="./palm/tests/test_data/simple_2state_traj.csv")
+        target_data.load_data(data_file="./palm/test/test_data/simple_2state_traj.csv")
         model = model_factory.create_model(model_parameters)
         trajectory = target_data.get_feature()
         prediction = data_predictor.predict_data(model, trajectory)
@@ -95,14 +95,14 @@ class TestComputeLikelihoodOfSimpleModelWithLongTrajectory(object):
         model_parameters.set_parameter('log_k2', 0.0)
         data_predictor = LikelihoodPredictor()
         target_data = SimpleTargetData()
-        target_data.load_data(data_file="./palm/tests/test_data/stochpy_2state_traj.csv")
+        target_data.load_data(data_file="./palm/test/test_data/stochpy_2state_traj.csv")
         model = model_factory.create_model(model_parameters)
         trajectory = target_data.get_feature()
         prediction = data_predictor.predict_data(model, trajectory)
         prediction_array = prediction.as_array()
         log_likelihood = prediction_array[0]
         expected_log_likelihood = self.compute_log_likelihood(model_parameters,
-                                    "./palm/tests/test_data/stochpy_2state_traj.csv")
+                                    "./palm/test/test_data/stochpy_2state_traj.csv")
         delta_LL = expected_log_likelihood - log_likelihood
         nose.tools.ok_(abs(delta_LL) < EPSILON,
                        "Expected %.2f, got %.2f" % (expected_log_likelihood,
@@ -134,7 +134,7 @@ class TestOptimizeSimpleModel(object):
         data_predictor = LikelihoodPredictor()
         judge = LikelihoodJudge()
         target_data = SimpleTargetData()
-        target_data.load_data(data_file="./palm/tests/test_data/stochpy_2state_traj.csv")
+        target_data.load_data(data_file="./palm/test/test_data/stochpy_2state_traj.csv")
         score_fcn = self.make_score_fcn(model_factory, initial_parameters,
                                         judge, data_predictor, target_data)
         optimizer = ScipyOptimizer()

@@ -1,6 +1,6 @@
-import scipy.misc
-import numpy
 import logging
+import numpy
+import scipy.misc
 
 ALMOST_ZERO = numpy.float64(1e-300)
 PORT = 26 * 26**2 + 1 * 26**1 + 13 * 26**0

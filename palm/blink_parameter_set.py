@@ -1,5 +1,5 @@
 import numpy
-from base.parameter_set import ParameterSet
+from palm.base.parameter_set import ParameterSet
 
 class SingleDarkParameterSet(ParameterSet):
     """Parameters for a blink model with one dark state."""

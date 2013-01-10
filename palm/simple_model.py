@@ -1,14 +1,16 @@
 import numpy
 import pandas
-import base.parameter_set
-import base.model_factory
-import base.model
-import base.target_data
-from discrete_state_trajectory import DiscreteStateTrajectory,\
-                                      DiscreteDwellSegment
-from aggregated_kinetic_model import State, Route, AggregatedKineticModel
 
-class SimpleParameterSet(base.parameter_set.ParameterSet):
+from palm.base.model import Model
+from palm.base.model_factory import ModelFactory
+from palm.base.parameter_set import ParameterSet
+from palm.base.target_data import TargetData
+from palm.aggregated_kinetic_model import State, Route, AggregatedKineticModel
+from palm.discrete_state_trajectory import DiscreteStateTrajectory,\
+                                           DiscreteDwellSegment
+
+
+class SimpleParameterSet(ParameterSet):
     """
     Parameters for a simple two-state model.
     """
@@ -55,7 +57,7 @@ class SimpleParameterSet(base.parameter_set.ParameterSet):
         return bounds
 
 
-class SimpleModelFactory(base.model_factory.ModelFactory):
+class SimpleModelFactory(ModelFactory):
     """
     This factory class creates a simple two-state aggregated
     kinetic model.
@@ -122,7 +124,7 @@ class SimpleModel(AggregatedKineticModel):
         initial_population_array[0,0] = 1.0
         return initial_population_array
 
-class SimpleTargetData(base.target_data.TargetData):
+class SimpleTargetData(TargetData):
     """
     One dwell trajectory loaded from a file. The trajectory
     should be a series of green and orange observations and
