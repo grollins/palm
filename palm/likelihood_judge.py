@@ -27,10 +27,20 @@ class CollectionLikelihoodJudge(Judge):
         super(CollectionLikelihoodJudge, self).__init__()
 
     def judge_prediction(self, model, data_predictor, target_data):
+        num_successful = 0
+        num_failed = 0
         total_log_likelihood = 0.0
-        for trajectory in target_data:
+        for i, trajectory in enumerate(target_data):
             prediction = data_predictor.predict_data(model, trajectory)
+            if prediction.failed():
+                print target_data.get_feature_by_index(i).get_filename(), "failed"
+                print model.parameter_set
+                num_failed += 1
+                continue
             prediction_array = prediction.as_array()
             log_likelihood = prediction_array[0]
             total_log_likelihood += log_likelihood
-        return -total_log_likelihood, prediction
+            num_successful += 1
+        avg_log_likelihood = total_log_likelihood / num_successful
+        score = -avg_log_likelihood
+        return score, num_failed

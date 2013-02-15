@@ -25,6 +25,7 @@ class BlinkTargetData(TargetData):
         self.segment_factory = DiscreteDwellSegment
 
     def load_data(self, data_file):
+        self.filename = data_file
         data_table = pandas.read_csv(data_file, header=0)
         self.trajectory = self.trajectory_factory()
         for segment_data in data_table.itertuples():
@@ -42,6 +43,10 @@ class BlinkTargetData(TargetData):
 
     def get_notes(self):
         return []
+
+    def get_filename(self):
+        return self.filename
+
 
 class BlinkCollectionTargetData(TargetData):
     """
@@ -65,6 +70,9 @@ class BlinkCollectionTargetData(TargetData):
         for blink_target in self.target_data_collection:
             trajectory = blink_target.get_feature()
             yield trajectory
+
+    def get_feature_by_index(self, index):
+        return self.target_data_collection[index]
 
     def load_data(self, data_file):
         self.target_data_collection = []

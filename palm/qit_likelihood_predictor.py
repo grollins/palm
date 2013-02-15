@@ -17,19 +17,25 @@ class LikelihoodPredictor(DataPredictor):
         self.prediction_factory = LikelihoodPrediction
 
     def predict_data(self, model, trajectory):
-        likelihood, has_failed = self.compute_likelihood(model, trajectory)
-        log_likelihood = numpy.log10(likelihood)
+        try:
+            likelihood = self.compute_likelihood(model, trajectory)
+            log_likelihood = numpy.log10(likelihood)
+            has_failed = False
+        except (RuntimeError, ZeroDivisionError):
+            log_likelihood = 999
+            has_failed = True
         return self.prediction_factory(log_likelihood, has_failed)
 
     def compute_likelihood(self, model, trajectory):
-        beta_set, c_set, has_failed = self.compute_backward_vectors(model, trajectory)
+        beta_set, c_set, has_failed = self.compute_backward_vectors(model,
+                                                                    trajectory)
         likelihood = 1./(c_set.compute_product())
         if likelihood < ALMOST_ZERO:
             likelihood = ALMOST_ZERO
         if has_failed:
             print c_set
             print trajectory
-        return likelihood, has_failed
+        return likelihood
 
     def scale_vector(self, vector):
         vector_sum = vector.sum()
@@ -93,8 +99,13 @@ class LikelihoodPredictor(DataPredictor):
 
         Q_aa_array = numpy.asarray(Q_aa)
         ab_vector_as_1d_array = numpy.asarray(ab_vector)[:,0]
-        qit_results = qit.utils.expv( segment_duration, Q_aa_array,
-                                      ab_vector_as_1d_array )
+        try:
+            qit_results = qit.utils.expv( segment_duration, Q_aa_array,
+                                          ab_vector_as_1d_array )
+        except (RuntimeError, ZeroDivisionError):
+            print "qit matrix exponentiation failed"
+            raise
+
         this_beta_row_vec = qit_results[0].real
         this_beta_col_vec = this_beta_row_vec.T
         return numpy.asmatrix(this_beta_col_vec)
