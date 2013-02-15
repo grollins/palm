@@ -1,43 +1,66 @@
 import numpy
-import cPickle
+import pandas
 from collections import defaultdict
+
+class ParamSetDistFactory(object):
+    def __init__(self):
+        super(ParamSetDistFactory, self).__init__()
+        self.distribution_dict = defaultdict(list)
+        self.param_set_list = []
+
+    def add_parameter_set(self, parameter_set):
+        for param_name, param_value in parameter_set:
+            self.add_parameter(param_name, param_value)
+
+    def add_parameters_from_data_series(self, ds):
+        for param_name in ds.keys():
+            param_value = ds[param_name]
+            self.add_parameter(param_name, param_value)
+
+    def add_parameter(self, parameter_name, parameter_value):
+        self.distribution_dict[parameter_name].append(parameter_value)
+
+    def make_psd(self):
+        return ParameterSetDistribution(self.distribution_dict)
+
 
 class ParameterSetDistribution(object):
     """
     A distribution of parameter values, probably from
     repeated bootstrap fittings of data.
     """
-    def __init__(self):
-        super(ParameterSetDistribution, self).__init__()
-        self.distribution = defaultdict(list)
+    def __init__(self, dist_dict=None):
+        if dist_dict:
+            self.data_frame = pandas.DataFrame(dist_dict)
+        else:
+            self.data_frame = None
 
-    def __eq__(self, other_parameter_set):
-        parameter_name = self.distribution.keys()[0]
-        parameter_dist = self.single_parameter_distribution_as_array(parameter_name)
-        other_parameter_dist = other_parameter_set.single_parameter_distribution_as_array(parameter_name)
-        is_equal = True
-        for i in xrange(len(parameter_dist)):
-            if parameter_dist[i] == other_parameter_dist[i]:
-                continue
-            else:
-                is_equal = False
-                break
-        return is_equal
+    def __len__(self):
+        return len(self.data_frame)
 
-    def add_parameter_set(self, parameter_set, score):
-        for param_name, param_value in parameter_set:
-            self.distribution[param_name].append(param_value)
-            self.distribution['score'].append(score)
+    def __str__(self):
+        return str(self.data_frame)
 
     def single_parameter_distribution_as_array(self, parameter_name):
-        return numpy.array(self.distribution[parameter_name])
+        return numpy.array(self.data_frame[parameter_name])
+
+    def select_param_sets(self, parameter_name, parameter_value):
+        condition = self.data_frame[parameter_name] == parameter_value
+        selected_data = self.data_frame[condition]
+        return selected_data
 
     def save_to_file(self, filename):
-        output_stream = open(filename, 'wb')
-        cPickle.dump(self.distribution, output_stream)
-        output_stream.close()
+        self.data_frame.save(filename)
 
     def load_from_file(self, filename):
-        input_stream = open(filename, 'rb')
-        self.distribution = cPickle.load(input_stream)
-        input_stream.close()
+        self.data_frame = pandas.load(filename)
+
+    def sort_index(self, sort_by_column, is_ascending=True):
+        self.data_frame = self.data_frame.sort_index(by=sort_by_column,
+                                                     ascending=is_ascending)
+
+    def to_html(self, filename):
+        html_str = self.data_frame.to_html()
+        with open(filename, 'w') as f:
+            f.write(html_str)
+        
