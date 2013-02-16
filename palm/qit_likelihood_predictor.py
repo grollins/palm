@@ -1,4 +1,5 @@
 import numpy
+import cPickle
 import qit.utils
 
 from palm.base.data_predictor import DataPredictor
@@ -12,29 +13,21 @@ class LikelihoodPredictor(DataPredictor):
     exponential routine from the Quantum Information Toolkit.
     We follow the Sachs et al. forward-backward recursion approach.
     """
-    def __init__(self):
+    def __init__(self, debug_mode=False):
         super(LikelihoodPredictor, self).__init__()
         self.prediction_factory = LikelihoodPrediction
+        self.debug_mode = debug_mode
 
     def predict_data(self, model, trajectory):
-        try:
-            likelihood = self.compute_likelihood(model, trajectory)
-            log_likelihood = numpy.log10(likelihood)
-            has_failed = False
-        except (RuntimeError, ZeroDivisionError):
-            log_likelihood = 999
-            has_failed = True
-        return self.prediction_factory(log_likelihood, has_failed)
+        likelihood = self.compute_likelihood(model, trajectory)
+        log_likelihood = numpy.log10(likelihood)
+        return self.prediction_factory(log_likelihood, False)
 
     def compute_likelihood(self, model, trajectory):
-        beta_set, c_set, has_failed = self.compute_backward_vectors(model,
-                                                                    trajectory)
+        beta_set, c_set = self.compute_backward_vectors(model, trajectory)
         likelihood = 1./(c_set.compute_product())
         if likelihood < ALMOST_ZERO:
             likelihood = ALMOST_ZERO
-        if has_failed:
-            print c_set
-            print trajectory
         return likelihood
 
     def scale_vector(self, vector):
@@ -48,7 +41,6 @@ class LikelihoodPredictor(DataPredictor):
         return scaled_vector, this_c
 
     def compute_backward_vectors(self, model, trajectory):
-        has_failed = False
         beta_set = VectorSet()
         c_set = ScalingCoefficients()
         prev_beta_col_vec = None
@@ -63,14 +55,21 @@ class LikelihoodPredictor(DataPredictor):
                 end_class = next_segment.get_class()
             else:
                 end_class = None
-            beta_col_vec = self.compute_beta(model, segment_duration, start_class,
-                                             end_class, prev_beta_col_vec)
+
+            try:
+                beta_col_vec = self.compute_beta(model, segment_number,
+                                                 segment_duration,
+                                                 start_class, end_class,
+                                                 prev_beta_col_vec)
+            except:
+                with open("./debug/fail_beta_set.pkl", 'w') as f:
+                    cPickle.dump(beta_set.vector_dict, f)
+                raise
+
             assert type(beta_col_vec) is numpy.matrix
             scaled_beta_col_vec, this_c = self.scale_vector(beta_col_vec)
-            if numpy.isnan(this_c):
-                has_failed = True
             c_set.set_coef(segment_number, this_c)
-            beta_set.add_vector(segment_number, beta_col_vec)
+            beta_set.add_vector(segment_number, scaled_beta_col_vec)
             prev_beta_col_vec = scaled_beta_col_vec
 
         model.build_rate_matrix(time=0.0)
@@ -79,17 +78,17 @@ class LikelihoodPredictor(DataPredictor):
         assert type(init_pop_row_vec) is numpy.matrix
         final_beta = init_pop_row_vec * prev_beta_col_vec
         scaled_final_beta, final_c = self.scale_vector(final_beta)
-        beta_set.add_vector(-1, final_beta)
+        beta_set.add_vector(-1, scaled_final_beta)
         c_set.set_coef(-1, final_c)
 
-        return beta_set, c_set, has_failed
+        return beta_set, c_set
 
-    def compute_beta(self, model, segment_duration, start_class,
-                     end_class, prev_beta):
+    def compute_beta(self, model, segment_number, segment_duration,
+                     start_class, end_class, prev_beta):
         Q_aa = model.get_numpy_submatrix(start_class, start_class)
         assert type(Q_aa) is numpy.matrix, "Got %s" % (type(Q_aa))
         if end_class is None:
-            Q_ab = None
+            Q_ab = numpy.ones([2,2])
             ones_col_vec = numpy.asmatrix(numpy.ones([len(Q_aa),1]))
             ab_vector = ones_col_vec
         else:
@@ -99,12 +98,35 @@ class LikelihoodPredictor(DataPredictor):
 
         Q_aa_array = numpy.asarray(Q_aa)
         ab_vector_as_1d_array = numpy.asarray(ab_vector)[:,0]
+        inds = numpy.where(ab_vector_as_1d_array == 0.0)[0]
+        ab_vector_as_1d_array[inds] = ALMOST_ZERO
         try:
             qit_results = qit.utils.expv( segment_duration, Q_aa_array,
                                           ab_vector_as_1d_array )
         except (RuntimeError, ZeroDivisionError):
-            print "qit matrix exponentiation failed"
+            numpy.save("./debug/fail_matrix_Qaa.npy", Q_aa_array)
+            numpy.save("./debug/fail_matrix_Qab.npy", numpy.asarray(Q_ab))
+            numpy.save("./debug/fail_vec.npy", ab_vector_as_1d_array)
+            with open("./debug/fail_notes.txt", 'w') as f:
+                f.write("qit matrix exponentiation failed\n")
+                f.write('%.2e\n' % segment_duration)
             raise
+
+        if self.debug_mode:
+            print "Wrote debug files for segment %d" % segment_number
+            print start_class, end_class
+            Q_aa_filename = "./debug/Qaa_%s_%s_%03d.npy" % (start_class,
+                                                            start_class,
+                                                            segment_number)
+            numpy.save(Q_aa_filename, Q_aa_array)
+            Q_ab_filename = "./debug/Qab_%s_%s_%03d.npy" % (start_class,
+                                                            end_class,
+                                                            segment_number)
+
+            numpy.save(Q_ab_filename, numpy.asarray(Q_ab))
+            numpy.save("./debug/vec_%03d.npy" % segment_number, ab_vector_as_1d_array)
+            with open("./debug/segment_durations.txt", 'a') as f:
+                f.write('%d,%.2e\n' % (segment_number, segment_duration))
 
         this_beta_row_vec = qit_results[0].real
         this_beta_col_vec = this_beta_row_vec.T
