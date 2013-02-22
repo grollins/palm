@@ -21,7 +21,7 @@ class LikelihoodPredictor(DataPredictor):
     def predict_data(self, model, trajectory):
         likelihood = self.compute_likelihood(model, trajectory)
         log_likelihood = numpy.log10(likelihood)
-        return self.prediction_factory(log_likelihood, False)
+        return self.prediction_factory(log_likelihood)
 
     def compute_likelihood(self, model, trajectory):
         beta_set, c_set = self.compute_backward_vectors(model, trajectory)

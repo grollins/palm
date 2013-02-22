@@ -16,20 +16,16 @@ class LikelihoodPredictor(DataPredictor):
         self.prediction_factory = LikelihoodPrediction
 
     def predict_data(self, model, trajectory):
-        likelihood, has_failed = self.compute_likelihood(model, trajectory)
+        likelihood = self.compute_likelihood(model, trajectory)
         log_likelihood = numpy.log10(likelihood)
-        return self.prediction_factory(log_likelihood, has_failed)
+        return self.prediction_factory(log_likelihood)
 
     def compute_likelihood(self, model, trajectory):
-        alpha_set, c_set, has_failed = self.compute_forward_vectors(model,
-                                                                trajectory)
+        alpha_set, c_set = self.compute_forward_vectors(model, trajectory)
         likelihood = 1./(c_set.compute_product())
         if likelihood < ALMOST_ZERO:
             likelihood = ALMOST_ZERO
-        if has_failed:
-            print c_set
-            print trajectory
-        return likelihood, has_failed
+        return likelihood
 
     def scale_vector(self, vector):
         vector_sum = vector.sum()
@@ -42,7 +38,6 @@ class LikelihoodPredictor(DataPredictor):
         return scaled_vector, this_c
 
     def compute_forward_vectors(self, model, trajectory):
-        has_failed = False
         alpha_set = VectorSet()
         c_set = ScalingCoefficients()
 
@@ -66,19 +61,22 @@ class LikelihoodPredictor(DataPredictor):
                 end_class = next_segment.get_class()
             else:
                 end_class = None
-            G = self.get_G_matrix(model, segment_duration,
-                                  start_class, end_class)
-            assert type(G) is numpy.matrix, "Got %s" % (type(G))
-            alpha_T = prev_alpha_T * G
+            try:
+                G = self.get_G_matrix(model, segment_duration,
+                                      start_class, end_class)
+                assert type(G) is numpy.matrix, "Got %s" % (type(G))
+                alpha_T = prev_alpha_T * G
+            except:
+                with open("./debug/fail_alpha_set.pkl", 'w') as f:
+                    cPickle.dump(c_set.vector_dict, f)
+                raise
             assert type(alpha_T) is numpy.matrix
             scaled_alpha_T, this_c = self.scale_vector(alpha_T)
-            if numpy.isnan(this_c):
-                has_failed = True
             c_set.set_coef(segment_number, this_c)
             scaled_alpha = scaled_alpha_T.T
             alpha_set.add_vector(segment_number, scaled_alpha)
             prev_alpha_T = scaled_alpha_T
-        return alpha_set, c_set, has_failed
+        return alpha_set, c_set
 
     def get_G_matrix(self, model, segment_duration, start_class, end_class):
         '''
@@ -86,13 +84,26 @@ class LikelihoodPredictor(DataPredictor):
         '''
         Q_aa = model.get_numpy_submatrix(start_class, start_class)
         assert type(Q_aa) is numpy.matrix, "Got %s" % (type(Q_aa))
-        G = scipy.linalg.expm(Q_aa * segment_duration)
-        G = numpy.asmatrix(G)
         if end_class is None:
             Q_ab = None
         else:
             Q_ab = model.get_numpy_submatrix(start_class, end_class)
             assert type(Q_ab) is numpy.matrix, "Got %s" % (type(Q_ab))
+
+        try:
+            G = scipy.linalg.expm(Q_aa * segment_duration)
+        except:
+            numpy.save("./debug/fail_matrix_Qaa.npy", Q_aa)
+            numpy.save("./debug/fail_matrix_Qab.npy", Q_ab)
+            with open("./debug/fail_notes.txt", 'w') as f:
+                f.write("matrix exponentiation failed\n")
+                f.write('%.2e\n' % segment_duration)
+            raise
+
+        G = numpy.asmatrix(G)
+        if end_class is None:
+            pass
+        else:
             G = G * Q_ab
         return G
 

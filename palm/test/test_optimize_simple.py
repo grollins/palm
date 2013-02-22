@@ -116,9 +116,9 @@ class TestOptimizeSimpleModel(object):
         def f(current_parameter_array):
             parameter_set.update_from_array(current_parameter_array)
             current_model = model_factory.create_model(parameter_set)
-            score, prediction = judge.judge_prediction(current_model,
-                                                       data_predictor,
-                                                       target_data)
+            score = judge.judge_prediction(current_model,
+                                           data_predictor,
+                                           target_data)
             return score
         return f
 
@@ -142,6 +142,6 @@ class TestOptimizeSimpleModel(object):
                                                           initial_parameters)
         print new_params
         optimized_model = model_factory.create_model(new_params)
-        score, prediction = judge.judge_prediction(optimized_model, data_predictor,
-                                                   target_data)
-        print score, prediction
+        score = judge.judge_prediction(optimized_model, data_predictor,
+                                       target_data)
+        print score

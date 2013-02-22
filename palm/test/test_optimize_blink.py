@@ -103,9 +103,8 @@ class TestOptimizeBlinkModel(object):
         def f(current_parameter_array):
             parameter_set.update_from_array(current_parameter_array)
             current_model = model_factory.create_model(parameter_set)
-            score, prediction = judge.judge_prediction(current_model,
-                                                       data_predictor,
-                                                       target_data)
+            score = judge.judge_prediction(current_model, data_predictor,
+                                           target_data)
             print score, parameter_set
             return score
         return f
@@ -131,10 +130,10 @@ class TestOptimizeBlinkModel(object):
     #     optimizer = ScipyOptimizer()
     #     new_params, score = optimizer.optimize_parameters(score_fcn, initial_parameters)
     #     optimized_model = model_factory.create_model(new_params)
-    #     score, prediction = judge.judge_prediction(optimized_model, data_predictor,
+    #     score = judge.judge_prediction(optimized_model, data_predictor,
     #                                                target_data)
     #     print new_params
-    #     print score, prediction
+    #     print score
 
     # @nose.tools.istest
     # def optimize_parameters_viterbi_test(self):
@@ -157,7 +156,7 @@ class TestOptimizeBlinkModel(object):
     #     optimizer = ScipyOptimizer()
     #     new_params, score = optimizer.optimize_parameters(score_fcn, initial_parameters)
     #     optimized_model = model_factory.create_model(new_params)
-    #     score, prediction = judge.judge_prediction(optimized_model, data_predictor,
+    #     score = judge.judge_prediction(optimized_model, data_predictor,
     #                                                target_data)
     #     print new_params
-    #     print score, prediction
+    #     print score

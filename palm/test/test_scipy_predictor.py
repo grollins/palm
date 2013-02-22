@@ -113,6 +113,4 @@ def test_likelihood_calculation():
     prediction_array = prediction.as_array()
     log_likelihood = prediction_array[0]
     print log_likelihood
-    if prediction.failed():
-        print model_parameters
 

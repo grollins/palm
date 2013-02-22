@@ -122,8 +122,6 @@ class SpecialPredictor(DataPredictor):
         #   for the dwell in the bright state.
         elif start_class == 'bright':
             try:
-                # qit_results = qit.utils.expv( segment_duration, Q_aa_array,
-                                              # ab_vector_as_1d_array )
                 expv_results = self.matrix_exponentiator.expv(segment_duration,
                                                              Q_aa_array,
                                                              ab_vector_as_1d_array)

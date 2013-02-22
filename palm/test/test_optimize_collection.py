@@ -84,8 +84,7 @@ class TestComputeLikelihoodOfBlinkCollectionWithShortTrajectories(object):
         target_data.load_data(data_file="./palm/test/test_data/traj_directory.txt")
         model = model_factory.create_model(model_parameters)
         judge = CollectionLikelihoodJudge()
-        score, prediction = judge.judge_prediction(model, data_predictor,
-                                                   target_data)
+        score = judge.judge_prediction(model, data_predictor, target_data)
         log_likelihood = -score
         num_trajs = len(target_data)
         expected_log_likelihood = self.compute_log_likelihood(model_parameters,
