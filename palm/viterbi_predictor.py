@@ -14,13 +14,14 @@ class ViterbiPredictor(DataPredictor):
     the most likely path within the state space of the given
     model.
     """
-    def __init__(self):
+    def __init__(self, always_rebuild_rate_matrix=True):
         super(ViterbiPredictor, self).__init__()
         self.prediction_factory = LikelihoodPrediction
+        self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
 
     def predict_data(self, model, trajectory):
         log_likelihood = self.compute_log_likelihood(model, trajectory)
-        return self.prediction_factory(log_likelihood, has_failed=False)
+        return self.prediction_factory(log_likelihood)
 
     def compute_log_likelihood(self, model, trajectory):
         log_alpha_set = self.compute_log_viterbi_vectors(model, trajectory)
@@ -41,7 +42,10 @@ class ViterbiPredictor(DataPredictor):
 
         for segment_number, segment in enumerate(trajectory):
             cumulative_time = trajectory.get_cumulative_time(segment_number)
-            model.build_rate_matrix(time=cumulative_time)
+            if self.always_rebuild_rate_matrix:
+                model.build_rate_matrix(time=cumulative_time)
+            else:
+                pass
             segment_duration = segment.get_duration()
             start_class = segment.get_class()
             next_segment = trajectory.get_segment(segment_number + 1)
