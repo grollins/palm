@@ -111,6 +111,10 @@ class AggregatedKineticModel(Model):
         return sorted_state_list, sorted_state_index_dict,\
                sorted_class_indices_dict
 
+    def iter_states(self):
+        for s in self.states:
+            yield s
+
     def iter_routes(self):
         for r in self.routes:
             yield r

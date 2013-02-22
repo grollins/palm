@@ -90,7 +90,6 @@ class TestComputeLikelihoodOfBlinkCollectionWithShortTrajectories(object):
         num_trajs = len(target_data)
         expected_log_likelihood = self.compute_log_likelihood(model_parameters,
                                     "./palm/test/test_data/short_blink_traj.csv")
-        expected_log_likelihood *= num_trajs
         delta_LL = expected_log_likelihood - log_likelihood
         error_message = "Expected %.2f, got %.2f" % (expected_log_likelihood,
                                                     log_likelihood)

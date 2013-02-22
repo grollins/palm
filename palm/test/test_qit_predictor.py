@@ -27,12 +27,14 @@ def computes_correct_beta():
     prev_beta = numpy.matrix([1.0])
     mock_model = mock.Mock()
     mock_model.get_numpy_submatrix = submatrix_fcn_factory(ka, kb)
+    segment_number = 1
     segment_duration = 1.0 # a reasonable dwell time
     start_class = 'start'
     end_class = 'end'
     predictor = LikelihoodPredictor()
-    qit_beta = predictor.compute_beta(mock_model, segment_duration,
-                                  start_class, end_class, prev_beta)
+    qit_beta = predictor.compute_beta(mock_model, segment_number,
+                                      segment_duration, start_class,
+                                      end_class, prev_beta)
 
     Q_aa = mock_model.get_numpy_submatrix(start_class, start_class)
     Q_ab = mock_model.get_numpy_submatrix(start_class, end_class)
