@@ -24,6 +24,9 @@ class BlinkTargetData(TargetData):
         self.trajectory_factory = DiscreteStateTrajectory
         self.segment_factory = DiscreteDwellSegment
 
+    def len(self):
+        return len(self.trajectory_factory)
+
     def load_data(self, data_file):
         self.filename = data_file
         data_table = pandas.read_csv(data_file, header=0)
@@ -70,6 +73,12 @@ class BlinkCollectionTargetData(TargetData):
         for blink_target in self.target_data_collection:
             trajectory = blink_target.get_feature()
             yield trajectory
+
+    def get_total_number_of_trajectory_segments(self):
+        num_segments = 0
+        for traj in self:
+            num_segments += len(traj)
+        return num_segments
 
     def get_feature_by_index(self, index):
         return self.target_data_collection[index]
