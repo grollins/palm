@@ -18,7 +18,7 @@ def main():
     model_parameters.set_parameter('log_kd', -0.5)
     model_parameters.set_parameter('log_kr', -0.5)
     model_parameters.set_parameter('log_kb', -0.5)
-    data_predictor = SpecialPredictor()
+    data_predictor = SpecialPredictor(always_rebuild_rate_matrix=False)
     target_data = BlinkTargetData()
     # target_data.load_data(data_file="./palm/tests/test_data/short_blink_traj.csv")
     target_data.load_data(data_file=os.path.expanduser("~/Documents/blink_data_stochpy_05/converted_results/blink_model_05.psc_TimeSim5.csv"))

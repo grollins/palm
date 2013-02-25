@@ -25,7 +25,7 @@ class SpecialPredictor(DataPredictor):
     def predict_data(self, model, trajectory):
         likelihood = self.compute_likelihood(model, trajectory)
         log_likelihood = numpy.log10(likelihood)
-        return self.prediction_factory(log_likelihood, False)
+        return self.prediction_factory(log_likelihood)
 
     def compute_likelihood(self, model, trajectory):
         beta_set, c_set = self.compute_backward_vectors(model, trajectory)
@@ -100,7 +100,10 @@ class SpecialPredictor(DataPredictor):
         else:
             Q_ab = model.get_numpy_submatrix(start_class, end_class)
             assert type(Q_ab) is numpy.matrix, "Got %s" % (type(Q_ab))
-            ab_vector = Q_ab * prev_beta
+            try:
+                ab_vector = Q_ab * prev_beta
+            except ValueError:
+                print Q_ab.shape, prev_beta.shape
 
         Q_aa_array = numpy.asarray(Q_aa, dtype=dt)
         ab_vector_as_1d_array = numpy.asarray(ab_vector, dtype=dt)[:,0]
@@ -125,7 +128,7 @@ class SpecialPredictor(DataPredictor):
                 expv_results = self.matrix_exponentiator.expv(segment_duration,
                                                              Q_aa_array,
                                                              ab_vector_as_1d_array)
-                this_beta_row_vec = expv_results[0].real
+                this_beta_row_vec = expv_results.real
                 this_beta_col_vec = this_beta_row_vec.T
             except (RuntimeError, ZeroDivisionError):
                 numpy.save("./debug/fail_matrix_Qaa.npy", Q_aa_array)
