@@ -6,7 +6,7 @@ from palm.likelihood_prediction import LikelihoodPrediction
 from palm.util import ALMOST_ZERO
 from palm.expm import MatrixExponential
 
-dt = numpy.float64
+DATA_TYPE = numpy.float64
 
 class SpecialPredictor(DataPredictor):
     """
@@ -15,12 +15,14 @@ class SpecialPredictor(DataPredictor):
     exponential routine from the Quantum Information Toolkit.
     We follow the Sachs et al. forward-backward recursion approach.
     """
-    def __init__(self, always_rebuild_rate_matrix=True, debug_mode=False):
+    def __init__(self, always_rebuild_rate_matrix=True, debug_mode=False,
+                 include_off_diagonal_terms=True):
         super(SpecialPredictor, self).__init__()
-        self.prediction_factory = LikelihoodPrediction
-        self.debug_mode = debug_mode
-        self.matrix_exponentiator = MatrixExponential()
         self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
+        self.debug_mode = debug_mode
+        self.include_off_diagonal_terms = include_off_diagonal_terms
+        self.prediction_factory = LikelihoodPrediction
+        self.beta_calculator = BetaCalculator(self.include_off_diagonal_terms)
 
     def predict_data(self, model, trajectory):
         likelihood = self.compute_likelihood(model, trajectory)
@@ -48,7 +50,8 @@ class SpecialPredictor(DataPredictor):
         beta_set = VectorSet()
         c_set = ScalingCoefficients()
         prev_beta_col_vec = None
-        model.build_rate_matrix(time=0.0)
+        end_time = trajectory.get_end_time()
+        model.build_rate_matrix(time=end_time)
         for segment_number, segment in trajectory.reverse_iter():
             cumulative_time = trajectory.get_cumulative_time(segment_number)
             if self.always_rebuild_rate_matrix:
@@ -86,7 +89,6 @@ class SpecialPredictor(DataPredictor):
         scaled_final_beta, final_c = self.scale_vector(final_beta)
         beta_set.add_vector(-1, scaled_final_beta)
         c_set.set_coef(-1, final_c)
-
         return beta_set, c_set
 
     def compute_beta(self, model, segment_number, segment_duration,
@@ -105,8 +107,8 @@ class SpecialPredictor(DataPredictor):
             except ValueError:
                 print Q_ab.shape, prev_beta.shape
 
-        Q_aa_array = numpy.asarray(Q_aa, dtype=dt)
-        ab_vector_as_1d_array = numpy.asarray(ab_vector, dtype=dt)[:,0]
+        Q_aa_array = numpy.asarray(Q_aa, dtype=DATA_TYPE)
+        ab_vector_as_1d_array = numpy.asarray(ab_vector, dtype=DATA_TYPE)[:,0]
         inds = numpy.where(ab_vector_as_1d_array < ALMOST_ZERO)[0]
         ab_vector_as_1d_array[inds] = ALMOST_ZERO
 
@@ -115,52 +117,96 @@ class SpecialPredictor(DataPredictor):
         #   we don't need to compute a matrix exponential
         #   for the dwell in the dark state.
         if start_class == 'dark':
+            this_beta_col_vec = self.beta_calculator.diagonal_only_expm(
+                                    segment_duration, Q_aa_array,
+                                    ab_vector_as_1d_array)
             exp_vec = numpy.exp(Q_aa_array.diagonal() * segment_duration)
             G = numpy.diag(exp_vec)
             this_beta_row_vec = numpy.dot(G, ab_vector_as_1d_array)
             this_beta_row_vec = numpy.atleast_2d(this_beta_row_vec)
             this_beta_col_vec = this_beta_row_vec.T
-        # In this branch, we assume that there are interconnected
-        #   bright states. As such, we need to compute a matrix exponential
-        #   for the dwell in the bright state.
+
+        # In this branch, there might be interconnected states.
+        #   If the flag include_off_diagonal_terms is False, we ignore the off
+        #   diagonal terms. If it is True, we compute the full matrix
+        #   exponential.
         elif start_class == 'bright':
-            try:
-                expv_results = self.matrix_exponentiator.expv(segment_duration,
-                                                             Q_aa_array,
-                                                             ab_vector_as_1d_array)
-                this_beta_row_vec = expv_results.real
-                this_beta_col_vec = this_beta_row_vec.T
-            except (RuntimeError, ZeroDivisionError):
-                numpy.save("./debug/fail_matrix_Qaa.npy", Q_aa_array)
-                numpy.save("./debug/fail_matrix_Qab.npy", numpy.asarray(Q_ab, dtype=dt))
-                numpy.save("./debug/fail_vec.npy", ab_vector_as_1d_array)
-                with open("./debug/fail_notes.txt", 'w') as f:
-                    f.write("matrix exponentiation failed\n")
-                    f.write('%.2e\n' % segment_duration)
-                raise
+            if self.include_off_diagonal_terms:
+                try:
+                    this_beta_col_vec = self.beta_calculator.full_expm(
+                                            segment_duration, Q_aa_array,
+                                            ab_vector_as_1d_array)
+                except (RuntimeError, ZeroDivisionError):
+                    self._fail_output(Q_aa_array, Q_ab, ab_vector_as_1d_array,
+                                      segment_duration)
+                    raise
+            elif not self.include_off_diagonal_terms:
+                this_beta_col_vec = self.beta_calculator.diagonal_only_expm(
+                                        segment_duration, Q_aa_array,
+                                        ab_vector_as_1d_array)
+            else:
+                raise RuntimeError("Logic error in beta calculation")
+
+        # should never get here, the only aggregated states we expect are
+        # dark or bright
         else:
             raise RuntimeError("Unexpected state: %s" % start_class)
 
         if self.debug_mode:
-            print "Wrote debug files for segment %d" % segment_number
-            print start_class, end_class
-            Q_aa_filename = "./debug/Qaa_%s_%s_%03d.npy" % (start_class,
-                                                            start_class,
-                                                            segment_number)
-            numpy.save(Q_aa_filename, Q_aa_array)
-            Q_ab_filename = "./debug/Qab_%s_%s_%03d.npy" % (start_class,
-                                                            end_class,
-                                                            segment_number)
-
-            numpy.save(Q_ab_filename, numpy.asarray(Q_ab, dtype=dt))
-            numpy.save("./debug/vec_%03d.npy" % segment_number,
-                       ab_vector_as_1d_array)
-            with open("./debug/segment_durations.txt", 'a') as f:
-                f.write('%d,%.2e\n' % (segment_number, segment_duration))
+            self._debug_output(segment_number, segment_duration, start_class,
+                               end_class, Q_aa_filename, Q_aa_array,
+                               Q_ab_filename, Q_ab, ab_vector_as_1d_array)
         else:
             pass
 
         return numpy.asmatrix(this_beta_col_vec)
+    def _debug_output(self, segment_number, segment_duration, start_class,
+                      end_class, Q_aa_filename, Q_aa_array, Q_ab_filename,
+                      Q_ab, ab_vector_as_1d_array):
+        print "Wrote debug files for segment %d" % segment_number
+        print start_class, end_class
+        Q_aa_filename = "./debug/Qaa_%s_%s_%03d.npy" % (start_class, start_class,
+                                                        segment_number)
+        numpy.save(Q_aa_filename, Q_aa_array)
+        Q_ab_filename = "./debug/Qab_%s_%s_%03d.npy" % (start_class, end_class,
+                                                        segment_number)
+        numpy.save(Q_ab_filename, numpy.asarray(Q_ab, dtype=DATA_TYPE))
+        numpy.save("./debug/vec_%03d.npy" % segment_number,
+                   ab_vector_as_1d_array)
+        with open("./debug/segment_durations.txt", 'a') as f:
+            f.write('%d,%.2e\n' % (segment_number, segment_duration))
+    def _fail_output(self, Q_aa_array, Q_ab, ab_vector_as_1d_array,
+                     segment_duration):
+        numpy.save("./debug/fail_matrix_Qaa.npy", Q_aa_array)
+        numpy.save("./debug/fail_matrix_Qab.npy",
+                   numpy.asarray(Q_ab, dtype=DATA_TYPE))
+        numpy.save("./debug/fail_vec.npy", ab_vector_as_1d_array)
+        with open("./debug/fail_notes.txt", 'w') as f:
+            f.write("matrix exponentiation failed\n")
+            f.write('%.2e\n' % segment_duration)
+
+
+class BetaCalculator(object):
+    """docstring for BetaCalculator"""
+    def __init__(self, include_off_diagonal_terms):
+        super(BetaCalculator, self).__init__()
+        self.matrix_exponentiator = MatrixExponential()
+    def full_expm(self, t, Q, v):
+        try:
+            expv_results = self.matrix_exponentiator.expv(t, Q, v)
+            beta_row_vec = expv_results.real
+            beta_col_vec = beta_row_vec.T
+        except (RuntimeError, ZeroDivisionError):
+            raise
+        return beta_col_vec
+    def diagonal_only_expm(self, t, Q, v):
+        diagonal_vector = Q.diagonal()
+        exp_vector = numpy.exp(diagonal_vector * t)
+        exp_array = numpy.diag(exp_vector)
+        beta_row_vec = numpy.dot(exp_array, v)
+        beta_row_vec = numpy.atleast_2d(beta_row_vec)
+        beta_col_vec = beta_row_vec.T
+        return beta_col_vec
 
 
 class VectorSet(object):

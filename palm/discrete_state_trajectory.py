@@ -75,6 +75,9 @@ class DiscreteStateTrajectory(Trajectory):
         else:
             return None
 
+    def get_end_time(self):
+        return self.cumulative_time_list[-1]
+
     def reverse_iter(self):
         reverse_range = range(len(self.segment_list))
         reverse_range.reverse()
