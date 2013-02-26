@@ -42,9 +42,8 @@ class LikelihoodPredictor(DataPredictor):
         c_set = ScalingCoefficients()
 
         model.build_rate_matrix(time=0.0)
-        alpha_0_T = numpy.matrix(model.get_initial_population_array())
+        alpha_0_T = model.get_initial_population_array()
         assert alpha_0_T.shape[0] == 1, "Expected a row vector."
-        assert type(alpha_0_T) is numpy.matrix
         scaled_alpha_0_T, c_0 = self.scale_vector(alpha_0_T)
         c_set.set_coef(-1, c_0)
         scaled_alpha_0 = scaled_alpha_0_T.T
@@ -62,15 +61,13 @@ class LikelihoodPredictor(DataPredictor):
             else:
                 end_class = None
             try:
-                G = self.get_G_matrix(model, segment_duration,
+                G = self.get_G_array(model, segment_duration,
                                       start_class, end_class)
-                assert type(G) is numpy.matrix, "Got %s" % (type(G))
-                alpha_T = prev_alpha_T * G
+                alpha_T = numpy.dot(prev_alpha_T, G)
             except:
                 with open("./debug/fail_alpha_set.pkl", 'w') as f:
                     cPickle.dump(c_set.vector_dict, f)
                 raise
-            assert type(alpha_T) is numpy.matrix
             scaled_alpha_T, this_c = self.scale_vector(alpha_T)
             c_set.set_coef(segment_number, this_c)
             scaled_alpha = scaled_alpha_T.T
@@ -78,17 +75,15 @@ class LikelihoodPredictor(DataPredictor):
             prev_alpha_T = scaled_alpha_T
         return alpha_set, c_set
 
-    def get_G_matrix(self, model, segment_duration, start_class, end_class):
+    def get_G_array(self, model, segment_duration, start_class, end_class):
         '''
         Eqn 4 in Qin et al
         '''
         Q_aa = model.get_numpy_submatrix(start_class, start_class)
-        assert type(Q_aa) is numpy.matrix, "Got %s" % (type(Q_aa))
         if end_class is None:
             Q_ab = None
         else:
             Q_ab = model.get_numpy_submatrix(start_class, end_class)
-            assert type(Q_ab) is numpy.matrix, "Got %s" % (type(Q_ab))
 
         try:
             G = scipy.linalg.expm(Q_aa * segment_duration)
@@ -100,11 +95,10 @@ class LikelihoodPredictor(DataPredictor):
                 f.write('%.2e\n' % segment_duration)
             raise
 
-        G = numpy.asmatrix(G)
         if end_class is None:
             pass
         else:
-            G = G * Q_ab
+            G = numpy.dot(G, Q_ab)
         return G
 
 

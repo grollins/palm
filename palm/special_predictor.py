@@ -3,10 +3,8 @@ import cPickle
 
 from palm.base.data_predictor import DataPredictor
 from palm.likelihood_prediction import LikelihoodPrediction
-from palm.util import ALMOST_ZERO
+from palm.util import ALMOST_ZERO, DATA_TYPE
 from palm.expm import MatrixExponential
-
-DATA_TYPE = numpy.float64
 
 class SpecialPredictor(DataPredictor):
     """
@@ -48,12 +46,10 @@ class SpecialPredictor(DataPredictor):
 
     def _get_rate_arrays(self, model, start_class, end_class):
         Q_aa = model.get_numpy_submatrix(start_class, start_class)
-        Q_aa = numpy.asarray(Q_aa, dtype=DATA_TYPE)
         if end_class is None:
             Q_ab = None
         else:
             Q_ab = model.get_numpy_submatrix(start_class, end_class)
-            Q_ab = numpy.asarray(Q_ab, dtype=DATA_TYPE)
         return Q_aa, Q_ab
 
     def compute_backward_vectors(self, model, trajectory):
@@ -181,7 +177,7 @@ class SpecialPredictor(DataPredictor):
         numpy.save(Q_aa_filename, Q_aa)
         Q_ab_filename = "./debug/Qab_%s_%s_%03d.npy" % (start_class, end_class,
                                                         segment_number)
-        numpy.save(Q_ab_filename, numpy.asarray(Q_ab, dtype=DATA_TYPE))
+        numpy.save(Q_ab_filename, Q_ab)
         numpy.save("./debug/vec_%03d.npy" % segment_number,
                    ab_vector)
         with open("./debug/segment_durations.txt", 'a') as f:
@@ -190,8 +186,7 @@ class SpecialPredictor(DataPredictor):
     def _fail_output(self, Q_aa, Q_ab, ab_vector,
                      segment_duration):
         numpy.save("./debug/fail_matrix_Qaa.npy", Q_aa)
-        numpy.save("./debug/fail_matrix_Qab.npy",
-                   numpy.asarray(Q_ab, dtype=DATA_TYPE))
+        numpy.save("./debug/fail_matrix_Qab.npy", Q_ab)
         numpy.save("./debug/fail_vec.npy", ab_vector)
         with open("./debug/fail_notes.txt", 'w') as f:
             f.write("matrix exponentiation failed\n")

@@ -4,11 +4,12 @@ import scipy.misc
 
 ALMOST_ZERO = numpy.float64(1e-300)
 PORT = 26 * 26**2 + 1 * 26**1 + 13 * 26**0
+DATA_TYPE = numpy.float64
 
 def n_choose_k(n,k):
-    assert n > 0, "%d %d" % (n, k)
+    error_msg = "n must be larger than zero in n_choose_k.\nn=%d, k=%d" % (n, k)
+    assert n > 0, error_msg
     return int( round(scipy.misc.comb(n, k)) )
-    # return scipy.misc.factorial(n) / (scipy.misc.factorial(k) * scipy.misc.factorial(n-k))
 
 def multichoose(n,k):
     '''

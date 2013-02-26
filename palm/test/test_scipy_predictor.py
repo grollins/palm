@@ -30,8 +30,8 @@ def submatrix_fcn_factory(ka, kb, a_mult=1, b_mult=1):
         A   -ka  ka
         B   kb  -kb
         '''
-        whole_matrix = numpy.matrix([[-a_mult*ka, a_mult*ka],
-                                     [b_mult*kb, -b_mult*kb]])
+        whole_matrix = numpy.array([ [-a_mult*ka, a_mult*ka],
+                                     [b_mult*kb, -b_mult*kb] ])
         if start_class == 'start':
             row_inds = [0]
         elif start_class == 'end':
@@ -54,7 +54,7 @@ def G_sum_should_be_between_zero_and_one(ka, kb):
     start_class = 'start'
     end_class = 'end'
     predictor = LikelihoodPredictor()
-    G = predictor.get_G_matrix(mock_model, segment_duration,
+    G = predictor.get_G_array(mock_model, segment_duration,
                                start_class, end_class)
     sum_of_G_elements = G.sum()
     error_message = "Probabilities should be between 0 and 1. Got %.2e for %.2e  %.2e" % (sum_of_G_elements, ka, kb)
@@ -85,7 +85,7 @@ def test_blink_model_G_calculation():
     segment_duration = 1.0
     start_class = 'dark'
     end_class = 'bright'
-    G = predictor.get_G_matrix(model, segment_duration,
+    G = predictor.get_G_array(model, segment_duration,
                                start_class, end_class)
     sum_of_G_elements = G.sum()
     error_message = "Probabilities should be between 0 and 1. Got %.2e" % (sum_of_G_elements)

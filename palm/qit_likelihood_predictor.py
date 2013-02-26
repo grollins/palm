@@ -66,17 +66,15 @@ class LikelihoodPredictor(DataPredictor):
                     cPickle.dump(beta_set.vector_dict, f)
                 raise
 
-            assert type(beta_col_vec) is numpy.matrix
             scaled_beta_col_vec, this_c = self.scale_vector(beta_col_vec)
             c_set.set_coef(segment_number, this_c)
             beta_set.add_vector(segment_number, scaled_beta_col_vec)
             prev_beta_col_vec = scaled_beta_col_vec
 
         model.build_rate_matrix(time=0.0)
-        init_pop_row_vec = numpy.matrix(model.get_initial_population_array())
+        init_pop_row_vec = model.get_initial_population_array()
         assert init_pop_row_vec.shape[0] == 1, "Expected a row vector."
-        assert type(init_pop_row_vec) is numpy.matrix
-        final_beta = init_pop_row_vec * prev_beta_col_vec
+        final_beta = numpy.dot(init_pop_row_vec, prev_beta_col_vec)
         scaled_final_beta, final_c = self.scale_vector(final_beta)
         beta_set.add_vector(-1, scaled_final_beta)
         c_set.set_coef(-1, final_c)
@@ -86,15 +84,13 @@ class LikelihoodPredictor(DataPredictor):
     def compute_beta(self, model, segment_number, segment_duration,
                      start_class, end_class, prev_beta):
         Q_aa = model.get_numpy_submatrix(start_class, start_class)
-        assert type(Q_aa) is numpy.matrix, "Got %s" % (type(Q_aa))
         if end_class is None:
             Q_ab = numpy.ones([2,2])
-            ones_col_vec = numpy.asmatrix(numpy.ones([len(Q_aa),1]))
+            ones_col_vec = numpy.ones([len(Q_aa),1])
             ab_vector = ones_col_vec
         else:
             Q_ab = model.get_numpy_submatrix(start_class, end_class)
-            assert type(Q_ab) is numpy.matrix, "Got %s" % (type(Q_ab))
-            ab_vector = Q_ab * prev_beta
+            ab_vector = numpy.dot(Q_ab, prev_beta)
 
         Q_aa_array = numpy.asarray(Q_aa)
         ab_vector_as_1d_array = numpy.asarray(ab_vector)[:,0]
@@ -130,7 +126,7 @@ class LikelihoodPredictor(DataPredictor):
 
         this_beta_row_vec = qit_results[0].real
         this_beta_col_vec = this_beta_row_vec.T
-        return numpy.asmatrix(this_beta_col_vec)
+        return this_beta_col_vec
 
 
 class VectorSet(object):

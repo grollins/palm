@@ -1,4 +1,5 @@
 import numpy
+from palm.util import DATA_TYPE
 
 class RateMatrixFactory(object):
     """
@@ -12,8 +13,7 @@ class RateMatrixFactory(object):
 
     def create_rate_matrix(self, model_size, model_routes,
                            state_index_dict, class_indices_dict, time):
-        size_list = [model_size, model_size]
-        rate_matrix = self.rate_matrix_class( size_list, class_indices_dict )
+        rate_matrix = self.rate_matrix_class( model_size, class_indices_dict )
         for r in model_routes:
             start_index = state_index_dict[r.start_state]
             end_index = state_index_dict[r.end_state]
@@ -34,9 +34,9 @@ class AggregatedRateMatrix(object):
      Q =   -----------
            Q_bd | Q_bb
     """
-    def __init__(self, size_list, class_indices_dict):
+    def __init__(self, model_size, class_indices_dict):
         super(AggregatedRateMatrix, self).__init__()
-        self.rate_matrix = numpy.zeros(size_list)
+        self.rate_matrix = numpy.zeros((model_size,model_size), dtype=DATA_TYPE)
         self.class_indices_dict = class_indices_dict
         self.is_finalized = False
 
@@ -59,4 +59,4 @@ class AggregatedRateMatrix(object):
         col_inds = self.class_indices_dict[end_class]
         submatrix = self.rate_matrix[row_inds[0]:row_inds[-1]+1,
                                      col_inds[0]:col_inds[-1]+1]
-        return numpy.asmatrix( numpy.atleast_2d(submatrix) )
+        return numpy.atleast_2d(submatrix)

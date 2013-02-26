@@ -1,6 +1,7 @@
 import numpy
 import scipy.linalg
 from palm.cylib import arnoldi
+from palm.util import DATA_TYPE
 
 # class ArnoldiIterator(object):
 #     """docstring for ArnoldiIterator"""
@@ -45,8 +46,6 @@ from palm.cylib import arnoldi
 #         if not is_happy:
 #             num_basis_vectors = self.krylov_dimension+1
 #         return V, H, num_basis_vectors, is_happy
-
-DATA_TYPE = numpy.float64
 
 class MatrixExponential(object):
     """docstring for MatrixExponential
