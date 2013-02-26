@@ -1,5 +1,7 @@
 # encoding: utf-8
 # cython: profile=False
+#cython: boundscheck=False
+#cython: wraparound=False
 # filename: arnoldi.pyx
 
 import numpy as np
