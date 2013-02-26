@@ -37,12 +37,13 @@ def computes_correct_beta():
     start_class = 'dark'
     end_class = 'bright'
     predictor = SpecialPredictor()
-    qit_beta = predictor.compute_beta(mock_model, segment_number,
-                                      segment_duration, start_class,
-                                      end_class, prev_beta)
     Q_aa = mock_model.get_numpy_submatrix(start_class, start_class)
     Q_ab = mock_model.get_numpy_submatrix(start_class, end_class)
-    expected_beta = scipy.linalg.expm(Q_aa * segment_duration) * Q_ab * prev_beta
+    qit_beta = predictor.compute_beta(Q_aa, Q_ab, segment_number,
+                                      segment_duration, start_class,
+                                      end_class, prev_beta)
+    expm_Qaa = scipy.linalg.expm(Q_aa * segment_duration)
+    expected_beta = numpy.dot(numpy.dot(expm_Qaa, Q_ab), prev_beta)
     error_message = "Expected %s,\ngot %s" % (str(expected_beta), str(qit_beta))
     nose.tools.ok_( numpy.allclose(qit_beta, expected_beta), error_message )
     print error_message

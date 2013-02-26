@@ -85,4 +85,4 @@ class BlinkModel(AggregatedKineticModel):
         dark_inds = self.class_indices_dict['dark']
         start_col = dark_inds[0]
         end_col = dark_inds[-1]
-        return initial_population_array[0, start_col:end_col+1]
+        return initial_population_array[:, start_col:end_col+1]
