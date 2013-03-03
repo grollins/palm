@@ -1,6 +1,7 @@
 import logging
 import numpy
 import scipy.misc
+import time
 
 ALMOST_ZERO = numpy.float64(1e-300)
 PORT = 26 * 26**2 + 1 * 26**1 + 13 * 26**0
@@ -26,5 +27,12 @@ def multichoose(n,k):
 def SetupLogging(Name):
     Logger = logging.getLogger(Name)
     Logger.debug("Module loaded")
-    
     return Logger
+
+class Timer:    
+    def __enter__(self):
+        self.start = time.time()
+        return self
+    def __exit__(self, *args):
+        self.end = time.time()
+        self.interval = self.end - self.start
