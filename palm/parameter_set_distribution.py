@@ -41,6 +41,10 @@ class ParameterSetDistribution(object):
     def __str__(self):
         return str(self.data_frame)
 
+    def __iter__(self):
+        for i, row in self.data_frame.T.iteritems():
+            yield i, row
+
     def single_parameter_distribution_as_array(self, parameter_name):
         return numpy.array(self.data_frame[parameter_name])
 
@@ -52,8 +56,13 @@ class ParameterSetDistribution(object):
     def save_to_file(self, filename):
         self.data_frame.save(filename)
 
-    def load_from_file(self, filename):
-        self.data_frame = pandas.load(filename)
+    def load_from_file(self, filename, append_data=False):
+        loaded_data_frame = pandas.load(filename)
+        if append_data:
+            self.data_frame = pandas.concat([self.data_frame,
+                                             loaded_data_frame])
+        else:
+            self.data_frame = pandas.load(filename)
 
     def sort_index(self, sort_by_column, is_ascending=True):
         self.data_frame = self.data_frame.sort_index(by=sort_by_column,
