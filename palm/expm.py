@@ -2,50 +2,69 @@ import numpy
 import scipy.linalg
 from palm.cylib import arnoldi
 from palm.util import DATA_TYPE
+import theano
+from theano.sandbox.linalg.ops import matrix_dot
 
-# class ArnoldiIterator(object):
-#     """docstring for ArnoldiIterator"""
-#     def __init__(self, krylov_dimension, tol):
-#         super(ArnoldiIterator, self).__init__()
-#         self.krylov_dimension = krylov_dimension
-#         self.tol = tol
-# 
-#     def run_inner_loop(self, V, H, p, j):
-#         for i in range(j):
-#             H[i, j-1] = numpy.vdot(V[:, i], p)
-#             p -= H[i, j-1] * V[:, i]
-#         return H, p
-# 
-#     def iterate(self, A, V, H, v, beta):
-#         """
-#         Trying to compute exp(A*t)v
-#         V  orthonormal basis vectors
-#         H  upper Hessenberg matrix
-#         """
-#         is_happy = False
-#         num_basis_vectors = None
-#         # the first basis vector v_0 is just v normalized
-#         V[:, 0] = (1 / beta) * v
-#         for j in range(1, self.krylov_dimension+1):
-#             # construct the Krylov vector v_j
-#             # orthogonalize it with the previous ones
-#             p = numpy.dot(A, V[:, j-1])
-#             H, p = self.run_inner_loop(V, H, p, j)
-#             temp = scipy.linalg.norm(p)
-#             # "happy breakdown": iteration terminates, Krylov approximation is exact
-#             if temp < self.tol:
-#                 is_happy = True
-#                 num_basis_vectors = j
-#                 break
-#             # store the now orthonormal basis vector
-#             else:
-#                 H[j, j-1] = temp
-#                 V[:, j] = (1 / temp) * p
-#                 continue
-#         # k_d + 1 b/c one extra vector for error control
-#         if not is_happy:
-#             num_basis_vectors = self.krylov_dimension+1
-#         return V, H, num_basis_vectors, is_happy
+
+class TheanoEigenMatrixExponential(object):
+    def __init__(self):
+        self.eig_vals = None
+        self.first_run = True
+        V = theano.tensor.zmatrix()
+        D = theano.tensor.zmatrix()
+        Vi = theano.tensor.zmatrix()
+        # VD = theano.tensor.dot(V, D)
+        # VDVi = theano.tensor.dot(VD, Vi)
+        # self.mat_mult_fcn = theano.function([a,b], a_dot_b)
+        VDVi = matrix_dot(V, D, Vi)
+        self.expm_fcn = theano.function([V,D,Vi], VDVi)
+    def _decompose_matrix(self, Q):
+        self.eig_vals, self.eig_vecs = scipy.linalg.eig(Q)
+        self.dim = self.eig_vecs.shape[0]
+        self.vec_inv = scipy.linalg.inv(self.eig_vecs)
+        self.exp_eig_val_array = numpy.diag(numpy.exp(self.eig_vals))
+    def compute_matrix_exp(self, t_end, Q, force_decomposition=False):
+        if self.first_run or force_decomposition:
+            self._decompose_matrix(Q)
+            self.first_run = False
+        else:
+            pass
+        # D = numpy.diag( numpy.exp(self.eig_vals * t_end) )
+        D = numpy.power(self.exp_eig_val_array, t_end)
+        # VD = self.mat_mult_fcn(self.eig_vecs, D)
+        # VDVi = self.mat_mult_fcn(VD, self.vec_inv)
+        VDVi = self.expm_fcn(self.eig_vecs, D, self.vec_inv)
+        return VDVi
+    def expv(self, t_end, A, v, force_decomposition=False):
+        expm_A = self.compute_matrix_exp(t_end, A, force_decomposition)
+        return numpy.atleast_2d( numpy.dot(expm_A, v) )
+
+
+class EigenMatrixExponential(object):
+    def __init__(self):
+        self.eig_vals = None
+        self.first_run = True
+    def _decompose_matrix(self, Q, limit=None):
+        self.eig_vals, self.eig_vecs = scipy.linalg.eig(Q)
+        self.dim = self.eig_vecs.shape[0]
+        self.vec_inv = scipy.linalg.inv(self.eig_vecs)
+
+    def compute_matrix_exp(self, t_end, Q, limit=None,
+                           force_decomposition=False):
+        if self.first_run or force_decomposition:
+            self._decompose_matrix(Q, limit)
+            self.first_run = False
+        else:
+            pass
+        D = numpy.diag( numpy.exp(self.eig_vals * t_end) )
+        VD = numpy.dot(self.eig_vecs, D)
+        VDVi = numpy.dot(VD, self.vec_inv)
+        return VDVi
+
+    def expv(self, t_end, A, v, force_decomposition=False):
+        expm_A = self.compute_matrix_exp(t_end, A, force_decomposition)
+        return numpy.atleast_2d( numpy.dot(expm_A, v) )
+
 
 class MatrixExponential(object):
     """docstring for MatrixExponential

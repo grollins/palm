@@ -1,7 +1,8 @@
 import nose.tools
 import numpy
 import scipy.linalg
-from palm.expm import MatrixExponential
+from palm.expm import MatrixExponential, EigenMatrixExponential
+from palm.expm import TheanoEigenMatrixExponential
 from palm.cylib import arnoldi
 
 @nose.tools.istest
@@ -16,6 +17,10 @@ def computes_matrix_exponential():
     # print palm_expv
     # print pade_expv
     nose.tools.ok_(numpy.allclose(palm_expv, pade_expv))
+    m2 = EigenMatrixExponential()
+    eigen_expv = m2.expv(1.0, Q, v)
+    nose.tools.ok_(numpy.allclose(eigen_expv, pade_expv))
+    # print eigen_expv
 
 @nose.tools.istest
 def computes_arnoldi():
@@ -31,5 +36,21 @@ def computes_arnoldi():
     V = numpy.zeros((N, krylov_dimension+1))
     V, H, j, happy = arnoldi.arnoldi_iterate(Q, V, H, v, v_norm, tol=1.0e-7,
                                      krylov_dimension=krylov_dimension)
-    print H.real
-    print V.real
+    # print H.real
+    # print V.real
+
+@nose.tools.istest
+def compute_correct_exponential_from_spectral_rep():
+    N = 10
+    Q = numpy.random.normal(0.0, 1.0, (N,N))
+    v = numpy.ones([N])
+    m = EigenMatrixExponential()
+    eigen_exp = m.compute_matrix_exp(1.0, Q)
+    pade_exp = scipy.linalg.expm(Q)
+    # print eigen_exp[:,1]
+    print pade_exp[:,1]
+    nose.tools.ok_(numpy.allclose(eigen_exp, pade_exp))
+    m2 = TheanoEigenMatrixExponential()
+    theano_exp = m2.compute_matrix_exp(1.0, Q)
+    print theano_exp[:,1]
+    nose.tools.ok_(numpy.allclose(theano_exp, pade_exp))
