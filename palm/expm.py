@@ -66,6 +66,16 @@ class EigenMatrixExponential(object):
         return numpy.atleast_2d( numpy.dot(expm_A, v) )
 
 
+class DiagonalExponential(object):
+    def __init__(self):
+        pass
+    def compute_matrix_exp(self, t_end, Q):
+        return numpy.diag( numpy.exp(Q.diagonal() * t_end) )
+    def expv(self, t_end, Q, v):
+        expm_dot_v = numpy.dot(self.compute_matrix_exp(t_end, Q), v)
+        return numpy.atleast_2d(expm_dot_v)
+
+
 class MatrixExponential(object):
     """docstring for MatrixExponential
     tol                tolerance

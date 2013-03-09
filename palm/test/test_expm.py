@@ -2,7 +2,7 @@ import nose.tools
 import numpy
 import scipy.linalg
 from palm.expm import MatrixExponential, EigenMatrixExponential
-from palm.expm import TheanoEigenMatrixExponential
+from palm.expm import TheanoEigenMatrixExponential, DiagonalExponential
 from palm.cylib import arnoldi
 
 @nose.tools.istest
@@ -54,3 +54,14 @@ def compute_correct_exponential_from_spectral_rep():
     theano_exp = m2.compute_matrix_exp(1.0, Q)
     print theano_exp[:,1]
     nose.tools.ok_(numpy.allclose(theano_exp, pade_exp))
+
+@nose.tools.istest
+def compute_correct_exponential_for_diagonal_matrix():
+    N = 10
+    Q = numpy.diag( numpy.random.normal(0.0, 1.0, (N,)) )
+    pade_exp = scipy.linalg.expm(Q)
+    m = DiagonalExponential()
+    diag_exp = m.compute_matrix_exp(1.0, Q)
+    print pade_exp.diagonal()
+    print diag_exp.diagonal()
+    nose.tools.ok_(numpy.allclose(diag_exp, pade_exp))
