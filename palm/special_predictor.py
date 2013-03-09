@@ -14,12 +14,14 @@ class SpecialPredictor(DataPredictor):
     exponential routine from the Quantum Information Toolkit.
     We follow the Sachs et al. forward-backward recursion approach.
     """
-    def __init__(self, always_rebuild_rate_matrix=True, debug_mode=False,
-                 include_off_diagonal_terms=True):
+    def __init__(self, always_rebuild_rate_matrix=True,
+                 include_off_diagonal_terms=True, debug_mode=False,
+                 print_routes=False):
         super(SpecialPredictor, self).__init__()
         self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
-        self.debug_mode = debug_mode
         self.include_off_diagonal_terms = include_off_diagonal_terms
+        self.debug_mode = debug_mode
+        self.print_routes = print_routes
         self.prediction_factory = LikelihoodPrediction
         self.beta_calculator = BetaCalculator(
                                     self.include_off_diagonal_terms)
@@ -56,6 +58,7 @@ class SpecialPredictor(DataPredictor):
         return Q_aa, Q_ab
 
     def compute_backward_vectors(self, model, trajectory):
+        self.beta_calculator.reset()
         beta_set = VectorSet()
         c_set = ScalingCoefficients()
         prev_beta_col_vec = None
@@ -113,6 +116,13 @@ class SpecialPredictor(DataPredictor):
             c_set.set_coef(segment_number, this_c)
             beta_set.add_vector(segment_number, scaled_beta_col_vec)
             prev_beta_col_vec = scaled_beta_col_vec
+
+            if self.print_routes:
+                for r in model.iter_routes():
+                    if r.get_label() == "I->A" and r.get_start_state() == "2_0_0_0":
+                        print "%s %.2f %.2f" %\
+                                (r, cumulative_time,
+                                 r.compute_log_rate(cumulative_time))
 
         init_pop_row_vec = model.get_initial_population_array()
         error_msg = "Expected a row vector, not %s" % \
@@ -215,18 +225,20 @@ class BetaCalculator(object):
     """docstring for BetaCalculator"""
     def __init__(self, include_off_diagonal_terms):
         super(BetaCalculator, self).__init__()
-        #self.matrix_exponentiator = MatrixExponential()
-        #self.matrix_exponentiator = EigenMatrixExponential()
+        # self.matrix_exponentiator = MatrixExponential()
+        # self.matrix_exponentiator = EigenMatrixExponential()
         self.matrix_exponentiator = TheanoEigenMatrixExponential()
+        self.force_decomposition = True
     def full_expm(self, t, Q, v):
         try:
             expv_results = self.matrix_exponentiator.expv(
                                 t, Q, v,
-                                force_decomposition=False)
+                                force_decomposition=self.force_decomposition)
             beta_row_vec = expv_results.real
             beta_col_vec = beta_row_vec.T
         except (RuntimeError, ZeroDivisionError):
             raise
+        self.force_decomposition = False
         return beta_col_vec
     def diagonal_only_expm(self, t, Q, v):
         diagonal_vector = Q.diagonal()
@@ -236,7 +248,8 @@ class BetaCalculator(object):
         beta_row_vec = numpy.atleast_2d(beta_row_vec)
         beta_col_vec = beta_row_vec.T
         return beta_col_vec
-
+    def reset(self):
+        self.force_decomposition = True
 
 class VectorSet(object):
     """
