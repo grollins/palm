@@ -1,3 +1,4 @@
+import numpy
 from palm.base.trajectory import TrajectorySegment, Trajectory
 
 class DiscreteDwellSegment(TrajectorySegment):
@@ -83,3 +84,40 @@ class DiscreteStateTrajectory(Trajectory):
         reverse_range.reverse()
         for i in reverse_range:
             yield (i, self.segment_list[i])
+
+    def as_continuous_traj_array(self):
+        class_to_signal_dict = {'dark':0.0, 'bright':1.0}
+        time_list = []
+        signal_list = []
+        # desired trajectory
+        # 0.0 dark
+        # 1.0 dark
+        # 1.0 bright
+        # 1.1 bright
+        # 1.1 dark
+        # 3.6 dark
+        # 3.6 bright
+        # 3.8 bright
+        # 3.8 dark
+        time_list.append(0.0)
+        signal_list.append(class_to_signal_dict['dark'])
+        for i, segment in enumerate(self):
+            if i >= len(self)-1:
+                break
+            this_class = segment.get_class()
+            this_signal = class_to_signal_dict[this_class]
+            next_signal = class_to_signal_dict[self.get_segment(i+1).get_class()]
+            this_cumulative_time = self.get_cumulative_time(i)
+            time_list.append(this_cumulative_time)
+            signal_list.append(this_signal)
+            time_list.append(this_cumulative_time)
+            signal_list.append(next_signal)
+        last_segment = self.get_segment(len(self)-1)
+        last_class = last_segment.get_class()
+        last_signal = class_to_signal_dict[last_class]
+        last_cumulative_time = self.get_cumulative_time(len(self)-1)
+        time_list.append(last_cumulative_time)
+        signal_list.append(last_signal)
+        traj_array = numpy.array([time_list, signal_list]).T
+        assert traj_array.shape[1] == 2
+        return traj_array
