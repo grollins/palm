@@ -72,4 +72,8 @@ class ParameterSetDistribution(object):
         html_str = self.data_frame.to_html()
         with open(filename, 'w') as f:
             f.write(html_str)
-        
+
+    def get_best_params_as_series(self):
+        best_score_index = self.data_frame['score'].idxmin()
+        best_score_row = self.data_frame.ix[best_score_index]
+        return best_score_row
