@@ -1,5 +1,12 @@
 import numpy
+import random
 from palm.base.parameter_set import ParameterSet
+
+def randomize_parameter(parameter_set, parameter_name, lower_bound,
+                        upper_bound):
+    new_value = random.uniform(lower_bound, upper_bound)
+    parameter_set.set_parameter(parameter_name, new_value)
+    return parameter_set
 
 class SingleDarkParameterSet(ParameterSet):
     """Parameters for a blink model with one dark state."""
@@ -14,8 +21,14 @@ class SingleDarkParameterSet(ParameterSet):
                             'log_kb':(None, None) }
 
     def __str__(self):
-        my_array = self.as_array()
-        return "%s" % (my_array)
+        # my_array = self.as_array()
+        # return "%s" % (my_array)
+        log_ka = self.get_parameter('log_ka')
+        log_kd = self.get_parameter('log_kd')
+        log_kr = self.get_parameter('log_kr')
+        log_kb = self.get_parameter('log_kb')
+        my_str = "%.4f,%.4f,%.4f,%.4f" % (log_ka, log_kd, log_kr, log_kb)
+        return my_str
 
     def __iter__(self):
         for param_name, param_value in self.parameter_dict.iteritems():
