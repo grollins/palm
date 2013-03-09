@@ -13,7 +13,7 @@ class IPythonManager(TaskManager):
         self.task_queue = None
         self.task_list = []
         self.refresh_time = refresh_time # seconds
-        self.max_iterations = 100
+        self.max_iterations = 1000000
 
     def start(self):
         # os.system("ipcluster start -n 2 &")
@@ -54,6 +54,7 @@ class IPythonManager(TaskManager):
             iteration_count += 1
             if iteration_count > self.max_iterations:
                 print "Waiting too long for tasks to complete."
+                print iteration_count
                 break
             else:
                 time.sleep(self.refresh_time)

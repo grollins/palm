@@ -11,15 +11,16 @@ class RateMatrixFactory(object):
         super(RateMatrixFactory, self).__init__()
         self.rate_matrix_class = rate_matrix_class
 
-    def create_rate_matrix(self, model_size, model_routes,
-                           state_index_dict, class_indices_dict, time):
+    def create_rate_matrix(self, model_size, model_routes, state_index_dict,
+                            class_indices_dict, time):
         rate_matrix = self.rate_matrix_class( model_size, class_indices_dict )
         for r in model_routes:
             start_index = state_index_dict[r.start_state]
             end_index = state_index_dict[r.end_state]
             this_log_rate = r.compute_log_rate(t=time)
             this_rate = 10**(this_log_rate)
-            assert this_rate >= 0.0, "%d %d %s" % (start_index, end_index, str(this_rate))
+            assert this_rate >= 0.0, "%d %d %s" % (start_index, end_index,
+                                                   str(this_rate))
             rate_matrix.set_rate(start_index, end_index, this_rate)
         rate_matrix.finalize_matrix()
         return rate_matrix

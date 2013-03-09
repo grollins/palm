@@ -47,6 +47,9 @@ class Route(object):
     def get_label(self):
         return self.label
 
+    def get_start_state(self):
+        return self.start_state
+
     def compute_log_rate(self, t):
         return self.log_rate_function(t)
 
@@ -132,11 +135,10 @@ class AggregatedKineticModel(Model):
         return len(self.routes)
 
     def build_rate_matrix(self, time=0.):
-        rate_matrix = self.rate_matrix_factory.create_rate_matrix(self.get_num_states(),
-                                                                  self.routes,
-                                                                  self.state_index_dict,
-                                                                  self.class_indices_dict,
-                                                                  time)
+        rate_matrix = self.rate_matrix_factory.create_rate_matrix(
+                            self.get_num_states(), self.routes,
+                            self.state_index_dict, self.class_indices_dict,
+                            time)
         self.rate_matrix = rate_matrix
 
     def get_numpy_submatrix(self, start_class, end_class):

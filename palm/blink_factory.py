@@ -25,14 +25,14 @@ class SingleDarkBlinkFactory(ModelFactory):
     def create_model(self, parameter_set):
         self.parameter_set = parameter_set
         N = self.parameter_set.get_parameter('N')
-        state_enumerator_factory = SingleDarkStateEnumeratorFactory(N,
-                                                          self.state_factory,
-                                                          self.MAX_A)
+        state_enumerator_factory = SingleDarkStateEnumeratorFactory(
+                                        N, self.state_factory, self.MAX_A)
         state_enumerator = state_enumerator_factory.create_state_enumerator()
-        route_mapper_factory = SingleDarkRouteMapperFactory(self.parameter_set,
-                                                            self.route_factory,
-                                                            self.MAX_A,
-                                                            self.fermi_activation)
+        route_mapper_factory = SingleDarkRouteMapperFactory(
+                                parameter_set=self.parameter_set,
+                                route_factory=self.route_factory,
+                                max_A=self.MAX_A,
+                                fermi_activation=self.fermi_activation)
         route_mapper = route_mapper_factory.create_route_mapper()
         new_model = BlinkModel(state_enumerator, route_mapper,
                                self.parameter_set)
@@ -57,14 +57,14 @@ class DoubleDarkBlinkFactory(ModelFactory):
     def create_model(self, parameter_set):
         self.parameter_set = parameter_set
         N = self.parameter_set.get_parameter('N')
-        state_enumerator_factory = DoubleDarkStateEnumeratorFactory(N,
-                                                          self.state_factory,
-                                                          self.MAX_A)
+        state_enumerator_factory = DoubleDarkStateEnumeratorFactory(
+                                        N, self.state_factory, self.MAX_A)
         state_enumerator = state_enumerator_factory.create_state_enumerator()
-        route_mapper_factory = DoubleDarkRouteMapperFactory(self.parameter_set,
-                                                            self.route_factory,
-                                                            self.MAX_A,
-                                                            self.fermi_activation)
+        route_mapper_factory = DoubleDarkRouteMapperFactory(
+                                parameter_set=self.parameter_set,
+                                route_factory=self.route_factory,
+                                max_A=self.MAX_A,
+                                fermi_activation=self.fermi_activation)
         route_mapper = route_mapper_factory.create_route_mapper()
         new_model = BlinkModel(state_enumerator, route_mapper,
                                            self.parameter_set)
