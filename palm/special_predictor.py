@@ -7,12 +7,12 @@ from palm.util import ALMOST_ZERO, DATA_TYPE
 from palm.expm import MatrixExponential, EigenMatrixExponential,\
                       TheanoEigenMatrixExponential
 
+
 class SpecialPredictor(DataPredictor):
     """
     Predicts the log likelihood of a dwell trajectory, given
-    an aggregated kinetic model. This class utilizes a matrix
-    exponential routine from the Quantum Information Toolkit.
-    We follow the Sachs et al. forward-backward recursion approach.
+    an aggregated kinetic model.We follow the Sachs et al.
+    forward-backward recursion approach.
     """
     def __init__(self, always_rebuild_rate_matrix=True,
                  include_off_diagonal_terms=True, debug_mode=False,
@@ -49,13 +49,13 @@ class SpecialPredictor(DataPredictor):
             scaled_vector = this_c * vector
         return scaled_vector, this_c
 
-    def _get_rate_arrays(self, model, start_class, end_class):
-        Q_aa = model.get_numpy_submatrix(start_class, start_class)
+    def _get_rate_matrices(self, model, start_class, end_class):
+        rate_matrix_aa = model.get_submatrix(start_class, start_class)
         if end_class is None:
-            Q_ab = None
+            rate_matrix_ab = None
         else:
-            Q_ab = model.get_numpy_submatrix(start_class, end_class)
-        return Q_aa, Q_ab
+            rate_matrix_ab = model.get_submatrix(start_class, end_class)
+        return rate_matrix_aa, rate_matrix_ab
 
     def compute_backward_vectors(self, model, trajectory):
         self.beta_calculator.reset()
@@ -64,8 +64,10 @@ class SpecialPredictor(DataPredictor):
         prev_beta_col_vec = None
         end_time = trajectory.get_end_time()
         model.build_rate_matrix(time=end_time)
-        Q_dd, Q_db = self._get_rate_arrays(model, 'dark', 'bright')
-        Q_bb, Q_bd = self._get_rate_arrays(model, 'bright', 'dark')
+        rate_matrix_dd, rate_matrix_db = self._get_rate_matrices(
+                                            model, 'dark', 'bright')
+        rate_matrix_bb, rate_matrix_bd = self._get_rate_matrices(
+                                            model, 'bright', 'dark')
         for segment_number, segment in trajectory.reverse_iter():
             cumulative_time = trajectory.get_cumulative_time(
                                 segment_number)
@@ -79,8 +81,9 @@ class SpecialPredictor(DataPredictor):
 
             if self.always_rebuild_rate_matrix:
                 model.build_rate_matrix(time=cumulative_time)
-                Q_aa, Q_ab = self._get_rate_arrays(model, start_class,
-                                                   end_class)
+                rate_matrix_aa, rate_matrix_ab = self._get_rate_matrices(
+                                                    model, start_class,
+                                                    end_class)
 
             # if we're not rebuilding rate matrices at each step,
             # we can just use the ones we computed at the start
@@ -88,25 +91,25 @@ class SpecialPredictor(DataPredictor):
             # of the rates vary with time.
             else:
                 if start_class == 'dark':
-                    Q_aa = Q_dd
+                    rate_matrix_aa = rate_matrix_dd
                 elif start_class == 'bright':
-                    Q_aa = Q_bb
+                    rate_matrix_aa = rate_matrix_bb
                 else:
                     raise RuntimeError("Logic error in determining Q_aa")
                 if end_class == 'bright':
-                    Q_ab = Q_db
+                    rate_matrix_ab = rate_matrix_db
                 elif end_class == 'dark':
-                    Q_ab = Q_bd
+                    rate_matrix_ab = rate_matrix_bd
                 elif end_class is None:
-                    Q_ab = None
+                    rate_matrix_ab = None
                 else:
                     raise RuntimeError("Logic error in determining Q_aa")
 
             try:
                 beta_col_vec = self.compute_beta(
-                                    Q_aa, Q_ab, segment_number,
-                                    segment_duration, start_class,
-                                    end_class, prev_beta_col_vec)
+                                    rate_matrix_aa, rate_matrix_ab,
+                                    segment_number, segment_duration,
+                                    start_class, end_class, prev_beta_col_vec)
             except:
                 with open("./debug/fail_beta_set.pkl", 'w') as f:
                     cPickle.dump(beta_set.vector_dict, f)
@@ -134,23 +137,17 @@ class SpecialPredictor(DataPredictor):
         c_set.set_coef(-1, final_c)
         return beta_set, c_set
 
-    def compute_beta(self, Q_aa, Q_ab, segment_number, segment_duration,
-                     start_class, end_class, prev_beta):
+    def compute_beta(self, rate_matrix_aa, rate_matrix_ab, segment_number,
+                     segment_duration, start_class, end_class, prev_beta):
         '''
         prev beta (N, 1) 2-d array
         ab vector (N,) 1-d array
         '''
         if end_class is None:
-            ab_vector = numpy.ones( (Q_aa.shape[1], 1) )
+            ab_vector = numpy.ones( (rate_matrix_aa.get_size(1), 1) )
         else:
-            # print "prev_beta", prev_beta.shape
-            try:
-                ab_vector = numpy.dot(Q_ab, prev_beta)
-            except ValueError:
-                print Q_ab.shape, prev_beta.shape
-                raise
+            ab_vector = numpy.dot(rate_matrix_ab.as_numpy_array(), prev_beta)
         ab_vector = ab_vector[:,0] # convert to 1-D
-        # print "ab", ab_vector.shape
 
         inds = numpy.where(ab_vector < ALMOST_ZERO)[0]
         ab_vector[inds] = ALMOST_ZERO
@@ -161,7 +158,7 @@ class SpecialPredictor(DataPredictor):
         #   for the dwell in the dark state.
         if start_class == 'dark':
             this_beta_col_vec = self.beta_calculator.diagonal_only_expm(
-                                    segment_duration, Q_aa, ab_vector)
+                                    segment_duration, rate_matrix_aa, ab_vector)
 
         # In this branch, there might be interconnected states.
         #   If the flag include_off_diagonal_terms is False, 
@@ -171,15 +168,15 @@ class SpecialPredictor(DataPredictor):
             if self.include_off_diagonal_terms:
                 try:
                     this_beta_col_vec = self.beta_calculator.full_expm(
-                                            segment_duration, Q_aa,
+                                            segment_duration, rate_matrix_aa,
                                             ab_vector)
                 except (RuntimeError, ZeroDivisionError):
-                    self._fail_output(Q_aa, Q_ab, ab_vector,
+                    self._fail_output(rate_matrix_aa, rate_matrix_ab, ab_vector,
                                       segment_duration)
                     raise
             elif not self.include_off_diagonal_terms:
                 b = self.beta_calculator.diagonal_only_expm(
-                        segment_duration, Q_aa, ab_vector)
+                        segment_duration, rate_matrix_aa, ab_vector)
                 this_beta_col_vec = b
             else:
                 raise RuntimeError("Logic error in beta calculation")
@@ -190,31 +187,32 @@ class SpecialPredictor(DataPredictor):
             raise RuntimeError("Unexpected state: %s" % start_class)
         if self.debug_mode:
             self._debug_output(segment_number, segment_duration,
-                               start_class, end_class, Q_aa, Q_ab,
-                               ab_vector)
+                               start_class, end_class, rate_matrix_aa,
+                               rate_matrix_ab, ab_vector)
         else:
             pass
         return this_beta_col_vec
 
-    def _debug_output(self, segment_number, segment_duration, 
-                      start_class, end_class, Q_aa, Q_ab, ab_vector):
+    def _debug_output(self, segment_number, segment_duration,
+                      start_class, end_class, rate_matrix_aa, rate_matrix_ab,
+                      ab_vector):
         print "Wrote debug files for segment %d" % segment_number
         print start_class, end_class
         Q_aa_filename = "./debug/Qaa_%s_%s_%03d.npy" % \
                         (start_class, start_class, segment_number)
-        numpy.save(Q_aa_filename, Q_aa)
+        numpy.save(Q_aa_filename, rate_matrix_aa.as_numpy_array())
         Q_ab_filename = "./debug/Qab_%s_%s_%03d.npy" % \
                         (start_class, end_class, segment_number)
-        numpy.save(Q_ab_filename, Q_ab)
+        numpy.save(Q_ab_filename, rate_matrix_ab.as_numpy_array())
         numpy.save("./debug/vec_%03d.npy" % segment_number,
                    ab_vector)
         with open("./debug/segment_durations.txt", 'a') as f:
             f.write('%d,%.2e\n' % (segment_number, segment_duration))
 
-    def _fail_output(self, Q_aa, Q_ab, ab_vector,
+    def _fail_output(self, rate_matrix_aa, rate_matrix_ab, ab_vector,
                      segment_duration):
-        numpy.save("./debug/fail_matrix_Qaa.npy", Q_aa)
-        numpy.save("./debug/fail_matrix_Qab.npy", Q_ab)
+        numpy.save("./debug/fail_matrix_Qaa.npy", rate_matrix_aa.as_numpy_array())
+        numpy.save("./debug/fail_matrix_Qab.npy", rate_matrix_ab.as_numpy_array())
         numpy.save("./debug/fail_vec.npy", ab_vector)
         with open("./debug/fail_notes.txt", 'w') as f:
             f.write("matrix exponentiation failed\n")
@@ -226,13 +224,13 @@ class BetaCalculator(object):
     def __init__(self, include_off_diagonal_terms):
         super(BetaCalculator, self).__init__()
         # self.matrix_exponentiator = MatrixExponential()
-        # self.matrix_exponentiator = EigenMatrixExponential()
-        self.matrix_exponentiator = TheanoEigenMatrixExponential()
+        self.matrix_exponentiator = EigenMatrixExponential()
+        # self.matrix_exponentiator = TheanoEigenMatrixExponential()
         self.force_decomposition = True
-    def full_expm(self, t, Q, v):
+    def full_expm(self, t, rate_matrix, v):
         try:
             expv_results = self.matrix_exponentiator.expv(
-                                t, Q, v,
+                                t, rate_matrix.as_numpy_array(), v,
                                 force_decomposition=self.force_decomposition)
             beta_row_vec = expv_results.real
             beta_col_vec = beta_row_vec.T
@@ -240,8 +238,8 @@ class BetaCalculator(object):
             raise
         self.force_decomposition = False
         return beta_col_vec
-    def diagonal_only_expm(self, t, Q, v):
-        diagonal_vector = Q.diagonal()
+    def diagonal_only_expm(self, t, rate_matrix, v):
+        diagonal_vector = rate_matrix.get_diagonal_vector()
         exp_vector = numpy.exp(diagonal_vector * t)
         exp_array = numpy.diag(exp_vector)
         beta_row_vec = numpy.dot(exp_array, v)

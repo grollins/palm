@@ -9,6 +9,7 @@ from palm.blink_parameter_set import SingleDarkParameterSet
 from palm.likelihood_judge import LikelihoodJudge
 from palm.blink_target_data import BlinkTargetData
 from palm.util import ALMOST_ZERO
+from palm.rate_matrix import AggregatedRateMatrix
 
 EPSILON = 1e-3
 
@@ -30,32 +31,34 @@ def computes_correct_beta():
     ka = 0.1
     kb = 0.1
     prev_beta = numpy.matrix([1.0])
-    mock_model = mock.Mock()
-    mock_model.get_numpy_submatrix = submatrix_fcn_factory(ka, kb)
     segment_number = 1
     segment_duration = 1.0 # a reasonable dwell time
     start_class = 'dark'
     end_class = 'bright'
     predictor = SpecialPredictor()
-    Q_aa = mock_model.get_numpy_submatrix(start_class, start_class)
-    Q_ab = mock_model.get_numpy_submatrix(start_class, end_class)
-    qit_beta = predictor.compute_beta(Q_aa, Q_ab, segment_number,
-                                      segment_duration, start_class,
-                                      end_class, prev_beta)
+    get_submatrix_fcn = submatrix_fcn_factory(ka, kb)
+    rate_matrix_aa = get_submatrix_fcn(start_class, start_class)
+    rate_matrix_ab = get_submatrix_fcn(start_class, end_class)
+    predicted_beta = predictor.compute_beta(
+                        rate_matrix_aa, rate_matrix_ab, segment_number,
+                        segment_duration, start_class, end_class, prev_beta)
+    Q_aa = rate_matrix_aa.as_numpy_array()
+    Q_ab = rate_matrix_ab.as_numpy_array()
     expm_Qaa = scipy.linalg.expm(Q_aa * segment_duration)
     expected_beta = numpy.dot(numpy.dot(expm_Qaa, Q_ab), prev_beta)
-    error_message = "Expected %s,\ngot %s" % (str(expected_beta), str(qit_beta))
-    nose.tools.ok_( numpy.allclose(qit_beta, expected_beta), error_message )
+    error_message = "Expected %s,\ngot %s" %\
+                        (str(expected_beta), str(predicted_beta))
+    nose.tools.ok_( numpy.allclose(predicted_beta, expected_beta), error_message )
     print error_message
 
 def submatrix_fcn_factory(ka, kb, a_mult=1, b_mult=1):
-    def get_submatrices(start_class, end_class):
+    def get_submatrix_fcn(start_class, end_class):
         '''
             A    B
         A   -ka  ka
         B   kb  -kb
         '''
-        whole_matrix = numpy.matrix([[-a_mult*ka, a_mult*ka],
+        whole_matrix = numpy.array([[-a_mult*ka, a_mult*ka],
                                      [b_mult*kb, -b_mult*kb]])
         if start_class == 'dark':
             row_inds = [0]
@@ -69,8 +72,12 @@ def submatrix_fcn_factory(ka, kb, a_mult=1, b_mult=1):
             col_inds = [0]
         else:
             print "unexpected end class: %s" % end_class
-        return whole_matrix[row_inds[0]:row_inds[-1]+1, col_inds[0]:col_inds[-1]+1]
-    return get_submatrices
+        numpy_submat = whole_matrix[row_inds[0]:row_inds[-1]+1, col_inds[0]:col_inds[-1]+1]
+        numpy_submat = numpy.atleast_2d(numpy_submat)
+        sub_matrix = AggregatedRateMatrix(1, {})
+        sub_matrix.rate_matrix = numpy_submat
+        return sub_matrix
+    return get_submatrix_fcn
 
 @nose.tools.istest
 def computes_likelihood():
