@@ -3,7 +3,7 @@ import os.path
 import mock
 import numpy
 import scipy.linalg
-from palm.special_predictor import SpecialPredictor
+from palm.backward_likelihood import BackwardPredictor
 from palm.blink_factory import SingleDarkBlinkFactory
 from palm.blink_parameter_set import SingleDarkParameterSet
 from palm.likelihood_judge import LikelihoodJudge
@@ -15,7 +15,7 @@ EPSILON = 1e-3
 
 @nose.tools.istest
 def vector_scaled_to_correct_value():
-    predictor = SpecialPredictor()
+    predictor = BackwardPredictor()
     vector = numpy.matrix([0.1, 0.1, 0.1])
     expected_c = 1./numpy.sum(vector)
     expected_scaled_vector = expected_c * vector
@@ -35,7 +35,7 @@ def computes_correct_beta():
     segment_duration = 1.0 # a reasonable dwell time
     start_class = 'dark'
     end_class = 'bright'
-    predictor = SpecialPredictor()
+    predictor = BackwardPredictor()
     get_submatrix_fcn = submatrix_fcn_factory(ka, kb)
     rate_matrix_aa = get_submatrix_fcn(start_class, start_class)
     rate_matrix_ab = get_submatrix_fcn(start_class, end_class)
@@ -88,7 +88,7 @@ def computes_likelihood():
     model_parameters.set_parameter('log_kd', -0.5)
     model_parameters.set_parameter('log_kr', -0.5)
     model_parameters.set_parameter('log_kb', -0.5)
-    data_predictor = SpecialPredictor(always_rebuild_rate_matrix=False)
+    data_predictor = BackwardPredictor(always_rebuild_rate_matrix=False)
     target_data = BlinkTargetData()
     target_data.load_data(data_file=os.path.expanduser("~/Documents/blink_data_stochpy_05/converted_results/blink_model_05.psc_TimeSim5.csv"))
     model = model_factory.create_model(model_parameters)

@@ -5,10 +5,10 @@ from palm.base.data_predictor import DataPredictor
 from palm.likelihood_prediction import LikelihoodPrediction
 from palm.util import ALMOST_ZERO, DATA_TYPE
 from palm.expm import MatrixExponential, EigenMatrixExponential,\
-                      TheanoEigenMatrixExponential
+                      TheanoEigenMatrixExponential, ScipyMatrixExponential
 
 
-class SpecialPredictor(DataPredictor):
+class BackwardPredictor(DataPredictor):
     """
     Predicts the log likelihood of a dwell trajectory, given
     an aggregated kinetic model.We follow the Sachs et al.
@@ -17,7 +17,7 @@ class SpecialPredictor(DataPredictor):
     def __init__(self, always_rebuild_rate_matrix=True,
                  include_off_diagonal_terms=True, debug_mode=False,
                  print_routes=False):
-        super(SpecialPredictor, self).__init__()
+        super(BackwardPredictor, self).__init__()
         self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
         self.include_off_diagonal_terms = include_off_diagonal_terms
         self.debug_mode = debug_mode
@@ -223,15 +223,15 @@ class BetaCalculator(object):
     """docstring for BetaCalculator"""
     def __init__(self, include_off_diagonal_terms):
         super(BetaCalculator, self).__init__()
-        # self.matrix_exponentiator = MatrixExponential()
-        self.matrix_exponentiator = EigenMatrixExponential()
+        self.matrix_exponentiator = MatrixExponential()
+        # self.matrix_exponentiator = EigenMatrixExponential()
         # self.matrix_exponentiator = TheanoEigenMatrixExponential()
+        # self.matrix_exponentiator = ScipyMatrixExponential()
         self.force_decomposition = True
     def full_expm(self, t, rate_matrix, v):
         try:
-            expv_results = self.matrix_exponentiator.expv(
-                                t, rate_matrix.as_numpy_array(), v,
-                                force_decomposition=self.force_decomposition)
+            expv_results = self.matrix_exponentiator.expv(t, rate_matrix, v)
+                                # force_decomposition=self.force_decomposition)
             beta_row_vec = expv_results.real
             beta_col_vec = beta_row_vec.T
         except (RuntimeError, ZeroDivisionError):
