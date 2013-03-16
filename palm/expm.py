@@ -5,6 +5,17 @@ from palm.util import DATA_TYPE
 import theano
 from theano.sandbox.linalg.ops import matrix_dot
 
+class ScipyMatrixExponential(object):
+    """docstring for ScipyMatrixExponential"""
+    def __init__(self):
+        super(ScipyMatrixExponential, self).__init__()
+    def compute_matrix_exp(self, rate_matrix, dwell_time):
+        Q = rate_matrix.as_numpy_array()
+        return scipy.linalg.expm(Q * dwell_time)
+    def expv(self, dwell_time, rate_matrix, v):
+        exp_Qt = self.compute_matrix_exp(rate_matrix, dwell_time)
+        return numpy.atleast_2d( numpy.dot(exp_Qt, v) )
+
 
 class TheanoEigenMatrixExponential(object):
     def __init__(self):
@@ -114,8 +125,8 @@ class MatrixExponential(object):
         # Ville Bergholm 2009-2012
 
         # just in case somebody tries to use numpy.matrix instances here
-        if isinstance(A, numpy.matrix) or isinstance(v, numpy.matrix):
-            raise ValueError("A and v must be plain numpy.ndarray instances, not numpy.matrix.")
+        A = A.as_numpy_array()
+        assert isinstance(A, numpy.ndarray)
 
         n = A.shape[0]
         W = numpy.zeros([1, len(v)], DATA_TYPE)
