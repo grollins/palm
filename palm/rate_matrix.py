@@ -25,6 +25,17 @@ class RateMatrixFactory(object):
         rate_matrix.finalize_matrix()
         return rate_matrix
 
+    def create_submatrix(self, rate_matrix, start_class, end_class):
+        row_inds = rate_matrix.class_indices_dict[start_class]
+        col_inds = rate_matrix.class_indices_dict[end_class]
+        numpy_submatrix = rate_matrix.rate_matrix[row_inds[0]:row_inds[-1]+1,
+                                                  col_inds[0]:col_inds[-1]+1]
+        numpy_submatrix = numpy.atleast_2d(numpy_submatrix)
+        submatrix = self.rate_matrix_class(
+                        model_size=1, class_indices_dict=None )
+        submatrix.rate_matrix = numpy_submatrix
+        return submatrix
+
 
 class AggregatedRateMatrix(object):
     """
@@ -55,9 +66,8 @@ class AggregatedRateMatrix(object):
                 self.rate_matrix[i,i] = -numpy.sum(self.rate_matrix[i,:])
             self.is_finalized = True
 
-    def get_numpy_submatrix(self, start_class, end_class):
-        row_inds = self.class_indices_dict[start_class]
-        col_inds = self.class_indices_dict[end_class]
-        submatrix = self.rate_matrix[row_inds[0]:row_inds[-1]+1,
-                                     col_inds[0]:col_inds[-1]+1]
-        return numpy.atleast_2d(submatrix)
+    def get_size(self):
+        return self.rate_matrix.shape[0]
+
+    def as_numpy_array(self):
+        return self.rate_matrix

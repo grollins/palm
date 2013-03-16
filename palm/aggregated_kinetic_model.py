@@ -142,4 +142,19 @@ class AggregatedKineticModel(Model):
         self.rate_matrix = rate_matrix
 
     def get_numpy_submatrix(self, start_class, end_class):
-        return self.rate_matrix.get_numpy_submatrix(start_class, end_class)
+        return self.get_submatrix(start_class, end_class)
+
+    def get_numpy_full_matrix(self):
+        return self.get_full_matrix()
+
+    def get_submatrix(self, start_class, end_class):
+        submatrix = self.rate_matrix_factory.create_submatrix(
+                        self.rate_matrix, start_class, end_class)
+        return submatrix
+
+    def get_full_matrix(self):
+        return self.rate_matrix
+
+    def get_local_submatrix(self, start_class, end_class, state_list, depth=3):
+        return None
+        
