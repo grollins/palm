@@ -5,7 +5,7 @@ import pandas
 from palm.blink_factory import SingleDarkBlinkFactory
 from palm.blink_parameter_set import SingleDarkParameterSet
 from palm.likelihood_judge import CollectionLikelihoodJudge
-from palm.qit_likelihood_predictor import LikelihoodPredictor
+from palm.backward_likelihood import BackwardPredictor
 from palm.blink_target_data import BlinkCollectionTargetData
 from palm.scipy_optimizer import ScipyOptimizer
 
@@ -79,7 +79,7 @@ class TestComputeLikelihoodOfBlinkCollectionWithShortTrajectories(object):
         model_parameters.set_parameter('log_kd', -0.5)
         model_parameters.set_parameter('log_kr', -0.5)
         model_parameters.set_parameter('log_kb', -0.5)
-        data_predictor = LikelihoodPredictor()
+        data_predictor = BackwardPredictor()
         target_data = BlinkCollectionTargetData()
         target_data.load_data(data_file="./palm/test/test_data/traj_directory.txt")
         model = model_factory.create_model(model_parameters)

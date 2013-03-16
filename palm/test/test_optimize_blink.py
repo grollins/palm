@@ -5,7 +5,7 @@ import pandas
 from palm.blink_factory import SingleDarkBlinkFactory
 from palm.blink_parameter_set import SingleDarkParameterSet
 from palm.likelihood_judge import LikelihoodJudge
-from palm.qit_likelihood_predictor import LikelihoodPredictor
+from palm.backward_likelihood import BackwardPredictor
 from palm.viterbi_predictor import ViterbiPredictor
 from palm.blink_target_data import BlinkTargetData
 from palm.scipy_optimizer import ScipyOptimizer
@@ -80,7 +80,7 @@ class TestComputeLikelihoodOfBlinkModelWithShortTrajectory(object):
         model_parameters.set_parameter('log_kd', -0.5)
         model_parameters.set_parameter('log_kr', -0.5)
         model_parameters.set_parameter('log_kb', -0.5)
-        data_predictor = LikelihoodPredictor()
+        data_predictor = BackwardPredictor()
         target_data = BlinkTargetData()
         target_data.load_data(data_file="./palm/test/test_data/short_blink_traj.csv")
         model = model_factory.create_model(model_parameters)
@@ -122,7 +122,7 @@ class TestOptimizeBlinkModel(object):
     #     initial_parameters.set_parameter_bounds('log_kr', -3.0, 2.0)
     #     initial_parameters.set_parameter_bounds('log_kb', -3.0, 2.0)
     #     judge = LikelihoodJudge()
-    #     data_predictor = LikelihoodPredictor()
+    #     data_predictor = BackwardPredictor()
     #     target_data = BlinkTargetData()
     #     target_data.load_data('palm/test/test_data/stochpy_blink10_traj.csv')
     #     score_fcn = self.make_score_fcn(model_factory, initial_parameters,

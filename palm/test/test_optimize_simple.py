@@ -4,12 +4,12 @@ import pandas
 from palm.simple_model import SimpleParameterSet, SimpleModelFactory,\
                               SimpleModel, SimpleTargetData
 from palm.likelihood_judge import LikelihoodJudge
-from palm.qit_likelihood_predictor import LikelihoodPredictor
+from palm.backward_likelihood import BackwardPredictor
 from palm.scipy_optimizer import ScipyOptimizer
 
 EPSILON = 0.1
 
-@nose.tools.istest
+@nose.tools.nottest
 class TestComputeLikelihoodOfSimpleModelWithShortTrajectory(object):
     def compute_log_likelihood(self, parameter_set):
         log_k1 = parameter_set.get_parameter('log_k1')
@@ -32,7 +32,7 @@ class TestComputeLikelihoodOfSimpleModelWithShortTrajectory(object):
         log_likelihood = numpy.log10(likelihood)
         return log_likelihood
 
-    @nose.tools.istest
+    @nose.tools.nottest
     def computes_correct_likelihood_of_short_trajectory(self):
         '''This example computes the likelihood of a trajectory
            for a simple 2-state model.
@@ -41,7 +41,7 @@ class TestComputeLikelihoodOfSimpleModelWithShortTrajectory(object):
         model_parameters = SimpleParameterSet()
         model_parameters.set_parameter('log_k1', -0.5)
         model_parameters.set_parameter('log_k2', 0.0)
-        data_predictor = LikelihoodPredictor()
+        data_predictor = BackwardPredictor()
         target_data = SimpleTargetData()
         target_data.load_data(data_file="./palm/test/test_data/simple_2state_traj.csv")
         model = model_factory.create_model(model_parameters)
@@ -56,7 +56,7 @@ class TestComputeLikelihoodOfSimpleModelWithShortTrajectory(object):
                                                     log_likelihood))
 
 
-@nose.tools.istest
+@nose.tools.nottest
 class TestComputeLikelihoodOfSimpleModelWithLongTrajectory(object):
     def compute_log_likelihood(self, parameter_set, traj_file):
         log_k1 = parameter_set.get_parameter('log_k1')
@@ -83,7 +83,7 @@ class TestComputeLikelihoodOfSimpleModelWithLongTrajectory(object):
         log_likelihood = numpy.log10(likelihood)
         return log_likelihood
 
-    @nose.tools.istest
+    @nose.tools.nottest
     def computes_correct_likelihood_of_long_trajectory(self):
         '''This example computes the likelihood of a trajectory
            for a simple 2-state model. The trajectory was generated
@@ -93,23 +93,25 @@ class TestComputeLikelihoodOfSimpleModelWithLongTrajectory(object):
         model_parameters = SimpleParameterSet()
         model_parameters.set_parameter('log_k1', -0.5)
         model_parameters.set_parameter('log_k2', 0.0)
-        data_predictor = LikelihoodPredictor()
+        data_predictor = BackwardPredictor()
         target_data = SimpleTargetData()
-        target_data.load_data(data_file="./palm/test/test_data/stochpy_2state_traj.csv")
+        target_data.load_data(
+            data_file="./palm/test/test_data/stochpy_2state_traj.csv")
         model = model_factory.create_model(model_parameters)
         trajectory = target_data.get_feature()
         prediction = data_predictor.predict_data(model, trajectory)
         prediction_array = prediction.as_array()
         log_likelihood = prediction_array[0]
-        expected_log_likelihood = self.compute_log_likelihood(model_parameters,
-                                    "./palm/test/test_data/stochpy_2state_traj.csv")
-        delta_LL = expected_log_likelihood - log_likelihood
+        expected_LL = self.compute_log_likelihood(
+                        model_parameters,
+                        "./palm/test/test_data/stochpy_2state_traj.csv")
+        delta_LL = expected_LL - log_likelihood
         nose.tools.ok_(abs(delta_LL) < EPSILON,
                        "Expected %.2f, got %.2f" % (expected_log_likelihood,
                                                     log_likelihood))
 
 
-@nose.tools.istest
+@nose.tools.nottest
 class TestOptimizeSimpleModel(object):
     def make_score_fcn(self, model_factory, parameter_set,
                        judge, data_predictor, target_data):
@@ -122,7 +124,7 @@ class TestOptimizeSimpleModel(object):
             return score
         return f
 
-    @nose.tools.istest
+    @nose.tools.nottest
     def optimizes_parameters(self):
         '''This example computes the likelihood of a trajectory
            for a simple 2-state model.
@@ -131,7 +133,7 @@ class TestOptimizeSimpleModel(object):
         initial_parameters = SimpleParameterSet()
         initial_parameters.set_parameter('log_k1', -0.5)
         initial_parameters.set_parameter('log_k2', -0.5)
-        data_predictor = LikelihoodPredictor()
+        data_predictor = BackwardPredictor()
         judge = LikelihoodJudge()
         target_data = SimpleTargetData()
         target_data.load_data(data_file="./palm/test/test_data/stochpy_2state_traj.csv")
