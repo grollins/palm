@@ -1,6 +1,7 @@
 import numpy
+import scipy.linalg
 from palm.probability_vector import make_prob_vec_from_panda_series
-from palm.probability_matrix import ProbabilityMatrix
+from palm.probability_matrix import make_prob_matrix_from_panda_data_frame
 
 def vector_product(vec1, vec2, do_alignment=True):
     if do_alignment:
@@ -20,3 +21,35 @@ def vector_matrix_product(vec, matrix, do_alignment=True):
     product_series = series.dot(frame)
     product_vec = make_prob_vec_from_panda_series(product_series)
     return product_vec
+
+def symmetric_matrix_matrix_product(matrix1, matrix2, do_alignment=True):
+    if do_alignment:
+        alignment_results = matrix1.data_frame.align(
+                                matrix2.data_frame, axis=None, join='left')
+        frame1, frame2 = alignment_results
+    else:
+        frame1, frame2 = (matrix1.data_frame, matrix2.data_frame)
+    product_frame = frame1.dot(frame2)
+    product_matrix = make_prob_matrix_from_panda_data_frame(product_frame)
+    return product_matrix
+
+def asymmetric_matrix_matrix_product(matrix1, matrix2, do_alignment=True):
+    if do_alignment:
+        alignment_results = matrix1.data_frame.align(
+                                matrix2.data_frame, axis=0, join='left')
+        frame1, frame2 = alignment_results
+    else:
+        frame1, frame2 = (matrix1.data_frame, matrix2.data_frame)
+    product_frame = frame1.dot(frame2)
+    product_matrix = make_prob_matrix_from_panda_data_frame(product_frame)
+    return product_matrix
+
+class ScipyMatrixExponential(object):
+    """docstring for ScipyMatrixExponential"""
+    def __init__(self):
+        super(ScipyMatrixExponential, self).__init__()
+    def compute_matrix_exp(self, rate_matrix, dwell_time):
+        Q = rate_matrix.as_npy_array()
+        expQt = scipy.linalg.expm(Q * dwell_time)
+        rate_matrix.data_frame.values[:,:] = expQt
+        return rate_matrix

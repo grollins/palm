@@ -48,3 +48,12 @@ def DoubleDarkModelHasCorrectNumberOfStatesAndRoutes():
         print s
     for r in model.routes:
         print r
+
+@nose.tools.istest
+def initial_vector_gives_probability_one_to_state_with_all_inactive():
+    parameter_set = SingleDarkParameterSet()
+    model_factory = SingleDarkBlinkFactory()
+    model = model_factory.create_model(parameter_set)
+    init_prob_vec = model.get_initial_probability_vector()
+    prob = init_prob_vec.get_state_probability(model.all_inactive_state_id)
+    nose.tools.eq_(prob, 1.0)

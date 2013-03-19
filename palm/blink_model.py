@@ -1,5 +1,6 @@
 import numpy
 from palm.aggregated_kinetic_model import AggregatedKineticModel
+from palm.probability_vector import make_prob_vec_from_state_ids
 
 class SingleDarkState(object):
     '''
@@ -67,6 +68,24 @@ class DoubleDarkState(object):
     def set_initial_state_flag(self):
         self.initial_state_flag = True
 
+class StateIDCollection(object):
+    """docstring for StateIDCollection"""
+    def __init__(self):
+        super(StateIDCollection, self).__init__()
+        self.state_id_list = []
+    def __str__(self):
+        return str(self.state_id_list)
+    def __iter__(self):
+        for s in self.state_id_list:
+            yield s
+    def __contains__(self, state_id):
+        return (state_id in self.state_id_list)
+    def __len__(self):
+        return len(self.state_id_list)
+    def add_id(self, state_id):
+        self.state_id_list.append(state_id)
+    def as_list(self):
+        return self.state_id_list
 
 class BlinkModel(AggregatedKineticModel):
     '''
@@ -78,11 +97,32 @@ class BlinkModel(AggregatedKineticModel):
     def __init__(self, state_enumerator, route_mapper, parameter_set):
         super(BlinkModel, self).__init__(state_enumerator, route_mapper,
                                           parameter_set)
+        self.dark_state_id_collection = None
+        self.bright_state_id_collection = None
+        self._fill_state_id_collections()
 
-    def get_initial_population_array(self):
-        initial_population_array = numpy.zeros([1, self.get_num_states()])
-        initial_population_array[0, self.initial_state_index] = 1.0
+    def _fill_state_id_collections(self):
+        self.dark_state_id_collection = StateIDCollection()
+        for dark_state in self.iter_dark_states():
+            self.dark_state_id_collection.add_id( dark_state.get_id() )
+        self.bright_state_id_collection = StateIDCollection()
+        for bright_state in self.iter_bright_states():
+            self.bright_state_id_collection.add_id( bright_state.get_id() )
+
+    def iter_dark_states(self):
         dark_inds = self.class_indices_dict['dark']
-        start_col = dark_inds[0]
-        end_col = dark_inds[-1]
-        return initial_population_array[:, start_col:end_col+1]
+        for ind in dark_inds:
+            s = self.states[ind]
+            yield s
+
+    def iter_bright_states(self):
+        bright_inds = self.class_indices_dict['bright']
+        for ind in bright_inds:
+            s = self.states[ind]
+            yield s
+
+    def get_initial_probability_vector(self):
+        initial_prob_vec = make_prob_vec_from_state_ids(
+                            self.dark_state_id_collection)
+        initial_prob_vec.set_state_probability(self.all_inactive_state_id, 1.0)
+        return initial_prob_vec
