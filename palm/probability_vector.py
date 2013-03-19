@@ -1,44 +1,32 @@
 import numpy
+import pandas
+
+def make_prob_vec_from_state_ids(state_id_collection):
+    pv = ProbabilityVector()
+    pv.series = pandas.Series(0.0, index=state_id_collection.as_list())
+    return pv
+
+def make_prob_vec_from_panda_series(series):
+    pv = ProbabilityVector()
+    pv.series = series
+    return pv
 
 class ProbabilityVector(object):
     """docstring for ProbabilityVector"""
     def __init__(self):
         super(ProbabilityVector, self).__init__()
-        self.state_id_collection = None
-        self.state_probability_by_id_dict = {}
+        self.series = None
     def __len__(self):
-        return len(self.state_id_collection)
+        return len(self.series)
     def __str__(self):
-        my_str = ""
-        for s_id in self.state_id_collection:
-            my_str += "%s %.2e\n" % (s_id, self.get_state_probability(s_id))
-        return my_str
-    def add_state_ids(self, state_id_collection):
-        self.state_id_collection = state_id_collection
-    def get_state_id_collection(self):
-        return self.state_id_collection
+        return str(self.series)
     def set_state_probability(self, state_id, probability):
-        assert state_id in self.state_id_collection
-        self.state_probability_by_id_dict[state_id] = probability
+        self.series[state_id] = probability
     def get_state_probability(self, state_id):
-        return self.state_probability_by_id_dict[state_id]
+        return self.series[state_id]
     def set_uniform_state_probability(self):
-        num_states = len(self)
-        uniform_pop = 1./num_states
-        for s_id in self.state_id_collection:
-            self.state_probability_by_id_dict[s_id] = uniform_pop
+        self.series[:] = 1./len(self)
     def sum_vector(self):
-        vec_sum = numpy.array(self.state_probability_by_id_dict.values()).sum()
-        return vec_sum
+        return self.series.sum()
     def scale_vector(self, scale_factor):
-        for k in self.state_probability_by_id_dict.iterkeys():
-            self.state_probability_by_id_dict[k] *= scale_factor
-    def as_numpy_row_array(self, state_id_collection):
-        pop_array = numpy.zeros( [1, len(state_id_collection)] )
-        pop_list = []
-        for s_id in state_id_collection:
-            pop_list.append(self.get_state_probability(s_id))
-        pop_array[0,:] = numpy.array(pop_list)
-        return pop_array
-    def as_numpy_column_array(self, state_id_collection):
-        return self.as_numpy_row_array(state_id_collection).T
+        self.series *= scale_factor
