@@ -1,5 +1,6 @@
 import numpy
 import scipy.linalg
+from pandas import Series
 from palm.probability_vector import make_prob_vec_from_panda_series
 from palm.probability_matrix import make_prob_matrix_from_panda_data_frame
 
@@ -19,6 +20,18 @@ def vector_matrix_product(vec, matrix, do_alignment=True):
     else:
         frame, series = (matrix.data_frame, vec.series)
     product_series = series.dot(frame)
+    product_vec = make_prob_vec_from_panda_series(product_series)
+    return product_vec
+
+def asym_vector_matrix_product(vec, matrix, do_alignment=True):
+    if do_alignment:
+        alignment_results = matrix.data_frame.align(
+                                vec.series, axis=0, join='left')
+        frame, series = alignment_results
+    else:
+        frame, series = (matrix.data_frame, vec.series)
+    product_series = Series(numpy.dot(series.values, frame.values),
+                            index=frame.columns)
     product_vec = make_prob_vec_from_panda_series(product_series)
     return product_vec
 
