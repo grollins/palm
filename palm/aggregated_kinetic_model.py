@@ -1,7 +1,9 @@
 import numpy
 from collections import defaultdict
 from palm.base.model import Model
-from palm.rate_matrix import RateMatrixFactory, AggregatedRateMatrix
+from palm.rate_matrix import make_rate_matrix_from_state_ids
+from palm.state_collection import StateIDCollection
+from palm.rate_fcn import rate_from_rate_id
 
 class State(object):
     '''
@@ -27,31 +29,41 @@ class State(object):
     def is_initial_state(self):
         return self.initial_state_flag
 
+    def as_dict(self):
+        return {'observation_class':self.get_class()}
+
+
 class Route(object):
     '''
     A generic route class for aggregated kinetic models.
     '''
-    def __init__(self, start_state, end_state, log_rate_function,
-                 label=''):
-        self.start_state = start_state
-        self.end_state = end_state
-        self.log_rate_function = log_rate_function
-        self.label = label
+    def __init__(self, id_str, start_state_id, end_state_id, rate_id,
+                 multiplicity):
+        self.id = id_str
+        self.start_state_id = start_state_id
+        self.end_state_id = end_state_id
+        self.rate_id = rate_id
+        self.multiplicity = multiplicity
 
     def __str__(self):
-        my_str = "%s %s %s %.3e" % (self.label, self.start_state,
-                                    self.end_state,
-                                    self.log_rate_function(t=0.0))
+        my_str = "%s %s %s %s %d" % (
+                    self.id, self.start_state_id, self.end_state_id,
+                    self.rate_id, self.multiplicity)
         return my_str
 
-    def get_label(self):
-        return self.label
-
+    def get_id(self):
+        return self.id
     def get_start_state(self):
-        return self.start_state
-
-    def compute_log_rate(self, t):
-        return self.log_rate_function(t)
+        return self.start_state_id
+    def get_end_state(self):
+        return self.end_state_id
+    def get_multiplicity(self):
+        return self.multiplicity
+    def as_dict(self):
+        return {'start_state':self.start_state_id,
+                'end_state':self.end_state_id,
+                'rate_id':self.rate_id,
+                'multiplicity':self.multiplicity}
 
 
 class AggregatedKineticModel(Model):
@@ -65,96 +77,52 @@ class AggregatedKineticModel(Model):
         self.state_enumerator = state_enumerator
         self.route_mapper = route_mapper
         self.parameter_set = parameter_set
-        self.rate_matrix_factory = RateMatrixFactory(AggregatedRateMatrix)
 
-        unsorted_state_list = self.state_enumerator()
-        sorting_results = self._sort_states_by_observation_class(unsorted_state_list)
-        self.states = sorting_results[0]
-        self.state_index_dict = sorting_results[1]
-        self.class_indices_dict = sorting_results[2]
+        self.state_collection, self.initial_state_id = self.state_enumerator()
+        self.state_groups = self.state_collection.sort('observation_class')
+        self.state_id_collection = self.state_collection.get_state_ids()
+        self.state_ids_by_class_dict = {}
+        for obs_class, id_list in self.state_groups.groups.iteritems():
+            this_state_id_collection = StateIDCollection()
+            this_state_id_collection.from_state_id_list(id_list)
+            self.state_ids_by_class_dict[obs_class] = this_state_id_collection
 
-        self.routes = self.route_mapper(self.states, self.state_index_dict)
+        self.route_collection = self.route_mapper(self.state_collection)
         self.rate_matrix = None
-
-    def _sort_states_by_observation_class(self, unsorted_state_list):
-        # initialize data structures for state sorting
-        unsorted_state_index_dict = {}
-        unsorted_class_indices_dict = defaultdict(list)
-        sorted_state_list = []
-        sorted_state_index_dict = {}
-        sorted_class_indices_dict = defaultdict(list)
-
-        # store current state indices by class name and by state id
-        for this_index, this_state in enumerate(unsorted_state_list):
-            unsorted_state_index_dict[this_state.get_id()] = this_index
-            unsorted_class_indices_dict[this_state.get_class()].append(this_index)
-
-        # sort states by class name
-        sorted_index = 0
-        for key, value in unsorted_class_indices_dict.iteritems():
-            this_class_indices_list = value
-            sorted_indices_list = []
-            for index in this_class_indices_list:
-                this_state = unsorted_state_list[index]
-                sorted_state_list.append(this_state)
-                sorted_indices_list.append(sorted_index)
-                sorted_index += 1
-            sorted_class_indices_dict[key] = sorted_indices_list
-
-        # store sorted state indices by class name and by state id
-        for this_index, this_state in enumerate(sorted_state_list):
-            sorted_state_index_dict[this_state.get_id()] = this_index
-
-        # save index of initial state
-        for this_index, this_state in enumerate(sorted_state_list):
-            if this_state.is_initial_state():
-                self.initial_state_index = this_index
-
-        # return sorted states
-        return sorted_state_list, sorted_state_index_dict,\
-               sorted_class_indices_dict
-
-    def iter_states(self):
-        for s in self.states:
-            yield s
-
-    def iter_routes(self):
-        for r in self.routes:
-            yield r
 
     def get_parameter(self, parameter_name):
         return self.parameter_set.get_parameter(parameter_name)
 
     def get_num_states(self, class_name=None):
         if class_name:
-            return len(self.class_indices_dict[class_name])
+            return len(self.state_groups[class_name])
         else:
-            return len(self.states)
+            return len(self.state_collection)
 
     def get_num_routes(self):
-        return len(self.routes)
+        return len(self.route_collection)
 
     def build_rate_matrix(self, time=0.):
-        rate_matrix = self.rate_matrix_factory.create_rate_matrix(
-                            self.get_num_states(), self.routes,
-                            self.state_index_dict, self.class_indices_dict,
-                            time)
-        self.rate_matrix = rate_matrix
+        # need a state id collection
+        rate_matrix = make_rate_matrix_from_state_ids(self.state_id_collection)
+        for r_id, r in self.route_collection.iter_routes():
+            start_id = r['start_state']
+            end_id = r['end_state']
+            rate_id = r['rate_id']
+            multiplicity = r['multiplicity']
+            this_rate = multiplicity * rate_from_rate_id(rate_id, time,
+                                                         self.parameter_set)
+            assert this_rate >= 0.0, "%s %s %.2e" % (start_id, end_id, this_rate)
+            rate_matrix.set_rate(start_id, end_id, this_rate)
+        rate_matrix.balance_transition_rates()
+        return rate_matrix
 
-    def get_numpy_submatrix(self, start_class, end_class):
-        return self.get_submatrix(start_class, end_class)
-
-    def get_numpy_full_matrix(self):
-        return self.get_full_matrix()
-
-    def get_submatrix(self, start_class, end_class):
-        submatrix = self.rate_matrix_factory.create_submatrix(
-                        self.rate_matrix, start_class, end_class)
+    def get_submatrix(self, rate_matrix, start_class, end_class):
+        start_id_collection = self.state_ids_by_class_dict[start_class]
+        end_id_collection = self.state_ids_by_class_dict[end_class]
+        submatrix = rate_matrix.get_submatrix(
+                        start_id_collection, end_id_collection)
         return submatrix
 
-    def get_full_matrix(self):
-        return self.rate_matrix
-
-    def get_local_submatrix(self, start_class, end_class, state_list, depth=3):
+    def get_local_matrix(self, start_state, depth=3):
         return None
-        
