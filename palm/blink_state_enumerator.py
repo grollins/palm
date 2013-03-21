@@ -1,5 +1,6 @@
 from types import IntType
 from palm.util import multichoose
+from palm.state_collection import StateCollectionFactory
 
 class SingleDarkStateEnumeratorFactory(object):
     """
@@ -10,13 +11,12 @@ class SingleDarkStateEnumeratorFactory(object):
         self.N = N
         self.state_factory = state_factory
         self.max_A = max_A
+        self.num_microstates = len(['I', 'A', 'D', 'B'])
 
     def create_state_enumerator(self):
         def enumerate_states():
-            # There are 4 states (I, A, D, B)
-            state_list = []
-            i = 0
-            for this_count_list in multichoose(4, self.N):
+            sc_factory = StateCollectionFactory()
+            for this_count_list in multichoose(self.num_microstates, self.N):
                 I = this_count_list[0]
                 A = this_count_list[1]
                 D = this_count_list[2]
@@ -32,11 +32,14 @@ class SingleDarkStateEnumeratorFactory(object):
                     this_state = self.state_factory(id_str, I, A, D, B,
                                                     obs_class)
                     if I == self.N:
-                        this_state.set_initial_state_flag()
-                    state_list.append(this_state)
-                    i += 1
-            return state_list
+                        initial_state_id = this_state.get_id()
+                    else:
+                        pass
+                    sc_factory.add_state(this_state)
+            state_collection = sc_factory.make_state_collection()
+            return state_collection, initial_state_id
         return enumerate_states
+
 
 class DoubleDarkStateEnumeratorFactory(object):
     """
@@ -47,13 +50,12 @@ class DoubleDarkStateEnumeratorFactory(object):
         self.N = N
         self.state_factory = state_factory
         self.max_A = max_A
+        self.num_microstates = len(['I', 'A', 'D1', 'D2', 'B'])
 
     def create_state_enumerator(self):
         def enumerate_states():
-            # There are 4 states (I, A, D1, D2, B)
-            state_list = []
-            i = 0
-            for this_count_list in multichoose(5, self.N):
+            sc_factory = StateCollectionFactory()
+            for this_count_list in multichoose(self.num_microstates, self.N):
                 I = this_count_list[0]
                 A = this_count_list[1]
                 D1 = this_count_list[2]
@@ -70,8 +72,10 @@ class DoubleDarkStateEnumeratorFactory(object):
                     this_state = self.state_factory(id_str, I, A, D1, D2, B,
                                                     obs_class)
                     if I == self.N:
-                        this_state.set_initial_state_flag()
-                    state_list.append(this_state)
-                    i += 1
-            return state_list
+                        initial_state_id = this_state.get_id()
+                    else:
+                        pass
+                    sc_factory.add_state(this_state)
+            state_collection = sc_factory.make_state_collection()
+            return state_collection, initial_state_id
         return enumerate_states
