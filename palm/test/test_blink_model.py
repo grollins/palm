@@ -24,6 +24,8 @@ def SingleDarkModelHasCorrectNumberOfStatesAndRoutes():
 
     num_routes = model.get_num_routes()
     nose.tools.ok_(num_routes > 0, "Model doesn't have routes.")
+    print model.state_collection
+    print model.route_collection
 
 @nose.tools.istest
 def DoubleDarkModelHasCorrectNumberOfStatesAndRoutes():
@@ -44,10 +46,6 @@ def DoubleDarkModelHasCorrectNumberOfStatesAndRoutes():
 
     num_routes = model.get_num_routes()
     nose.tools.ok_(num_routes > 0, "Model doesn't have routes.")
-    for s in model.states:
-        print s
-    for r in model.routes:
-        print r
 
 @nose.tools.istest
 def initial_vector_gives_probability_one_to_state_with_all_inactive():

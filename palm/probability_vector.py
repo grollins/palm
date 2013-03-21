@@ -30,3 +30,6 @@ class ProbabilityVector(object):
         return self.series.sum()
     def scale_vector(self, scale_factor):
         self.series *= scale_factor
+    def get_ml_state(self):
+        # print self.series
+        return self.series.idxmax()
