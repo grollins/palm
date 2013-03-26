@@ -2,13 +2,45 @@ import numpy
 from palm.util import n_choose_k
 from palm.route_collection import RouteCollectionFactory
 
+class Route(object):
+    '''
+    A generic route class for aggregated kinetic models.
+    '''
+    def __init__(self, id_str, start_state_id, end_state_id, rate_id,
+                 multiplicity):
+        self.id = id_str
+        self.start_state_id = start_state_id
+        self.end_state_id = end_state_id
+        self.rate_id = rate_id
+        self.multiplicity = multiplicity
+
+    def __str__(self):
+        my_str = "%s %s %s %s %d" % (
+                    self.id, self.start_state_id, self.end_state_id,
+                    self.rate_id, self.multiplicity)
+        return my_str
+
+    def get_id(self):
+        return self.id
+    def get_start_state(self):
+        return self.start_state_id
+    def get_end_state(self):
+        return self.end_state_id
+    def get_multiplicity(self):
+        return self.multiplicity
+    def as_dict(self):
+        return {'start_state':self.start_state_id,
+                'end_state':self.end_state_id,
+                'rate_id':self.rate_id,
+                'multiplicity':self.multiplicity}
+
 
 class SingleDarkRouteMapperFactory(object):
     """
     This factory class creates a route mapper for
     a blink model with one dark state.
     """
-    def __init__(self, parameter_set, route_factory, max_A,
+    def __init__(self, parameter_set, route_factory=Route, max_A=5,
                  fermi_activation=False):
         super(SingleDarkRouteMapperFactory, self).__init__()
         self.parameter_set = parameter_set
@@ -117,7 +149,7 @@ class DoubleDarkRouteMapperFactory(object):
     This factory class creates a route mapper for
     a blink model with two dark states.
     """
-    def __init__(self, parameter_set, route_factory, max_A,
+    def __init__(self, parameter_set, route_factory=Route, max_A=5,
                  fermi_activation=False):
         super(DoubleDarkRouteMapperFactory, self).__init__()
         self.parameter_set = parameter_set

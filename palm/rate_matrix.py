@@ -2,22 +2,17 @@ import numpy
 from pandas import DataFrame
 from palm.util import DATA_TYPE
 
-def make_rate_matrix_from_state_ids(index_id_collection,
-                                    column_id_collection=None):
-    pm = RateMatrix()
+def make_rate_matrix_from_state_ids(index_id_collection, column_id_collection):
+    rm = RateMatrix()
     index_id_list = index_id_collection.as_list()
-    if column_id_collection:
-        column_id_list = column_id_collection.as_list()
-    else:
-        column_id_list = index_id_list
-    pm.data_frame = DataFrame(0.0, index=index_id_list,
-                              columns=column_id_list)
-    return pm
+    column_id_list = column_id_collection.as_list()
+    rm.data_frame = DataFrame(0.0, index=index_id_list, columns=column_id_list)
+    return rm
 
 def make_rate_matrix_from_panda_data_frame(data_frame):
-    pm = RateMatrix()
-    pm.data_frame = data_frame
-    return pm
+    rm = RateMatrix()
+    rm.data_frame = data_frame
+    return rm
 
 
 class RateMatrix(object):

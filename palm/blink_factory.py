@@ -1,11 +1,11 @@
 import numpy
 from palm.base.model_factory import ModelFactory
-from palm.aggregated_kinetic_model import Route
-from palm.blink_model import SingleDarkState, DoubleDarkState, BlinkModel
-from palm.blink_route_mapper import SingleDarkRouteMapperFactory,\
-                                    DoubleDarkRouteMapperFactory
-from palm.blink_state_enumerator import SingleDarkStateEnumeratorFactory,\
+from palm.blink_model import BlinkModel
+from palm.blink_state_enumerator import SingleDarkState, DoubleDarkState,\
+                                        SingleDarkStateEnumeratorFactory,\
                                         DoubleDarkStateEnumeratorFactory
+from palm.blink_route_mapper import Route, SingleDarkRouteMapperFactory,\
+                                    DoubleDarkRouteMapperFactory
 
 
 class SingleDarkBlinkFactory(ModelFactory):

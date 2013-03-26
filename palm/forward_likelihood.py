@@ -59,7 +59,6 @@ class LocalPredictor(DataPredictor):
             ml_state_series = prev_alpha.get_ml_state_series(
                                 self.num_tracked_states,
                                 threshold=self.prob_threshold)
-            print len(ml_state_series)
             rate_matrix_organizer.build_local_rate_matrix(
                                     cumulative_time, ml_state_series,
                                     depth=self.depth)
@@ -86,6 +85,7 @@ class LocalPredictor(DataPredictor):
             self.vector_trajectory.add_vector(scaled_alpha)
         # end for loop
         return scaling_factor_set
+
     def _compute_alpha(self, rate_matrix_aa, rate_matrix_ab, segment_number,
                        segment_duration, start_class, end_class, prev_alpha):
         '''
@@ -152,10 +152,11 @@ class ForwardPredictor(DataPredictor):
                 rate_matrix_organizer.build_rate_matrix(time=cumulative_time)
             # skip updating the rate matrix. we should only do this when none of the rates vary with time.
             else:
-                rate_matrix_aa = rate_matrix_organizer.get_submatrix(
-                                    start_class, start_class)
-                rate_matrix_ab = rate_matrix_organizer.get_submatrix(
-                                    start_class, end_class)
+                pass
+            rate_matrix_aa = rate_matrix_organizer.get_submatrix(
+                                start_class, start_class)
+            rate_matrix_ab = rate_matrix_organizer.get_submatrix(
+                                start_class, end_class)
             if self.archive_matrices:
                 self.rate_matrix_trajectory.add_matrix(
                         rate_matrix_organizer.rate_matrix)

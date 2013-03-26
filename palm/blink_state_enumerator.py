@@ -2,11 +2,72 @@ from types import IntType
 from palm.util import multichoose
 from palm.state_collection import StateCollectionFactory
 
+class SingleDarkState(object):
+    '''
+    A state class for use with an aggregated kinetic model.
+    The available microstates are I, A, D, and B.
+    '''
+    def __init__(self, id_str, I, A, D, B, observation_class):
+        self.id = id_str
+        self.I = I
+        self.A = A
+        self.D = D
+        self.B = B
+        self.observation_class = observation_class
+        self.initial_state_flag = False
+    def __str__(self):
+        return "%s %s" % (self.id, self.observation_class)
+    def as_array(self):
+        return numpy.array([self.I, self.A, self.D, self.B])
+    def get_id(self):
+        return self.id
+    def get_class(self):
+        return self.observation_class
+    def is_initial_state(self):
+        return self.initial_state_flag
+    def set_initial_state_flag(self):
+        self.initial_state_flag = True
+    def as_dict(self):
+        return {'observation_class':self.get_class(),
+                'I':self.I, 'A':self.A, 'D':self.D, 'B':self.B}
+
+
+class DoubleDarkState(object):
+    '''
+    A state class for use with an aggregated kinetic model.
+    The available microstates are I, A, D1, D2, and B.
+    '''
+    def __init__(self, id_str, I, A, D1, D2, B, observation_class):
+        self.id = id_str
+        self.I = I
+        self.A = A
+        self.D1 = D1
+        self.D2 = D2
+        self.B = B
+        self.observation_class = observation_class
+        self.initial_state_flag = False
+    def __str__(self):
+        return "%s %s" % (self.id, self.observation_class)
+    def as_array(self):
+        return numpy.array([self.I, self.A, self.D1, self.D2, self.B])
+    def get_id(self):
+        return self.id
+    def get_class(self):
+        return self.observation_class
+    def is_initial_state(self):
+        return self.initial_state_flag
+    def set_initial_state_flag(self):
+        self.initial_state_flag = True
+    def as_dict(self):
+        return {'observation_class':self.get_class(),
+                'I':self.I, 'A':self.A, 'D1':self.D1, 'D2':self.D2, 'B':self.B}
+
+
 class SingleDarkStateEnumeratorFactory(object):
     """
     Creates a state enumerator for a blink model with one dark state.
     """
-    def __init__(self, N, state_factory, max_A):
+    def __init__(self, N, state_factory=SingleDarkState, max_A=5):
         assert type(N) is IntType
         self.N = N
         self.state_factory = state_factory
@@ -47,7 +108,7 @@ class DoubleDarkStateEnumeratorFactory(object):
     """
     Creates a state enumerator for a blink model with two dark states.
     """
-    def __init__(self, N, state_factory, max_A):
+    def __init__(self, N, state_factory=DoubleDarkState, max_A=5):
         assert type(N) is IntType
         self.N = N
         self.state_factory = state_factory
