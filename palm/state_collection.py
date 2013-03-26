@@ -52,8 +52,8 @@ class StateIDCollection(object):
         return len(self.state_id_list)
     def add_id(self, state_id):
         self.state_id_list.append(state_id)
-    def from_state_id_list(self, state_id_list):
-        self.state_id_list = state_id_list
+    def add_state_id_list(self, state_id_list):
+        self.state_id_list += state_id_list
     def from_state_collection(self, state_collection):
         self.state_id_list = state_collection.get_id_list()
     def as_list(self):
