@@ -75,6 +75,7 @@ class BlinkModel(AggregatedKineticModel):
         super(BlinkModel, self).__init__(state_enumerator, route_mapper,
                                           parameter_set)
         self.all_inactive_state_id = self.initial_state_id
+        self.all_bleached_state_id = self.final_state_id
 
     def get_initial_probability_vector(self):
         dark_state_id_collection = self.state_ids_by_class_dict['dark']

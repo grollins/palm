@@ -33,11 +33,13 @@ class SingleDarkStateEnumeratorFactory(object):
                                                     obs_class)
                     if I == self.N:
                         initial_state_id = this_state.get_id()
+                    elif B == self.N:
+                        final_state_id = this_state.get_id()
                     else:
                         pass
                     sc_factory.add_state(this_state)
             state_collection = sc_factory.make_state_collection()
-            return state_collection, initial_state_id
+            return state_collection, initial_state_id, final_state_id
         return enumerate_states
 
 
@@ -73,9 +75,11 @@ class DoubleDarkStateEnumeratorFactory(object):
                                                     obs_class)
                     if I == self.N:
                         initial_state_id = this_state.get_id()
+                    elif B == self.N:
+                        final_state_id = this_state.get_id()
                     else:
                         pass
                     sc_factory.add_state(this_state)
             state_collection = sc_factory.make_state_collection()
-            return state_collection, initial_state_id
+            return state_collection, initial_state_id, final_state_id
         return enumerate_states
