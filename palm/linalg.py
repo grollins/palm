@@ -20,6 +20,10 @@ def vector_matrix_product(vec, matrix, do_alignment=True):
     else:
         frame, series = (matrix.data_frame, vec.series)
     product_series = series.dot(frame)
+    if type(product_series) == numpy.ndarray:
+        # for some reason, the vector frame dot product produces a numpy
+        # array if they only have one entry
+        product_series = Series(product_series, index=vec.series.index.tolist())
     product_vec = make_prob_vec_from_panda_series(product_series)
     return product_vec
 

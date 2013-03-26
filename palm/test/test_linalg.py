@@ -63,6 +63,20 @@ def computes_vector_product_with_unordered_indices():
     nose.tools.eq_(numpy_vec_product, prob_vec_product, error_msg)
 
 @nose.tools.istest
+def computes_vector_matrix_with_only_one_entry_and_output_type_is_series():
+    state_ids = StateIDCollection()
+    state_ids.add_id('a')
+    prob_vec = make_prob_vec_from_state_ids(state_ids)
+    prob_vec.set_uniform_state_probability()
+    prob_matrix = make_prob_matrix_from_state_ids(state_ids)
+    prob_matrix.set_probability('a', 'a', 0.99)
+    prob_product = vector_matrix_product(prob_vec, prob_matrix,
+                                         do_alignment=False)
+    error_msg = "%s, %s" % (type(prob_product.series), type(prob_vec.series))
+    nose.tools.ok_(type(prob_product.series) == type(prob_vec.series),
+                   error_msg)
+
+@nose.tools.istest
 def compute_vector_matrix_product_with_ordered_indices():
     state_ids = StateIDCollection()
     state_ids.add_id('a')
