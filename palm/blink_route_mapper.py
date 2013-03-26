@@ -2,6 +2,7 @@ import numpy
 from palm.util import n_choose_k
 from palm.route_collection import RouteCollectionFactory
 
+
 class SingleDarkRouteMapperFactory(object):
     """
     This factory class creates a route mapper for
@@ -39,7 +40,8 @@ class SingleDarkRouteMapperFactory(object):
                 for end_id, transition in route_iterator:
                     rate_id = transition.rate_id
                     multiplicity = transition.compute_multiplicity(start_state)
-                    new_route = self.route_factory(start_id, start_id, end_id,
+                    route_id = "%s__%s" % (start_id, end_id)
+                    new_route = self.route_factory(route_id, start_id, end_id,
                                                    rate_id, multiplicity)
                     rc_factory.add_route(new_route)
             route_collection = rc_factory.make_route_collection()
@@ -152,7 +154,8 @@ class DoubleDarkRouteMapperFactory(object):
                 for end_id, transition in route_iterator:
                     rate_id = transition.rate_id
                     multiplicity = transition.compute_multiplicity(start_state)
-                    new_route = self.route_factory(start_id, start_id, end_id,
+                    route_id = "%s__%s" % (start_id, end_id)
+                    new_route = self.route_factory(route_id, start_id, end_id,
                                                    rate_id, multiplicity)
                     rc_factory.add_route(new_route)
             route_collection = rc_factory.make_route_collection()

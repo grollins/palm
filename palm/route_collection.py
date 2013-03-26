@@ -35,3 +35,5 @@ class RouteCollection(object):
         return s
     def sort(self, sort_column):
         return self.data_frame.groupby(sort_column)
+    def get_route_from_id_as_series(self, r_id):
+        return self.data_frame.ix[r_id]
