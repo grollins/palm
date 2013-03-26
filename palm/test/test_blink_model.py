@@ -9,7 +9,7 @@ from palm.util import n_choose_k
 @nose.tools.istest
 def SingleDarkModelHasCorrectNumberOfStatesAndRoutes():
     parameter_set = SingleDarkParameterSet()
-    parameter_set.set_parameter('N', 5)
+    parameter_set.set_parameter('N', 3)
     model_factory = SingleDarkBlinkFactory()
     model = model_factory.create_model(parameter_set)
 
