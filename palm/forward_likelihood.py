@@ -10,11 +10,13 @@ from palm.util import ALMOST_ZERO, DATA_TYPE
 
 class LocalPredictor(DataPredictor):
     """docstring for LocalPredictor"""
-    def __init__(self, depth, num_tracked_states, archive_matrices=False):
+    def __init__(self, depth, num_tracked_states, archive_matrices=False,
+                 prob_threshold=0.0):
         super(LocalPredictor, self).__init__()
         self.depth = depth
         self.num_tracked_states = num_tracked_states
         self.archive_matrices = archive_matrices
+        self.prob_threshold = prob_threshold
         expm_calculator = ScipyMatrixExponential()
         self.forward_calculator = ForwardCalculator(expm_calculator)
         self.prediction_factory = LikelihoodPrediction
@@ -55,7 +57,9 @@ class LocalPredictor(DataPredictor):
             else:
                 end_class = None
             ml_state_series = prev_alpha.get_ml_state_series(
-                                self.num_tracked_states)
+                                self.num_tracked_states,
+                                threshold=self.prob_threshold)
+            print len(ml_state_series)
             rate_matrix_organizer.build_local_rate_matrix(
                                     cumulative_time, ml_state_series,
                                     depth=self.depth)

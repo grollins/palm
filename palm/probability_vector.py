@@ -30,8 +30,9 @@ class ProbabilityVector(object):
         return self.series.sum()
     def scale_vector(self, scale_factor):
         self.series *= scale_factor
-    def get_ml_state_series(self, num_states):
-        ordered_series = self.series.order(ascending=False)
+    def get_ml_state_series(self, num_states, threshold=0.0):
+        above_threshold = self.series[self.series > threshold]
+        ordered_series = above_threshold.order(ascending=False)
         upper_limit = min(num_states, len(ordered_series))
         return ordered_series[:upper_limit]
     def combine_first(self, vec):
