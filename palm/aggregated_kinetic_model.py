@@ -15,11 +15,13 @@ class AggregatedKineticModel(Model):
        aggregated in the sense that each state belongs to one
        of several discrete observation classes (e.g. 'dark' or 'bright').
     """
-    def __init__(self, state_enumerator, route_mapper, parameter_set):
+    def __init__(self, state_enumerator, route_mapper, parameter_set,
+                 fermi_activation=False):
         super(AggregatedKineticModel, self).__init__()
         self.state_enumerator = state_enumerator
         self.route_mapper = route_mapper
         self.parameter_set = parameter_set
+        self.fermi_activation = fermi_activation
 
         r = self.state_enumerator()
         self.state_collection, self.initial_state_id, self.final_state_id = r
@@ -108,7 +110,8 @@ class AggregatedKineticModel(Model):
             rate_id = r['rate_id']
             multiplicity = r['multiplicity']
             this_rate = multiplicity * rate_from_rate_id(
-                                            rate_id, time, self.parameter_set)
+                                            rate_id, time, self.parameter_set,
+                                            self.fermi_activation)
             rate_matrix.set_rate(start_id, end_id, this_rate)
         rate_matrix.balance_transition_rates()
         return rate_matrix

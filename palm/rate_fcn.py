@@ -4,8 +4,8 @@ PARAM_NAME_DICT = {'ka':'log_ka', 'kd':'log_kd', 'kd1':'log_kd1',
                    'kd2':'log_kd2', 'kr':'log_kr', 'kr1':'log_kr1',
                    'kb':'log_kb'}
 
-def rate_from_rate_id(rate_id, t, parameter_set):
-    if rate_id == 'fermi_ka':
+def rate_from_rate_id(rate_id, t, parameter_set, fermi_activation):
+    if rate_id == 'ka' and fermi_activation:
         T = parameter_set.get_parameter('fermi_T')
         tf = parameter_set.get_parameter('fermi_tf')
         stability_limit = tf + tf/T

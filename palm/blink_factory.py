@@ -31,11 +31,10 @@ class SingleDarkBlinkFactory(ModelFactory):
         route_mapper_factory = SingleDarkRouteMapperFactory(
                                 parameter_set=self.parameter_set,
                                 route_factory=self.route_factory,
-                                max_A=self.MAX_A,
-                                fermi_activation=self.fermi_activation)
+                                max_A=self.MAX_A)
         route_mapper = route_mapper_factory.create_route_mapper()
         new_model = BlinkModel(state_enumerator, route_mapper,
-                               self.parameter_set)
+                               self.parameter_set, self.fermi_activation)
         return new_model
 
 

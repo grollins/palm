@@ -40,22 +40,16 @@ class SingleDarkRouteMapperFactory(object):
     This factory class creates a route mapper for
     a blink model with one dark state.
     """
-    def __init__(self, parameter_set, route_factory=Route, max_A=5,
-                 fermi_activation=False):
+    def __init__(self, parameter_set, route_factory=Route, max_A=5):
         super(SingleDarkRouteMapperFactory, self).__init__()
         self.parameter_set = parameter_set
         self.route_factory = route_factory
         self.max_A = max_A
         self.transition_factory = SingleDarkTransition
-        self.fermi_activation = fermi_activation
 
     def create_route_mapper(self):
-        if self.fermi_activation:
-            activation = self.transition_factory(
-                            -1, 1, 0, 0, {'I':1}, 'fermi_ka')
-        else:
-            activation = self.transition_factory(
-                            -1, 1, 0, 0, {'I':1}, 'ka')
+        activation = self.transition_factory(
+                           -1, 1, 0, 0, {'I':1}, 'ka')
         blinking = self.transition_factory(
                             0, -1, 1, 0, {'A':1}, 'kd')
         recovery = self.transition_factory(
@@ -149,22 +143,16 @@ class DoubleDarkRouteMapperFactory(object):
     This factory class creates a route mapper for
     a blink model with two dark states.
     """
-    def __init__(self, parameter_set, route_factory=Route, max_A=5,
-                 fermi_activation=False):
+    def __init__(self, parameter_set, route_factory=Route, max_A=5):
         super(DoubleDarkRouteMapperFactory, self).__init__()
         self.parameter_set = parameter_set
         self.route_factory = route_factory
         self.max_A = max_A
         self.transition_factory = DoubleDarkTransition
-        self.fermi_activation = fermi_activation
 
     def create_route_mapper(self):
-        if self.fermi_activation:
-            activation = self.transition_factory(
-                            -1, 1, 0, 0, 0, {'I':1}, 'fermi_ka')
-        else:
-            activation = self.transition_factory(
-                            -1, 1, 0, 0, 0, {'I':1}, 'ka')
+        activation = self.transition_factory(
+                           -1, 1, 0, 0, 0, {'I':1}, 'ka')
         blinking1 = self.transition_factory(
                             0, -1, 1, 0, 0, {'A':1}, 'kd1')
         recovery1 = self.transition_factory(

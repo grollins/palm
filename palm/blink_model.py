@@ -10,9 +10,10 @@ class BlinkModel(AggregatedKineticModel):
     1. dark (no fluorescence detected)
     2. bright (fluorescence detected)
     '''
-    def __init__(self, state_enumerator, route_mapper, parameter_set):
+    def __init__(self, state_enumerator, route_mapper, parameter_set,
+                 fermi_activation=False):
         super(BlinkModel, self).__init__(state_enumerator, route_mapper,
-                                          parameter_set)
+                                          parameter_set, fermi_activation)
         self.all_inactive_state_id = self.initial_state_id
         self.all_bleached_state_id = self.final_state_id
 

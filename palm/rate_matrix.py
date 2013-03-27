@@ -29,8 +29,6 @@ class RateMatrix(object):
             yield column_id, row_series
     def get_shape(self):
         return self.data_frame.shape
-    def get_value(self, index, column):
-        return self.data_frame.get_value(index, column)
     def set_rate(self, state_id1, state_id2, rate):
         self.data_frame.set_value(index=state_id1, col=state_id2, value=rate)
     def get_rate(self, state_id1, state_id2):
