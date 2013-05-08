@@ -5,10 +5,62 @@ from palm.base.model import Model
 from palm.base.model_factory import ModelFactory
 from palm.base.parameter_set import ParameterSet
 from palm.base.target_data import TargetData
-from palm.aggregated_kinetic_model import State, Route, AggregatedKineticModel
+from palm.aggregated_kinetic_model import AggregatedKineticModel
 from palm.discrete_state_trajectory import DiscreteStateTrajectory,\
                                            DiscreteDwellSegment
 
+
+class State(object):
+    def __init__(self, id_str, observation_class):
+        self.id = id_str
+        self.observation_class = observation_class
+        self.initial_state_flag = False
+    def __str__(self):
+        return "%s %s" % (self.id, self.observation_class)
+    def as_array(self):
+        return None
+    def get_id(self):
+        return self.id
+    def get_class(self):
+        return self.observation_class
+    def is_initial_state(self):
+        return self.initial_state_flag
+    def set_initial_state_flag(self):
+        self.initial_state_flag = True
+    def as_dict(self):
+        return {'observation_class':self.get_class()}
+
+class Route(object):
+    '''
+    A generic route class for aggregated kinetic models.
+    '''
+    def __init__(self, id_str, start_state_id, end_state_id, rate_id,
+                 multiplicity):
+        self.id = id_str
+        self.start_state_id = start_state_id
+        self.end_state_id = end_state_id
+        self.rate_id = rate_id
+        self.multiplicity = multiplicity
+
+    def __str__(self):
+        my_str = "%s %s %s %s %d" % (
+                    self.id, self.start_state_id, self.end_state_id,
+                    self.rate_id, self.multiplicity)
+        return my_str
+
+    def get_id(self):
+        return self.id
+    def get_start_state(self):
+        return self.start_state_id
+    def get_end_state(self):
+        return self.end_state_id
+    def get_multiplicity(self):
+        return self.multiplicity
+    def as_dict(self):
+        return {'start_state':self.start_state_id,
+                'end_state':self.end_state_id,
+                'rate_id':self.rate_id,
+                'multiplicity':self.multiplicity}
 
 class SimpleParameterSet(ParameterSet):
     """
