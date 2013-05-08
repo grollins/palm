@@ -1,282 +1,159 @@
 import numpy
-import cPickle
-
+import pandas
 from palm.base.data_predictor import DataPredictor
 from palm.likelihood_prediction import LikelihoodPrediction
-from palm.util import ALMOST_ZERO, DATA_TYPE
-from palm.expm import MatrixExponential, EigenMatrixExponential,\
-                      TheanoEigenMatrixExponential, ScipyMatrixExponential
-
+from palm.backward_calculator import BackwardCalculator
+from palm.linalg import ScipyMatrixExponential, DiagonalExpm, KrylovExpm,\
+                        vector_product, TheanoEigenExpm
+from palm.probability_vector import VectorTrajectory, ProbabilityVector
+from palm.rate_matrix import RateMatrixTrajectory
+from palm.util import ALMOST_ZERO
 
 class BackwardPredictor(DataPredictor):
-    """
-    Predicts the log likelihood of a dwell trajectory, given
-    an aggregated kinetic model.We follow the Sachs et al.
-    forward-backward recursion approach.
-    """
-    def __init__(self, always_rebuild_rate_matrix=True,
-                 include_off_diagonal_terms=True, debug_mode=False,
-                 print_routes=False):
+    """docstring for BackwardPredictor"""
+    def __init__(self, always_rebuild_rate_matrix, archive_matrices=False):
         super(BackwardPredictor, self).__init__()
         self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
-        self.include_off_diagonal_terms = include_off_diagonal_terms
-        self.debug_mode = debug_mode
-        self.print_routes = print_routes
+        self.archive_matrices = archive_matrices
+        expm_calculator = ScipyMatrixExponential()
+        # expm_calculator = KrylovExpm()
+        # expm_calculator = TheanoEigenExpm(
+        #                     force_decomposition=always_rebuild_rate_matrix)
+        diag_expm = DiagonalExpm()
+        self.backward_calculator = BackwardCalculator(expm_calculator)
+        self.diag_backward_calculator = BackwardCalculator(diag_expm)
         self.prediction_factory = LikelihoodPrediction
-        self.beta_calculator = BetaCalculator(
-                                    self.include_off_diagonal_terms)
+        self.vector_trajectory = None
+        self.rate_matrix_trajectory = None
+        self.scaling_factor_set = None
 
     def predict_data(self, model, trajectory):
-        likelihood = self.compute_likelihood(model, trajectory)
+        self.scaling_factor_set = self.compute_backward_vectors(
+                                    model, trajectory)
+        likelihood = 1./(self.scaling_factor_set.compute_product())
+        if likelihood < ALMOST_ZERO:
+            likelihood = ALMOST_ZERO
         log_likelihood = numpy.log10(likelihood)
         return self.prediction_factory(log_likelihood)
 
-    def compute_likelihood(self, model, trajectory):
-        beta_set, c_set = self.compute_backward_vectors(
-                                model, trajectory)
-        likelihood = 1./(c_set.compute_product())
-        if likelihood < ALMOST_ZERO:
-            likelihood = ALMOST_ZERO
-        return likelihood
-
-    def scale_vector(self, vector):
-        vector_sum = vector.sum()
-        if vector_sum < ALMOST_ZERO:
-            this_c = 1./ALMOST_ZERO
-            scaled_vector = numpy.ones_like(vector)
-        else:
-            this_c = 1./vector_sum
-            scaled_vector = this_c * vector
-        return scaled_vector, this_c
-
-    def _get_rate_matrices(self, model, start_class, end_class):
-        rate_matrix_aa = model.get_submatrix(start_class, start_class)
-        if end_class is None:
-            rate_matrix_ab = None
-        else:
-            rate_matrix_ab = model.get_submatrix(start_class, end_class)
-        return rate_matrix_aa, rate_matrix_ab
-
     def compute_backward_vectors(self, model, trajectory):
-        self.beta_calculator.reset()
-        beta_set = VectorSet()
-        c_set = ScalingCoefficients()
-        prev_beta_col_vec = None
-        end_time = trajectory.get_end_time()
-        model.build_rate_matrix(time=end_time)
-        rate_matrix_dd, rate_matrix_db = self._get_rate_matrices(
-                                            model, 'dark', 'bright')
-        rate_matrix_bb, rate_matrix_bd = self._get_rate_matrices(
-                                            model, 'bright', 'dark')
-        for segment_number, segment in trajectory.reverse_iter():
-            cumulative_time = trajectory.get_cumulative_time(
-                                segment_number)
-            segment_duration = segment.get_duration()
-            start_class = segment.get_class()
-            next_segment = trajectory.get_segment(segment_number + 1)
-            if next_segment:
-                end_class = next_segment.get_class()
-            else:
-                end_class = None
-
-            if self.always_rebuild_rate_matrix:
-                model.build_rate_matrix(time=cumulative_time)
-                rate_matrix_aa, rate_matrix_ab = self._get_rate_matrices(
-                                                    model, start_class,
-                                                    end_class)
-
-            # if we're not rebuilding rate matrices at each step,
-            # we can just use the ones we computed at the start
-            # of this method. We should only do this when none
-            # of the rates vary with time.
-            else:
-                if start_class == 'dark':
-                    rate_matrix_aa = rate_matrix_dd
-                elif start_class == 'bright':
-                    rate_matrix_aa = rate_matrix_bb
-                else:
-                    raise RuntimeError("Logic error in determining Q_aa")
-                if end_class == 'bright':
-                    rate_matrix_ab = rate_matrix_db
-                elif end_class == 'dark':
-                    rate_matrix_ab = rate_matrix_bd
-                elif end_class is None:
-                    rate_matrix_ab = None
-                else:
-                    raise RuntimeError("Logic error in determining Q_aa")
-
-            try:
-                beta_col_vec = self.compute_beta(
-                                    rate_matrix_aa, rate_matrix_ab,
-                                    segment_number, segment_duration,
-                                    start_class, end_class, prev_beta_col_vec)
-            except:
-                with open("./debug/fail_beta_set.pkl", 'w') as f:
-                    cPickle.dump(beta_set.vector_dict, f)
-                raise
-
-            scaled_beta_col_vec, this_c = self.scale_vector(beta_col_vec)
-            c_set.set_coef(segment_number, this_c)
-            beta_set.add_vector(segment_number, scaled_beta_col_vec)
-            prev_beta_col_vec = scaled_beta_col_vec
-
-            if self.print_routes:
-                for r in model.iter_routes():
-                    if r.get_label() == "I->A" and r.get_start_state() == "2_0_0_0":
-                        print "%s %.2f %.2f" %\
-                                (r, cumulative_time,
-                                 r.compute_log_rate(cumulative_time))
-
-        init_pop_row_vec = model.get_initial_population_array()
-        error_msg = "Expected a row vector, not %s" % \
-                     (str(init_pop_row_vec.shape))
-        assert init_pop_row_vec.shape[0] == 1, error_msg
-        final_beta = numpy.dot( init_pop_row_vec, prev_beta_col_vec)
-        scaled_final_beta, final_c = self.scale_vector(final_beta)
-        beta_set.add_vector(-1, scaled_final_beta)
-        c_set.set_coef(-1, final_c)
-        return beta_set, c_set
-
-    def compute_beta(self, rate_matrix_aa, rate_matrix_ab, segment_number,
-                     segment_duration, start_class, end_class, prev_beta):
-        '''
-        prev beta (N, 1) 2-d array
-        ab vector (N,) 1-d array
-        '''
-        if end_class is None:
-            ab_vector = numpy.ones( (rate_matrix_aa.get_size(1), 1) )
-        else:
-            ab_vector = numpy.dot(rate_matrix_ab.as_numpy_array(), prev_beta)
-        ab_vector = ab_vector[:,0] # convert to 1-D
-
-        inds = numpy.where(ab_vector < ALMOST_ZERO)[0]
-        ab_vector[inds] = ALMOST_ZERO
-
-        # assumption: dark states aren't directly connected,
-        #   they always pass through bright state. If so,
-        #   we don't need to compute a matrix exponential
-        #   for the dwell in the dark state.
-        if start_class == 'dark':
-            this_beta_col_vec = self.beta_calculator.diagonal_only_expm(
-                                    segment_duration, rate_matrix_aa, ab_vector)
-
-        # In this branch, there might be interconnected states.
-        #   If the flag include_off_diagonal_terms is False, 
-        #   we ignore the off-diagonal terms. If it is True, 
-        #   we compute the full matrix exponential.
-        elif start_class == 'bright':
-            if self.include_off_diagonal_terms:
-                try:
-                    this_beta_col_vec = self.beta_calculator.full_expm(
-                                            segment_duration, rate_matrix_aa,
-                                            ab_vector)
-                except (RuntimeError, ZeroDivisionError):
-                    self._fail_output(rate_matrix_aa, rate_matrix_ab, ab_vector,
-                                      segment_duration)
-                    raise
-            elif not self.include_off_diagonal_terms:
-                b = self.beta_calculator.diagonal_only_expm(
-                        segment_duration, rate_matrix_aa, ab_vector)
-                this_beta_col_vec = b
-            else:
-                raise RuntimeError("Logic error in beta calculation")
-
-        # should never get here, the only aggregated states we expect
-        # are dark or bright
-        else:
-            raise RuntimeError("Unexpected state: %s" % start_class)
-        if self.debug_mode:
-            self._debug_output(segment_number, segment_duration,
-                               start_class, end_class, rate_matrix_aa,
-                               rate_matrix_ab, ab_vector)
+        self.vector_trajectory = VectorTrajectory(model.state_id_collection)
+        if self.archive_matrices:
+            self.rate_matrix_trajectory = RateMatrixTrajectory()
         else:
             pass
-        return this_beta_col_vec
+        # initialize probability vector
+        scaling_factor_set = ScalingFactorSet()
+        rate_matrix_organizer = RateMatrixOrganizer(model)
+        rate_matrix_organizer.build_rate_matrix(time=trajectory.get_end_time())
+        final_prob = model.get_final_probability_vector()
+        scaling_factor_set.scale_vector(final_prob)
+        self.vector_trajectory.add_vector(trajectory.get_end_time(),
+                                          final_prob)
+        next_beta = final_prob
 
-    def _debug_output(self, segment_number, segment_duration,
-                      start_class, end_class, rate_matrix_aa, rate_matrix_ab,
-                      ab_vector):
-        print "Wrote debug files for segment %d" % segment_number
-        print start_class, end_class
-        Q_aa_filename = "./debug/Qaa_%s_%s_%03d.npy" % \
-                        (start_class, start_class, segment_number)
-        numpy.save(Q_aa_filename, rate_matrix_aa.as_numpy_array())
-        Q_ab_filename = "./debug/Qab_%s_%s_%03d.npy" % \
-                        (start_class, end_class, segment_number)
-        numpy.save(Q_ab_filename, rate_matrix_ab.as_numpy_array())
-        numpy.save("./debug/vec_%03d.npy" % segment_number,
-                   ab_vector)
-        with open("./debug/segment_durations.txt", 'a') as f:
-            f.write('%d,%.2e\n' % (segment_number, segment_duration))
+        # loop through trajectory segments, compute likelihood for each segment
+        for segment_number, segment in trajectory.reverse_iter():
+            # get current segment class and duration
+            cumulative_time = trajectory.get_cumulative_time(segment_number)
+            segment_duration = segment.get_duration()
+            start_class = segment.get_class()
 
-    def _fail_output(self, rate_matrix_aa, rate_matrix_ab, ab_vector,
-                     segment_duration):
-        numpy.save("./debug/fail_matrix_Qaa.npy", rate_matrix_aa.as_numpy_array())
-        numpy.save("./debug/fail_matrix_Qab.npy", rate_matrix_ab.as_numpy_array())
-        numpy.save("./debug/fail_vec.npy", ab_vector)
-        with open("./debug/fail_notes.txt", 'w') as f:
-            f.write("matrix exponentiation failed\n")
-            f.write('%.2e\n' % segment_duration)
+            # get next segment class (if there is a next one)
+            if trajectory.get_last_segment_number() == segment_number:
+                end_class = None
+            else:
+                next_segment = trajectory.get_segment(segment_number + 1)
+                end_class = next_segment.get_class()
+
+            # update the rate matrix to reflect changes to
+            # kinetic rates that vary with time.
+            if self.always_rebuild_rate_matrix:
+                rate_matrix_organizer.build_rate_matrix(time=cumulative_time)
+            # skip updating the rate matrix. we should only do this when none of the rates vary with time.
+            else:
+                pass
+            rate_matrix_aa = rate_matrix_organizer.get_submatrix(
+                                start_class, start_class)
+            rate_matrix_ab = rate_matrix_organizer.get_submatrix(
+                                start_class, end_class)
+            if self.archive_matrices:
+                self.rate_matrix_trajectory.add_matrix(
+                        rate_matrix_organizer.rate_matrix)
+            else:
+                pass
+            beta = self._compute_beta( rate_matrix_aa, rate_matrix_ab,
+                                       segment_number, segment_duration,
+                                       start_class, end_class,
+                                       next_beta)
+
+            # scale probability vector to avoid numerical underflow
+            scaled_beta = scaling_factor_set.scale_vector(beta)
+            # store handle to current beta vector for next iteration
+            next_beta = scaled_beta
+            self.vector_trajectory.add_vector(cumulative_time, scaled_beta)
+        # end for loop
+
+        # product of initial prob vec with beta from trajectory
+        init_prob_vec = model.get_initial_probability_vector()
+        total_beta = vector_product(init_prob_vec, next_beta, do_alignment=True)
+        total_beta_vec = ProbabilityVector()
+        total_beta_vec.series = pandas.Series([total_beta,])
+        scaled_total_beta = scaling_factor_set.scale_vector(total_beta_vec)
+        self.vector_trajectory.add_vector(0.0, scaled_total_beta)
+        return scaling_factor_set
+
+    def _compute_beta(self, rate_matrix_aa, rate_matrix_ab, segment_number,
+                       segment_duration, start_class, end_class, next_beta):
+        if start_class == 'dark':
+            beta = self.diag_backward_calculator.compute_backward_vector(
+                        next_beta, rate_matrix_aa, rate_matrix_ab,
+                        segment_duration)
+        else:
+            beta = self.backward_calculator.compute_backward_vector(
+                        next_beta, rate_matrix_aa, rate_matrix_ab,
+                        segment_duration)
+        return beta
 
 
-class BetaCalculator(object):
-    """docstring for BetaCalculator"""
-    def __init__(self, include_off_diagonal_terms):
-        super(BetaCalculator, self).__init__()
-        self.matrix_exponentiator = MatrixExponential()
-        # self.matrix_exponentiator = EigenMatrixExponential()
-        # self.matrix_exponentiator = TheanoEigenMatrixExponential()
-        # self.matrix_exponentiator = ScipyMatrixExponential()
-        self.force_decomposition = True
-    def full_expm(self, t, rate_matrix, v):
-        try:
-            expv_results = self.matrix_exponentiator.expv(t, rate_matrix, v)
-                                # force_decomposition=self.force_decomposition)
-            beta_row_vec = expv_results.real
-            beta_col_vec = beta_row_vec.T
-        except (RuntimeError, ZeroDivisionError):
-            raise
-        self.force_decomposition = False
-        return beta_col_vec
-    def diagonal_only_expm(self, t, rate_matrix, v):
-        diagonal_vector = rate_matrix.get_diagonal_vector()
-        exp_vector = numpy.exp(diagonal_vector * t)
-        exp_array = numpy.diag(exp_vector)
-        beta_row_vec = numpy.dot(exp_array, v)
-        beta_row_vec = numpy.atleast_2d(beta_row_vec)
-        beta_col_vec = beta_row_vec.T
-        return beta_col_vec
-    def reset(self):
-        self.force_decomposition = True
-
-class VectorSet(object):
-    """
-    Helper class for the likelihood predictor.
-    """
+class ScalingFactorSet(object):
     def __init__(self):
-        self.vector_dict = {}
-    def __str__(self):
-        return str(self.vector_dict)
-    def add_vector(self, key, vec):
-        self.vector_dict[key] = vec
-    def get_vector(self, key):
-        return self.vector_dict[key]
-
-
-class ScalingCoefficients(object):
-    """
-    Helper class for the likelihood predictor.
-    """
-    def __init__(self):
-        self.coef_dict = {}
+        self.factor_list = []
     def __len__(self):
-        return len(self.coef_dict)
+        return len(self.factor_list)
     def __str__(self):
-        return str(self.coef_dict)
-    def set_coef(self, key, coef):
-        self.coef_dict[key] = coef
-    def get_coef(self, key):
-        return self.coef_dict[key]
+        return str(self.factor_list)
+    def get_factor_set(self):
+        return self.factor_list
+    def append(self, factor):
+        self.factor_list.append(factor)
     def compute_product(self):
-        c_array = numpy.array(self.coef_dict.values())
-        return numpy.prod(c_array)
+        scaling_factor_array = numpy.array(self.factor_list)
+        return numpy.prod(scaling_factor_array)
+    def scale_vector(self, vector):
+        vector_sum = vector.sum_vector()
+        if vector_sum < ALMOST_ZERO:
+            this_scaling_factor = 1./ALMOST_ZERO
+        else:
+            this_scaling_factor = 1./vector_sum
+        vector.scale_vector(this_scaling_factor)
+        self.append(this_scaling_factor)
+        return vector
+
+
+class RateMatrixOrganizer(object):
+    """docstring for RateMatrixOrganizer"""
+    def __init__(self, model):
+        super(RateMatrixOrganizer, self).__init__()
+        self.model = model
+        self.rate_matrix = None
+    def build_rate_matrix(self, time):
+        self.rate_matrix = self.model.build_rate_matrix(time=time)
+        return
+    def get_submatrix(self, start_class, end_class):
+        if start_class and end_class:
+            submatrix = self.model.get_submatrix(
+                            self.rate_matrix, start_class, end_class)
+        else:
+            submatrix = None
+        return submatrix
