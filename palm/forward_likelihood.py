@@ -1,12 +1,12 @@
 import numpy
-import cPickle
+import pandas
 from palm.base.data_predictor import DataPredictor
 from palm.likelihood_prediction import LikelihoodPrediction
 from palm.forward_calculator import ForwardCalculator
-from palm.linalg import ScipyMatrixExponential
-from palm.probability_vector import VectorTrajectory
+from palm.linalg import ScipyMatrixExponential, DiagonalExpm, vector_product
+from palm.probability_vector import VectorTrajectory, ProbabilityVector
 from palm.rate_matrix import RateMatrixTrajectory
-from palm.util import ALMOST_ZERO, DATA_TYPE
+from palm.util import ALMOST_ZERO
 
 class LocalPredictor(DataPredictor):
     """docstring for LocalPredictor"""
@@ -18,7 +18,9 @@ class LocalPredictor(DataPredictor):
         self.archive_matrices = archive_matrices
         self.prob_threshold = prob_threshold
         expm_calculator = ScipyMatrixExponential()
+        diag_expm = DiagonalExpm()
         self.forward_calculator = ForwardCalculator(expm_calculator)
+        self.diag_forward_calculator = ForwardCalculator(diag_expm)
         self.prediction_factory = LikelihoodPrediction
         self.vector_trajectory = None
         self.rate_matrix_trajectory = None
@@ -41,7 +43,7 @@ class LocalPredictor(DataPredictor):
         init_prob_vec = model.get_initial_probability_vector()
         scaling_factor_set.scale_vector(init_prob_vec)
         prev_alpha = init_prob_vec
-        self.vector_trajectory.add_vector(init_prob_vec)
+        self.vector_trajectory.add_vector(0.0, init_prob_vec)
         rate_matrix_organizer = RateMatrixOrganizer(model)
 
         # loop through trajectory segments, compute likelihood for each segment
@@ -59,9 +61,17 @@ class LocalPredictor(DataPredictor):
             ml_state_series = prev_alpha.get_ml_state_series(
                                 self.num_tracked_states,
                                 threshold=self.prob_threshold)
-            rate_matrix_organizer.build_local_rate_matrix(
-                                    cumulative_time, ml_state_series,
-                                    depth=self.depth)
+            try:
+                rate_matrix_organizer.build_local_rate_matrix(
+                                        cumulative_time, ml_state_series,
+                                        depth=self.depth)
+            except:
+                print segment_number, segment_duration
+                print start_class, end_class
+                print prev_alpha
+                print ml_state_series
+                print self.vector_trajectory
+                raise
             if self.archive_matrices:
                 self.rate_matrix_trajectory.add_matrix(
                         rate_matrix_organizer.rate_matrix)
@@ -73,27 +83,50 @@ class LocalPredictor(DataPredictor):
                                     start_class, end_class)
             localized_prev_alpha = rate_matrix_organizer.get_local_vec(
                                     rate_matrix_aa, ml_state_series)
+            
             alpha = self._compute_alpha( rate_matrix_aa, rate_matrix_ab,
                                          segment_number, segment_duration,
                                          start_class, end_class,
                                          localized_prev_alpha)
+            alpha.fill_zeros(ALMOST_ZERO)
             # scale probability vector to avoid numerical underflow
             scaled_alpha = scaling_factor_set.scale_vector(alpha)
             # store handle to current alpha vector for next iteration
             prev_alpha = scaled_alpha
             # archive the current alpha vector for later inspection
-            self.vector_trajectory.add_vector(scaled_alpha)
+            self.vector_trajectory.add_vector(cumulative_time, scaled_alpha)
         # end for loop
+        # print prev_alpha
+        rate_matrix_aa = rate_matrix_organizer.get_local_submatrix(
+                                'dark', 'dark')
+        ml_state_series = prev_alpha.get_ml_state_series(
+                            self.num_tracked_states,
+                            threshold=self.prob_threshold)
+        localized_prev_alpha = rate_matrix_organizer.get_local_vec(
+                                    rate_matrix_aa, ml_state_series)
+        final_prob_vec = model.get_final_probability_vector()
+        total_alpha_scalar = vector_product(
+                                localized_prev_alpha, final_prob_vec,
+                                do_alignment=True)
+        # print final_prob_vec
+        # print total_alpha_scalar
+        total_alpha_vec = ProbabilityVector()
+        total_alpha_vec.series = pandas.Series([total_alpha_scalar,])
+        scaled_total_alpha = scaling_factor_set.scale_vector(total_alpha_vec)
+        self.vector_trajectory.add_vector(trajectory.get_end_time(),
+                                          scaled_total_alpha)
         return scaling_factor_set
 
     def _compute_alpha(self, rate_matrix_aa, rate_matrix_ab, segment_number,
                        segment_duration, start_class, end_class, prev_alpha):
-        '''
-        prev alpha (1, N) 2-d array
-        '''
-        alpha = self.forward_calculator.compute_forward_vector(
-                    prev_alpha, rate_matrix_aa, rate_matrix_ab,
-                    segment_duration)
+        if start_class == 'dark':
+            alpha = self.diag_forward_calculator.compute_forward_vector(
+                        prev_alpha, rate_matrix_aa, rate_matrix_ab,
+                        segment_duration)
+        else:
+            alpha = self.forward_calculator.compute_forward_vector(
+                        prev_alpha, rate_matrix_aa, rate_matrix_ab,
+                        segment_duration)
         return alpha
 
 
@@ -104,7 +137,9 @@ class ForwardPredictor(DataPredictor):
         self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
         self.archive_matrices = archive_matrices
         expm_calculator = ScipyMatrixExponential()
+        diag_expm = DiagonalExpm()
         self.forward_calculator = ForwardCalculator(expm_calculator)
+        self.diag_forward_calculator = ForwardCalculator(diag_expm)
         self.prediction_factory = LikelihoodPrediction
         self.vector_trajectory = None
         self.rate_matrix_trajectory = None
@@ -129,7 +164,7 @@ class ForwardPredictor(DataPredictor):
         rate_matrix_organizer.build_rate_matrix(time=0.0)
         init_prob = model.get_initial_probability_vector()
         scaling_factor_set.scale_vector(init_prob)
-        self.vector_trajectory.add_vector(init_prob)
+        self.vector_trajectory.add_vector(0.0, init_prob)
         prev_alpha = init_prob
 
         # loop through trajectory segments, compute likelihood for each segment
@@ -171,18 +206,28 @@ class ForwardPredictor(DataPredictor):
             scaled_alpha = scaling_factor_set.scale_vector(alpha)
             # store handle to current alpha vector for next iteration
             prev_alpha = scaled_alpha
-            self.vector_trajectory.add_vector(scaled_alpha)
+            self.vector_trajectory.add_vector(cumulative_time, scaled_alpha)
         # end for loop
+        final_prob_vec = model.get_final_probability_vector()
+        total_alpha_scalar = vector_product(prev_alpha, final_prob_vec,
+                                            do_alignment=True)
+        total_alpha_vec = ProbabilityVector()
+        total_alpha_vec.series = pandas.Series([total_alpha_scalar,])
+        scaled_total_alpha = scaling_factor_set.scale_vector(total_alpha_vec)
+        self.vector_trajectory.add_vector(trajectory.get_end_time(),
+                                          scaled_total_alpha)
         return scaling_factor_set
 
     def _compute_alpha(self, rate_matrix_aa, rate_matrix_ab, segment_number,
                        segment_duration, start_class, end_class, prev_alpha):
-        '''
-        prev alpha (1, N) 2-d array
-        '''
-        alpha = self.forward_calculator.compute_forward_vector(
-                    prev_alpha, rate_matrix_aa, rate_matrix_ab,
-                    segment_duration)
+        if start_class == 'dark':
+            alpha = self.diag_forward_calculator.compute_forward_vector(
+                        prev_alpha, rate_matrix_aa, rate_matrix_ab,
+                        segment_duration)
+        else:
+            alpha = self.forward_calculator.compute_forward_vector(
+                        prev_alpha, rate_matrix_aa, rate_matrix_ab,
+                        segment_duration)
         return alpha
 
 
