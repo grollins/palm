@@ -125,7 +125,7 @@ class MatrixExponential(object):
         # Ville Bergholm 2009-2012
 
         # just in case somebody tries to use numpy.matrix instances here
-        A = A.as_numpy_array()
+        # A = A.as_numpy_array()
         assert isinstance(A, numpy.ndarray)
 
         n = A.shape[0]

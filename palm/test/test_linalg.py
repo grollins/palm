@@ -10,7 +10,9 @@ from palm.linalg import vector_product, vector_matrix_product,\
                         asym_vector_matrix_product,\
                         symmetric_matrix_matrix_product,\
                         asymmetric_matrix_matrix_product,\
-                        ScipyMatrixExponential
+                        ScipyMatrixExponential,\
+                        matrix_vector_product, asym_matrix_vector_product
+from palm.util import ALMOST_ZERO
 
 @nose.tools.istest
 def computes_vector_product_with_ordered_indices():
@@ -34,6 +36,7 @@ def computes_vector_product_with_ordered_indices():
 
     error_msg = "Expected %.2f, got %.2f" % (numpy_vec_product, prob_vec_product)
     nose.tools.eq_(numpy_vec_product, prob_vec_product, error_msg)
+    print error_msg
 
 @nose.tools.istest
 def computes_vector_product_with_unordered_indices():
@@ -61,6 +64,35 @@ def computes_vector_product_with_unordered_indices():
 
     error_msg = "Expected %.2f, got %.2f" % (numpy_vec_product, prob_vec_product)
     nose.tools.eq_(numpy_vec_product, prob_vec_product, error_msg)
+    print error_msg
+
+@nose.tools.istest
+def computes_vector_product_with_mostly_zeros():
+    state_ids = StateIDCollection()
+    state_ids.add_id('a')
+    state_ids.add_id('b')
+    state_ids.add_id('c')
+    unordered_state_ids = StateIDCollection()
+    unordered_state_ids.add_id('b')
+    unordered_state_ids.add_id('c')
+    unordered_state_ids.add_id('a')
+    prob_vec1 = make_prob_vec_from_state_ids(state_ids)
+    prob_vec2 = make_prob_vec_from_state_ids(unordered_state_ids)
+    prob_vec1.set_state_probability('a', 1.0)
+    prob_vec1.set_state_probability('b', ALMOST_ZERO)
+    prob_vec1.set_state_probability('c', ALMOST_ZERO)
+    prob_vec2.set_state_probability('a', 1.0)
+    prob_vec2.set_state_probability('b', 0.0)
+    prob_vec2.set_state_probability('c', 0.0)
+    prob_vec_product = vector_product(prob_vec1, prob_vec2, do_alignment=True)
+
+    numpy_vec1 = numpy.array( [1.0, ALMOST_ZERO, ALMOST_ZERO] )
+    numpy_vec2 = numpy.array( [1.0, 0.0, 0.0] )
+    numpy_vec_product = numpy.dot(numpy_vec1, numpy_vec2.T)
+
+    error_msg = "Expected %.2f, got %.2f" % (numpy_vec_product, prob_vec_product)
+    nose.tools.eq_(numpy_vec_product, prob_vec_product, error_msg)
+    print error_msg
 
 @nose.tools.istest
 def computes_vector_matrix_with_only_one_entry_and_output_type_is_series():
@@ -94,7 +126,7 @@ def compute_vector_matrix_product_with_ordered_indices():
     prob_matrix.balance_transition_prob()
     prob_product = vector_matrix_product(prob_vec, prob_matrix,
                                          do_alignment=False)
-
+    # print prob_matrix.data_frame.columns, prob_product.series.index
     npy_vec = numpy.ones( [1,3] ) / 3.
     npy_array = numpy.zeros( [3,3] )
     npy_array[0,1] = 0.5  # a,b
@@ -131,7 +163,7 @@ def compute_vector_matrix_product_with_unordered_indices():
     prob_matrix.balance_transition_prob()
     prob_product = vector_matrix_product(prob_vec, prob_matrix,
                                          do_alignment=True)
-
+    # print prob_matrix.data_frame.columns, prob_product.series.index
     npy_vec = numpy.ones( [1,3] ) / 3.
     npy_array = numpy.zeros( [3,3] )
     npy_array[0,1] = 0.5  # a,b
@@ -171,6 +203,7 @@ def compute_asymmetric_vector_matrix_product_with_unordered_indices():
     prob_matrix.set_probability('c', 'f', 0.00)
     prob_product = asym_vector_matrix_product(prob_vec, prob_matrix,
                                               do_alignment=True)
+    # print prob_matrix.data_frame.columns, prob_product.series.index
     npy_vec = numpy.ones( [1,3] ) / 3.
     npy_array = numpy.zeros( [3,2] )
     npy_array[0,0] = 0.01  # a,d
@@ -182,6 +215,127 @@ def compute_asymmetric_vector_matrix_product_with_unordered_indices():
     npy_product = numpy.dot(npy_vec, npy_array)
     nose.tools.eq_( npy_product[0,0], prob_product.get_state_probability('d') )
     nose.tools.eq_( npy_product[0,1], prob_product.get_state_probability('f') )
+
+@nose.tools.istest
+def computes_matrix_vector_with_only_one_entry_and_output_type_is_series():
+    state_ids = StateIDCollection()
+    state_ids.add_id('a')
+    prob_vec = make_prob_vec_from_state_ids(state_ids)
+    prob_vec.set_uniform_state_probability()
+    prob_matrix = make_prob_matrix_from_state_ids(state_ids, state_ids)
+    prob_matrix.set_probability('a', 'a', 0.99)
+    prob_product = matrix_vector_product(prob_matrix, prob_vec,
+                                         do_alignment=False)
+    error_msg = "%s, %s" % (type(prob_product.series), type(prob_vec.series))
+    nose.tools.ok_(type(prob_product.series) == type(prob_vec.series),
+                   error_msg)
+
+@nose.tools.istest
+def compute_matrix_vector_product_with_ordered_indices():
+    state_ids = StateIDCollection()
+    state_ids.add_id('a')
+    state_ids.add_id('b')
+    state_ids.add_id('c')
+    prob_vec = make_prob_vec_from_state_ids(state_ids)
+    prob_vec.set_uniform_state_probability()
+    prob_matrix = make_prob_matrix_from_state_ids(state_ids)
+    prob_matrix.set_probability('a', 'b', 0.5)
+    prob_matrix.set_probability('a', 'c', 0.0)
+    prob_matrix.set_probability('b', 'c', 0.1)
+    prob_matrix.set_probability('b', 'a', 0.0)
+    prob_matrix.set_probability('c', 'a', 0.9)
+    prob_matrix.set_probability('c', 'b', 0.0)
+    prob_matrix.balance_transition_prob()
+    prob_product = matrix_vector_product(prob_matrix, prob_vec,
+                                         do_alignment=False)
+    # print prob_matrix.data_frame.index, prob_product.series.index
+    npy_vec = numpy.ones( [3,1] ) / 3.
+    npy_array = numpy.zeros( [3,3] )
+    npy_array[0,1] = 0.5  # a,b
+    npy_array[1,2] = 0.1  # b,c
+    npy_array[2,0] = 0.9  # c,a
+    npy_array[0,0] = 1 - npy_array[0,:].sum()
+    npy_array[1,1] = 1 - npy_array[1,:].sum()
+    npy_array[2,2] = 1 - npy_array[2,:].sum()
+    npy_product = numpy.dot(npy_array, npy_vec)
+
+    nose.tools.eq_( npy_product[0,0], prob_product.get_state_probability('a') )
+    nose.tools.eq_( npy_product[1,0], prob_product.get_state_probability('b') )
+    nose.tools.eq_( npy_product[2,0], prob_product.get_state_probability('c') )
+
+@nose.tools.istest
+def compute_matrix_vector_product_with_unordered_indices():
+    state_ids = StateIDCollection()
+    state_ids.add_id('a')
+    state_ids.add_id('b')
+    state_ids.add_id('c')
+    prob_vec = make_prob_vec_from_state_ids(state_ids)
+    prob_vec.set_uniform_state_probability()
+    unordered_state_ids = StateIDCollection()
+    unordered_state_ids.add_id('b')
+    unordered_state_ids.add_id('c')
+    unordered_state_ids.add_id('a')
+    prob_matrix = make_prob_matrix_from_state_ids(unordered_state_ids)
+    prob_matrix.set_probability('a', 'b', 0.5)
+    prob_matrix.set_probability('a', 'c', 0.0)
+    prob_matrix.set_probability('b', 'c', 0.1)
+    prob_matrix.set_probability('b', 'a', 0.0)
+    prob_matrix.set_probability('c', 'a', 0.9)
+    prob_matrix.set_probability('c', 'b', 0.0)
+    prob_matrix.balance_transition_prob()
+    prob_product = matrix_vector_product(prob_matrix, prob_vec,
+                                         do_alignment=True)
+    # print prob_matrix.data_frame.index, prob_product.series.index
+    npy_vec = numpy.ones( [3,1] ) / 3.
+    npy_array = numpy.zeros( [3,3] )
+    npy_array[0,1] = 0.5  # a,b
+    npy_array[1,2] = 0.1  # b,c
+    npy_array[2,0] = 0.9  # c,a
+    npy_array[0,0] = 1 - npy_array[0,:].sum()
+    npy_array[1,1] = 1 - npy_array[1,:].sum()
+    npy_array[2,2] = 1 - npy_array[2,:].sum()
+    npy_product = numpy.dot(npy_array, npy_vec)
+
+    nose.tools.eq_( npy_product[0,0], prob_product.get_state_probability('a') )
+    nose.tools.eq_( npy_product[1,0], prob_product.get_state_probability('b') )
+    nose.tools.eq_( npy_product[2,0], prob_product.get_state_probability('c') )
+
+@nose.tools.istest
+def compute_asymmetric_matrix_vector_product_with_unordered_indices():
+    state_ids = StateIDCollection()
+    state_ids.add_id('d')
+    state_ids.add_id('f')
+    prob_vec = make_prob_vec_from_state_ids(state_ids)
+    prob_vec.set_uniform_state_probability()
+    state_ids = StateIDCollection()
+    state_ids.add_id('a')
+    state_ids.add_id('b')
+    state_ids.add_id('c')
+    column_ids = StateIDCollection()
+    column_ids.add_id('f')
+    column_ids.add_id('d')
+    prob_matrix = make_prob_matrix_from_state_ids(state_ids, column_ids)
+    prob_matrix.set_probability('a', 'd', 0.01)
+    prob_matrix.set_probability('a', 'f', 0.05)
+    prob_matrix.set_probability('b', 'd', 0.00)
+    prob_matrix.set_probability('b', 'f', 0.10)
+    prob_matrix.set_probability('c', 'd', 0.10)
+    prob_matrix.set_probability('c', 'f', 0.00)
+    prob_product = asym_matrix_vector_product(prob_matrix, prob_vec,
+                                              do_alignment=True)
+    # print prob_matrix.data_frame.index, prob_product.series.index
+    npy_vec = numpy.ones( [2,1] ) / 2.
+    npy_array = numpy.zeros( [3,2] )
+    npy_array[0,0] = 0.01  # a,d
+    npy_array[0,1] = 0.05  # a,f
+    npy_array[1,0] = 0.00  # b,d
+    npy_array[1,1] = 0.10  # b,f
+    npy_array[2,0] = 0.10  # c,d
+    npy_array[2,1] = 0.00  # c,f
+    npy_product = numpy.dot(npy_array, npy_vec)
+    nose.tools.eq_( npy_product[0,0], prob_product.get_state_probability('a') )
+    nose.tools.eq_( npy_product[1,0], prob_product.get_state_probability('b') )
+    nose.tools.eq_( npy_product[2,0], prob_product.get_state_probability('c') )
 
 @nose.tools.istest
 def compute_symmetric_matrix_matrix_product_with_ordered_indices():
@@ -207,6 +361,8 @@ def compute_symmetric_matrix_matrix_product_with_ordered_indices():
     prob_matrix2.balance_transition_prob()
     prob_product = symmetric_matrix_matrix_product(
                         prob_matrix1, prob_matrix2, do_alignment=False)
+    # print prob_matrix1.data_frame.index, prob_product.data_frame.index
+    # print prob_matrix2.data_frame.columns, prob_product.data_frame.columns
     npy_array = numpy.zeros( [3,3] )
     npy_array[0,1] = 0.5  # a,b
     npy_array[1,2] = 0.1  # b,c
@@ -245,7 +401,8 @@ def compute_symmetric_matrix_matrix_product_with_unordered_indices():
     prob_matrix2.balance_transition_prob()
     prob_product = symmetric_matrix_matrix_product(
                         prob_matrix1, prob_matrix2, do_alignment=True)
-
+    # print prob_matrix1.data_frame.index, prob_product.data_frame.index
+    # print prob_matrix2.data_frame.columns, prob_product.data_frame.columns
     npy_array = numpy.zeros( [3,3] )
     npy_array[0,1] = 0.5  # a,b
     npy_array[1,2] = 0.1  # b,c
@@ -287,7 +444,8 @@ def compute_asymmetric_matrix_matrix_product_with_unordered_indices():
     prob_matrix2.set_probability('c', 'f', 0.00)
     prob_product = asymmetric_matrix_matrix_product(
                         prob_matrix1, prob_matrix2, do_alignment=True)
-
+    # print prob_matrix1.data_frame.index, prob_product.data_frame.index
+    # print prob_matrix2.data_frame.columns, prob_product.data_frame.columns
     npy_array1 = numpy.zeros( [3,3] )
     npy_array1[0,1] = 0.5  # a,b
     npy_array1[1,2] = 0.1  # b,c
@@ -312,7 +470,7 @@ def compute_matrix_exponential():
     state_ids.add_id('a')
     state_ids.add_id('b')
     state_ids.add_id('c')
-    rate_matrix = make_rate_matrix_from_state_ids(state_ids)
+    rate_matrix = make_rate_matrix_from_state_ids(state_ids, state_ids)
     rate_matrix.set_rate('a', 'b', 10.0)
     rate_matrix.set_rate('a', 'c', 0.1)
     rate_matrix.set_rate('b', 'c', 1.2)

@@ -47,6 +47,10 @@ class RateMatrix(object):
         return make_rate_matrix_from_panda_data_frame(sub_df)
     def get_index_id_list(self):
         return self.data_frame.index.tolist()
+    def get_column_id_list(self):
+        return self.data_frame.columns.tolist()
+    def copy(self):
+        return make_rate_matrix_from_panda_data_frame(self.data_frame.copy())
 
 
 class RateMatrixTrajectory(object):
