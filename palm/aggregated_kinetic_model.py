@@ -45,9 +45,9 @@ class AggregatedKineticModel(Model):
 
     def get_num_states(self, class_name=None):
         if class_name:
-            return len(self.state_groups[class_name])
+            return len(self.state_ids_by_class_dict[class_name])
         else:
-            return len(self.state_collection)
+            return len(self.state_id_collection)
 
     def get_num_routes(self):
         return len(self.route_collection)
