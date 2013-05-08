@@ -22,3 +22,9 @@ class BlinkModel(AggregatedKineticModel):
         initial_prob_vec = make_prob_vec_from_state_ids(dark_state_id_collection)
         initial_prob_vec.set_state_probability(self.all_inactive_state_id, 1.0)
         return initial_prob_vec
+
+    def get_final_probability_vector(self):
+        dark_state_id_collection = self.state_ids_by_class_dict['dark']
+        final_prob_vec = make_prob_vec_from_state_ids(dark_state_id_collection)
+        final_prob_vec.set_state_probability(self.all_bleached_state_id, 1.0)
+        return final_prob_vec
