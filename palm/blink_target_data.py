@@ -23,9 +23,10 @@ class BlinkTargetData(TargetData):
         super(BlinkTargetData, self).__init__()
         self.trajectory_factory = DiscreteStateTrajectory
         self.segment_factory = DiscreteDwellSegment
+        self.trajectory = None
 
-    def len(self):
-        return len(self.trajectory_factory)
+    def __len__(self):
+        return len(self.trajectory)
 
     def load_data(self, data_file):
         self.filename = data_file

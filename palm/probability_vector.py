@@ -38,26 +38,39 @@ class ProbabilityVector(object):
     def combine_first(self, vec):
         # self clobbers vec
         return self.series.combine_first(vec.series)
+    def fill_zeros(self, value):
+        self.series[self.series == 0.0] = value
+    def as_npy_array(self):
+        return numpy.array(self.series)
 
 
 class VectorTrajectory(object):
     """docstring for VectorTrajectory"""
-    def __init__(self, state_id_collection):
+    def __init__(self, state_id_list):
         super(VectorTrajectory, self).__init__()
-        self.state_id_collection = state_id_collection
+        self.state_id_list = state_id_list
+        self.time_list = []
         self.vec_list = []
     def __len__(self):
         return len(self.vec_list)
     def __str__(self):
         full_str = ""
-        for v in iter(self):
-            full_str += str(v)
-            full_str += "\n"
+        for t,v in iter(self):
+            full_str += "%.2e\n%s\n" % (t,str(v))
         return full_str
     def __iter__(self):
-        for v in iter(self.vec_list):
-            yield v
-    def add_vector(self, vec):
-        vec_template = make_prob_vec_from_state_ids(self.state_id_collection)
-        combined_vec = vec.combine_first(vec_template)
+        for t,v in zip(self.time_list, self.vec_list):
+            yield t,v
+    def add_vector(self, time, vec):
+        self.time_list.append(time)
+        vec_template = make_prob_vec_from_state_ids(self.state_id_list)
+        combined_vec_series = vec.combine_first(vec_template)
+        combined_vec = make_prob_vec_from_panda_series(combined_vec_series)
         self.vec_list.append(combined_vec)
+    def convert_to_df(self):
+        vec_dict_list = []
+        for t,v in self:
+            vec_dict_list.append( v.series.to_dict() )
+        df = pandas.DataFrame(vec_dict_list)
+        df['time'] = pandas.Series(self.time_list)
+        return df

@@ -38,7 +38,7 @@ class DiscreteStateTrajectory(Trajectory):
         for segment in self.segment_list:
             segment_class = segment.get_class()
             segment_duration = segment.get_duration()
-            full_str += "%s  %.4e\n" % (segment_class, segment_duration)
+            full_str += "%s,%.4e\n" % (segment_class, segment_duration)
         return full_str
 
     def __iter__(self):
@@ -65,7 +65,7 @@ class DiscreteStateTrajectory(Trajectory):
         self.cumulative_time_list.append(cumulative_time)
 
     def get_segment(self, segment_number):
-        if segment_number < len(self.segment_list):
+        if segment_number < len(self.segment_list) and segment_number >= 0:
             return self.segment_list[segment_number]
         else:
             return None
@@ -79,11 +79,19 @@ class DiscreteStateTrajectory(Trajectory):
     def get_end_time(self):
         return self.cumulative_time_list[-1]
 
+    def get_last_segment_number(self):
+        return len(self) - 1
+
     def reverse_iter(self):
         reverse_range = range(len(self.segment_list))
         reverse_range.reverse()
         for i in reverse_range:
             yield (i, self.segment_list[i])
+
+    def to_csv_str(self):
+        csv_str = "class,dwell time\n"
+        csv_str += str(self)
+        return csv_str
 
     def as_continuous_traj_array(self):
         class_to_signal_dict = {'dark':0.0, 'bright':1.0}
