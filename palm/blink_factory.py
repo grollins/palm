@@ -62,8 +62,7 @@ class DoubleDarkBlinkFactory(ModelFactory):
         route_mapper_factory = DoubleDarkRouteMapperFactory(
                                 parameter_set=self.parameter_set,
                                 route_factory=self.route_factory,
-                                max_A=self.MAX_A,
-                                fermi_activation=self.fermi_activation)
+                                max_A=self.MAX_A)
         route_mapper = route_mapper_factory.create_route_mapper()
         new_model = BlinkModel(state_enumerator, route_mapper,
                                            self.parameter_set)
