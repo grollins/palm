@@ -1,4 +1,5 @@
 import numpy
+import scipy.linalg
 import pandas
 
 def make_prob_vec_from_state_ids(state_id_collection):
@@ -40,8 +41,19 @@ class ProbabilityVector(object):
         return self.series.combine_first(vec.series)
     def fill_zeros(self, value):
         self.series[self.series == 0.0] = value
+    def fill_na(self, value):
+        self.series = self.series.fillna(value)
+    def fill_negative(self, value):
+        self.series[self.series < 0.0] = value
+    def fill_positive(self, value):
+        self.series[self.series > 1.0] = value
     def as_npy_array(self):
         return numpy.array(self.series)
+    def allclose(self, other_vec):
+        return numpy.allclose(self.series.values,
+                              other_vec.series.values)
+    def compute_norm(self):
+        return scipy.linalg.norm(self.series)
 
 
 class VectorTrajectory(object):

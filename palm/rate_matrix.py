@@ -1,4 +1,5 @@
 import numpy
+import scipy.linalg
 from pandas import DataFrame
 from palm.util import DATA_TYPE
 
@@ -51,6 +52,25 @@ class RateMatrix(object):
         return self.data_frame.columns.tolist()
     def copy(self):
         return make_rate_matrix_from_panda_data_frame(self.data_frame.copy())
+    def compute_sparsity(self):
+        zero_df = self.data_frame[self.data_frame == 0.0]
+        num_zero_entries = zero_df.count().sum()
+        num_nonzero = numpy.count_nonzero(self.data_frame.values)
+        total_entries = len(self) * len(self)
+        assert total_entries == (num_nonzero + num_zero_entries)
+        fraction_zero = num_zero_entries / (1. * total_entries)
+        print total_entries, num_zero_entries
+        return fraction_zero
+    def compute_norm(self):
+        return scipy.linalg.norm(self.data_frame.values, numpy.inf)
+    def compute_max_element_magnitude(self):
+        return numpy.max(numpy.abs(self.data_frame.values))
+    def print_non_zero_entries(self):
+        r,c = numpy.where(self.data_frame.values > 0.0)
+        nonzero_values = numpy.ravel(self.data_frame.values[r,c])
+        nonzero_values.sort()
+        reversed_nonzero_values = nonzero_values[::-1]
+        print reversed_nonzero_values[:min(len(self),30)]
 
 
 class RateMatrixTrajectory(object):
