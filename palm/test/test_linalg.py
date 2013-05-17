@@ -36,7 +36,6 @@ def computes_vector_product_with_ordered_indices():
 
     error_msg = "Expected %.2f, got %.2f" % (numpy_vec_product, prob_vec_product)
     nose.tools.eq_(numpy_vec_product, prob_vec_product, error_msg)
-    print error_msg
 
 @nose.tools.istest
 def computes_vector_product_with_unordered_indices():
@@ -64,7 +63,6 @@ def computes_vector_product_with_unordered_indices():
 
     error_msg = "Expected %.2f, got %.2f" % (numpy_vec_product, prob_vec_product)
     nose.tools.eq_(numpy_vec_product, prob_vec_product, error_msg)
-    print error_msg
 
 @nose.tools.istest
 def computes_vector_product_with_mostly_zeros():
@@ -92,7 +90,6 @@ def computes_vector_product_with_mostly_zeros():
 
     error_msg = "Expected %.2f, got %.2f" % (numpy_vec_product, prob_vec_product)
     nose.tools.eq_(numpy_vec_product, prob_vec_product, error_msg)
-    print error_msg
 
 @nose.tools.istest
 def computes_vector_matrix_with_only_one_entry_and_output_type_is_series():
@@ -238,6 +235,9 @@ def compute_matrix_vector_product_with_ordered_indices():
     state_ids.add_id('c')
     prob_vec = make_prob_vec_from_state_ids(state_ids)
     prob_vec.set_uniform_state_probability()
+    prob_vec.set_state_probability('a', 0.2)
+    prob_vec.set_state_probability('b', 0.1)
+    prob_vec.set_state_probability('c', 0.7)
     prob_matrix = make_prob_matrix_from_state_ids(state_ids)
     prob_matrix.set_probability('a', 'b', 0.5)
     prob_matrix.set_probability('a', 'c', 0.0)
@@ -250,6 +250,9 @@ def compute_matrix_vector_product_with_ordered_indices():
                                          do_alignment=False)
     # print prob_matrix.data_frame.index, prob_product.series.index
     npy_vec = numpy.ones( [3,1] ) / 3.
+    npy_vec[0,0] = 0.2
+    npy_vec[1,0] = 0.1
+    npy_vec[2,0] = 0.7
     npy_array = numpy.zeros( [3,3] )
     npy_array[0,1] = 0.5  # a,b
     npy_array[1,2] = 0.1  # b,c
@@ -262,6 +265,10 @@ def compute_matrix_vector_product_with_ordered_indices():
     nose.tools.eq_( npy_product[0,0], prob_product.get_state_probability('a') )
     nose.tools.eq_( npy_product[1,0], prob_product.get_state_probability('b') )
     nose.tools.eq_( npy_product[2,0], prob_product.get_state_probability('c') )
+    #print npy_vec
+    #print npy_array
+    #print npy_product
+    #print prob_product
 
 @nose.tools.istest
 def compute_matrix_vector_product_with_unordered_indices():

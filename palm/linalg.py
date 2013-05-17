@@ -1,3 +1,4 @@
+import gc
 import numpy
 import pandas
 import scipy.linalg
@@ -7,9 +8,11 @@ from pandas import Series
 
 from palm.probability_vector import make_prob_vec_from_panda_series
 from palm.probability_matrix import make_prob_matrix_from_panda_data_frame
-from palm.cylib import arnoldi
+# from palm.cylib import arnoldi
 from palm.util import DATA_TYPE
-
+import qit.utils
+# from memory_profiler import LineProfiler, show_results
+# prof = LineProfiler()
 
 def vector_product(vec1, vec2, do_alignment=True):
     if do_alignment:
@@ -105,6 +108,19 @@ def asymmetric_matrix_matrix_product(matrix1, matrix2, do_alignment=True):
     return product_matrix
 
 
+class StubExponential(object):
+    def __init__(self):
+        pass
+    def compute_matrix_expv(self, rate_matrix, dwell_time, vec):
+        alignment_results = rate_matrix.data_frame.align(
+                                vec.series, axis=1, join='right')
+        aligned_frame, aligned_series = alignment_results
+        v = numpy.array(aligned_series)
+        A = aligned_frame.values
+        assert isinstance(A, numpy.ndarray)
+        return vec
+
+
 class ScipyMatrixExponential(object):
     """docstring for ScipyMatrixExponential"""
     def __init__(self):
@@ -112,9 +128,62 @@ class ScipyMatrixExponential(object):
     def compute_matrix_exp(self, rate_matrix, dwell_time):
         Q = rate_matrix.as_npy_array()
         expQt = scipy.linalg.expm(Q * dwell_time)
+        # del expQt
+        # gc.collect()
         expQt_matrix = rate_matrix.copy()
         expQt_matrix.data_frame.values[:,:] = expQt
+        # rate_matrix.data_frame.values[:,:] = scipy.linalg.expm2(rate_matrix.data_frame.values * dwell_time)
+        # return rate_matrix
         return expQt_matrix
+    def compute_matrix_expv(self, rate_matrix, dwell_time, vec):
+        expQt_matrix = self.compute_matrix_exp(rate_matrix, dwell_time)
+        expv = matrix_vector_product(expQt_matrix, vec, do_alignment=True)
+        return expv
+
+
+class ScipyMatrixExponential2(object):
+    """docstring for ScipyMatrixExponential2"""
+    def __init__(self):
+        super(ScipyMatrixExponential2, self).__init__()
+    def compute_matrix_exp(self, rate_matrix, dwell_time):
+        Q = rate_matrix.as_npy_array()
+        expQt = scipy.linalg.expm2(Q * dwell_time)
+        # del expQt
+        # gc.collect()
+        expQt_matrix = rate_matrix.copy()
+        expQt_matrix.data_frame.values[:,:] = expQt
+        # rate_matrix.data_frame.values[:,:] = scipy.linalg.expm2(rate_matrix.data_frame.values * dwell_time)
+        # return rate_matrix
+        return expQt_matrix
+    def compute_matrix_expv(self, rate_matrix, dwell_time, vec):
+        expQt_matrix = self.compute_matrix_exp(rate_matrix, dwell_time)
+        expv = matrix_vector_product(expQt_matrix, vec, do_alignment=True)
+        return expv
+
+
+class QitMatrixExponential(object):
+    """docstring for QitMatrixExponential"""
+    def __init__(self):
+        super(QitMatrixExponential, self).__init__()
+    def compute_matrix_expv(self, rate_matrix, dwell_time, vec):
+        alignment_results = rate_matrix.data_frame.align(
+                                vec.series, axis=1, join='right')
+        aligned_frame, aligned_series = alignment_results
+        v = numpy.array(aligned_series)
+        A = aligned_frame.values
+        assert isinstance(A, numpy.ndarray)
+
+        try:
+            r = qit.utils.expv(dwell_time, A, v)
+        except:
+            print scipy.linalg.norm(A, numpy.inf)
+            print scipy.linalg.norm(v)
+            raise
+        expv = r[0].ravel() # converts (1,n) to (n,)
+        expv = expv.real
+        expv_series = pandas.Series(expv, index=aligned_frame.index)
+        expv_vec = make_prob_vec_from_panda_series(expv_series)
+        return expv_vec
 
 
 class DiagonalExpm(object):
@@ -162,6 +231,7 @@ class TheanoEigenExpm(object):
         expQt_matrix = rate_matrix.copy()
         expQt_matrix.data_frame.values[:,:] = VDVi
         return expQt_matrix
+
 
 class KrylovExpm(object):
     """docstring for KrylovExpm
