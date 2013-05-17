@@ -3,10 +3,13 @@ import pandas
 from palm.base.data_predictor import DataPredictor
 from palm.likelihood_prediction import LikelihoodPrediction
 from palm.forward_calculator import ForwardCalculator
-from palm.linalg import ScipyMatrixExponential, DiagonalExpm, vector_product
+from palm.linalg import ScipyMatrixExponential, ScipyMatrixExponential2, DiagonalExpm, vector_product
 from palm.probability_vector import VectorTrajectory, ProbabilityVector
 from palm.rate_matrix import RateMatrixTrajectory
 from palm.util import ALMOST_ZERO
+# from memory_profiler import LineProfiler, show_results
+
+# prof = LineProfiler()
 
 class LocalPredictor(DataPredictor):
     """docstring for LocalPredictor"""
@@ -17,8 +20,9 @@ class LocalPredictor(DataPredictor):
         self.num_tracked_states = num_tracked_states
         self.archive_matrices = archive_matrices
         self.prob_threshold = prob_threshold
-        expm_calculator = ScipyMatrixExponential()
+        expm_calculator = ScipyMatrixExponential2()
         diag_expm = DiagonalExpm()
+        # diag_expm = ScipyMatrixExponential2()
         self.forward_calculator = ForwardCalculator(expm_calculator)
         self.diag_forward_calculator = ForwardCalculator(diag_expm)
         self.prediction_factory = LikelihoodPrediction
@@ -136,14 +140,16 @@ class ForwardPredictor(DataPredictor):
         super(ForwardPredictor, self).__init__()
         self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
         self.archive_matrices = archive_matrices
-        expm_calculator = ScipyMatrixExponential()
+        expm_calculator = ScipyMatrixExponential2()
         diag_expm = DiagonalExpm()
+        # diag_expm = ScipyMatrixExponential2()
         self.forward_calculator = ForwardCalculator(expm_calculator)
         self.diag_forward_calculator = ForwardCalculator(diag_expm)
         self.prediction_factory = LikelihoodPrediction
         self.vector_trajectory = None
         self.rate_matrix_trajectory = None
         self.scaling_factor_set = None
+
     def predict_data(self, model, trajectory):
         self.scaling_factor_set = self.compute_forward_vectors(
                                     model, trajectory)
@@ -151,11 +157,13 @@ class ForwardPredictor(DataPredictor):
         if likelihood < ALMOST_ZERO:
             likelihood = ALMOST_ZERO
         log_likelihood = numpy.log10(likelihood)
+        # show_results(prof)
         return self.prediction_factory(log_likelihood)
+
     def compute_forward_vectors(self, model, trajectory):
-        self.vector_trajectory = VectorTrajectory(model.state_id_collection)
         if self.archive_matrices:
             self.rate_matrix_trajectory = RateMatrixTrajectory()
+            self.vector_trajectory = VectorTrajectory(model.state_id_collection)
         else:
             pass
         # initialize probability vector
@@ -164,7 +172,8 @@ class ForwardPredictor(DataPredictor):
         rate_matrix_organizer.build_rate_matrix(time=0.0)
         init_prob = model.get_initial_probability_vector()
         scaling_factor_set.scale_vector(init_prob)
-        self.vector_trajectory.add_vector(0.0, init_prob)
+        if self.archive_matrices:
+            self.vector_trajectory.add_vector(0.0, init_prob)
         prev_alpha = init_prob
 
         # loop through trajectory segments, compute likelihood for each segment
@@ -206,7 +215,8 @@ class ForwardPredictor(DataPredictor):
             scaled_alpha = scaling_factor_set.scale_vector(alpha)
             # store handle to current alpha vector for next iteration
             prev_alpha = scaled_alpha
-            self.vector_trajectory.add_vector(cumulative_time, scaled_alpha)
+            if self.archive_matrices:
+                self.vector_trajectory.add_vector(cumulative_time, scaled_alpha)
         # end for loop
         final_prob_vec = model.get_final_probability_vector()
         total_alpha_scalar = vector_product(prev_alpha, final_prob_vec,
@@ -214,10 +224,12 @@ class ForwardPredictor(DataPredictor):
         total_alpha_vec = ProbabilityVector()
         total_alpha_vec.series = pandas.Series([total_alpha_scalar,])
         scaled_total_alpha = scaling_factor_set.scale_vector(total_alpha_vec)
-        self.vector_trajectory.add_vector(trajectory.get_end_time(),
-                                          scaled_total_alpha)
+        if self.archive_matrices:
+            self.vector_trajectory.add_vector(trajectory.get_end_time(),
+                                              scaled_total_alpha)
         return scaling_factor_set
 
+    # @prof
     def _compute_alpha(self, rate_matrix_aa, rate_matrix_ab, segment_number,
                        segment_duration, start_class, end_class, prev_alpha):
         if start_class == 'dark':
@@ -229,7 +241,6 @@ class ForwardPredictor(DataPredictor):
                         prev_alpha, rate_matrix_aa, rate_matrix_ab,
                         segment_duration)
         return alpha
-
 
 class ScalingFactorSet(object):
     def __init__(self):

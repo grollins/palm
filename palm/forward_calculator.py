@@ -9,8 +9,12 @@ class ForwardCalculator(object):
 
     def compute_forward_vector(self, init_prob, rate_matrix_aa,
                                rate_matrix_ab, dwell_time):
-        expQt = self.expm_calculator.compute_matrix_exp(
-                    rate_matrix_aa, dwell_time)
+        try:
+            expQt = self.expm_calculator.compute_matrix_exp(
+                        rate_matrix_aa, dwell_time)
+        except:
+            print rate_matrix_aa
+            raise
         fwd_vec = vector_matrix_product(init_prob, expQt, do_alignment=True)
         if rate_matrix_ab is None or rate_matrix_ab.get_shape()[1] == 0:
             pass

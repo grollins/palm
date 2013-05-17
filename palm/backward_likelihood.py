@@ -3,8 +3,8 @@ import pandas
 from palm.base.data_predictor import DataPredictor
 from palm.likelihood_prediction import LikelihoodPrediction
 from palm.backward_calculator import BackwardCalculator
-from palm.linalg import ScipyMatrixExponential, DiagonalExpm, KrylovExpm,\
-                        vector_product, TheanoEigenExpm
+from palm.linalg import ScipyMatrixExponential, ScipyMatrixExponential2, DiagonalExpm, QitMatrixExponential,\
+                        vector_product, StubExponential
 from palm.probability_vector import VectorTrajectory, ProbabilityVector
 from palm.rate_matrix import RateMatrixTrajectory
 from palm.util import ALMOST_ZERO
@@ -15,11 +15,10 @@ class BackwardPredictor(DataPredictor):
         super(BackwardPredictor, self).__init__()
         self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
         self.archive_matrices = archive_matrices
-        expm_calculator = ScipyMatrixExponential()
-        # expm_calculator = KrylovExpm()
-        # expm_calculator = TheanoEigenExpm(
-        #                     force_decomposition=always_rebuild_rate_matrix)
+        expm_calculator = QitMatrixExponential()
+        # expm_calculator = StubExponential()
         diag_expm = DiagonalExpm()
+        # diag_expm = StubExponential()
         self.backward_calculator = BackwardCalculator(expm_calculator)
         self.diag_backward_calculator = BackwardCalculator(diag_expm)
         self.prediction_factory = LikelihoodPrediction
@@ -37,9 +36,9 @@ class BackwardPredictor(DataPredictor):
         return self.prediction_factory(log_likelihood)
 
     def compute_backward_vectors(self, model, trajectory):
-        self.vector_trajectory = VectorTrajectory(model.state_id_collection)
         if self.archive_matrices:
             self.rate_matrix_trajectory = RateMatrixTrajectory()
+            self.vector_trajectory = VectorTrajectory(model.state_id_collection)
         else:
             pass
         # initialize probability vector
@@ -48,8 +47,9 @@ class BackwardPredictor(DataPredictor):
         rate_matrix_organizer.build_rate_matrix(time=trajectory.get_end_time())
         final_prob = model.get_final_probability_vector()
         scaling_factor_set.scale_vector(final_prob)
-        self.vector_trajectory.add_vector(trajectory.get_end_time(),
-                                          final_prob)
+        if self.archive_matrices:
+            self.vector_trajectory.add_vector(trajectory.get_end_time(),
+                                              final_prob)
         next_beta = final_prob
 
         # loop through trajectory segments, compute likelihood for each segment
@@ -89,9 +89,11 @@ class BackwardPredictor(DataPredictor):
 
             # scale probability vector to avoid numerical underflow
             scaled_beta = scaling_factor_set.scale_vector(beta)
+            # print segment_number, scaled_beta
             # store handle to current beta vector for next iteration
             next_beta = scaled_beta
-            self.vector_trajectory.add_vector(cumulative_time, scaled_beta)
+            if self.archive_matrices:
+                self.vector_trajectory.add_vector(cumulative_time, scaled_beta)
         # end for loop
 
         # product of initial prob vec with beta from trajectory
@@ -100,7 +102,8 @@ class BackwardPredictor(DataPredictor):
         total_beta_vec = ProbabilityVector()
         total_beta_vec.series = pandas.Series([total_beta,])
         scaled_total_beta = scaling_factor_set.scale_vector(total_beta_vec)
-        self.vector_trajectory.add_vector(0.0, scaled_total_beta)
+        if self.archive_matrices:
+            self.vector_trajectory.add_vector(0.0, scaled_total_beta)
         return scaling_factor_set
 
     def _compute_beta(self, rate_matrix_aa, rate_matrix_ab, segment_number,
