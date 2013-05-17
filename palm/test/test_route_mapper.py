@@ -1,8 +1,8 @@
 import nose.tools
-import mock
 import numpy
 from palm.blink_route_mapper import SingleDarkRouteMapperFactory
 from palm.blink_parameter_set import SingleDarkParameterSet
+from palm.rate_fcn import rate_from_rate_id
 
 EPSILON = 0.01
 
@@ -22,11 +22,9 @@ def fermi_ka_at_time_zero_matches_expected_value():
     tf = 192.0 # seconds
     params.set_parameter('fermi_T', T)
     params.set_parameter('fermi_tf', tf)
-    mock_route_factory = mock.Mock()
-    rm_factory = SingleDarkRouteMapperFactory(params, mock_route_factory,
-                                              max_A=1)
-    fermi_fcn = rm_factory.fermi_log_ka_factory(log_combinatoric_factor=0)
-    log_ka_at_time_zero = fermi_fcn(0.0)
+    ka_at_time_zero = rate_from_rate_id(
+                        'ka', 0.0, params, fermi_activation=True)
+    log_ka_at_time_zero = numpy.log10(ka_at_time_zero)
     expected_log_ka_at_time_zero = compute_fermi_log_ka(0.0, T, tf)
     log_ka_diff = abs(expected_log_ka_at_time_zero - log_ka_at_time_zero)
     error_msg = "Expected %.2e, got %.2e" % (expected_log_ka_at_time_zero,

@@ -1,3 +1,4 @@
+from nose import SkipTest
 import nose.tools
 from palm.ipython_manager import IPythonManager
 
@@ -13,7 +14,10 @@ class IPythonManagerTest(object):
     def setup(self):
         refresh_time = 0.1 # seconds
         self.task_manager = IPythonManager(refresh_time)
-        self.task_manager.start()
+        try:
+            self.task_manager.start()
+        except:
+            raise SkipTest
         self.num_tasks = 5
 
     def teardown(self):
