@@ -9,6 +9,7 @@ from palm.likelihood_judge import LikelihoodJudge
 from palm.backward_likelihood import BackwardPredictor
 from palm.blink_target_data import BlinkTargetData
 from palm.scipy_optimizer import ScipyOptimizer
+from palm.linalg import QitMatrixExponential
 
 EPSILON = 0.1
 
@@ -80,7 +81,8 @@ class TestComputeLikelihoodOfBlinkModelWithShortTrajectory(object):
         model_parameters.set_parameter('log_kd', -0.5)
         model_parameters.set_parameter('log_kr', -0.5)
         model_parameters.set_parameter('log_kb', -0.5)
-        data_predictor = BackwardPredictor(always_rebuild_rate_matrix=True)
+        data_predictor = BackwardPredictor(QitMatrixExponential(),
+                                           always_rebuild_rate_matrix=True)
         target_data = BlinkTargetData()
         target_data.load_data(data_file="./palm/test/test_data/short_blink_traj.csv")
         model = model_factory.create_model(model_parameters)

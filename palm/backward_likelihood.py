@@ -3,8 +3,7 @@ import pandas
 from palm.base.data_predictor import DataPredictor
 from palm.likelihood_prediction import LikelihoodPrediction
 from palm.backward_calculator import BackwardCalculator
-from palm.linalg import ScipyMatrixExponential, ScipyMatrixExponential2, DiagonalExpm, QitMatrixExponential,\
-                        vector_product, StubExponential
+from palm.linalg import DiagonalExpm, vector_product
 from palm.probability_vector import VectorTrajectory, ProbabilityVector
 from palm.rate_matrix import RateMatrixTrajectory
 from palm.util import ALMOST_ZERO
@@ -38,18 +37,19 @@ class BackwardPredictor(DataPredictor):
 
     Parameters
     ----------
+    expm_calculator : MatrixExponential
+        An object with a `compute_matrix_expv` method.
     always_rebuild_rate_matrix : bool
         Whether to rebuild rate matrix for every trajectory segment.
     archive_matrices : bool, optional
         Whether to save the intermediate results of the calculation for
         later plotting, debugging, etc.
     """
-    def __init__(self, always_rebuild_rate_matrix, archive_matrices=False):
+    def __init__(self, expm_calculator, always_rebuild_rate_matrix,
+                 archive_matrices=False):
         super(BackwardPredictor, self).__init__()
         self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
         self.archive_matrices = archive_matrices
-        expm_calculator = QitMatrixExponential()
-        # expm_calculator = StubExponential()
         diag_expm = DiagonalExpm()
         # diag_expm = StubExponential()
         self.backward_calculator = BackwardCalculator(expm_calculator)

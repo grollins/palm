@@ -18,8 +18,7 @@ def bwd_lh(N):
     model_parameters.set_parameter('log_kb', -0.5)
     data_predictor = BackwardPredictor(always_rebuild_rate_matrix=False)
     target_data = BlinkTargetData()
-    data_path = os.path.join('~/Documents', 'stochkit_05a',
-                             'trajectory0144.csv')
+    data_path = os.path.join('./', 'trajectory0001.csv')
     data_path = os.path.expanduser(data_path)
     target_data.load_data(data_file=data_path)
     model = model_factory.create_model(model_parameters)

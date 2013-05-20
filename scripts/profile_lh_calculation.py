@@ -1,6 +1,8 @@
 import cProfile
 import pstats
 import os.path
+from palm.linalg import ScipyMatrixExponential, ScipyMatrixExponential2,\
+                        QitMatrixExponential, StubExponential
 from palm.blink_factory import SingleDarkBlinkFactory
 from palm.blink_parameter_set import SingleDarkParameterSet
 from palm.likelihood_judge import LikelihoodJudge
@@ -24,10 +26,19 @@ def main():
     model_parameters.set_parameter_bounds('log_kd', -3., 3.)
     model_parameters.set_parameter_bounds('log_kr', -3., 3.)
     model_parameters.set_parameter_bounds('log_kb', -3., 3.)
-    data_predictor = BackwardPredictor(always_rebuild_rate_matrix=False)
-    # data_predictor = BackwardPredictor(always_rebuild_rate_matrix=True)
+
+    # ================================================================
+    # = Alternative matrix exponential objects can be specified here =
+    # ================================================================
+    data_predictor = BackwardPredictor(QitMatrixExponential(),
+                                       always_rebuild_rate_matrix=False)
+    # data_predictor = BackwardPredictor(QitMatrixExponential(),
+    #                                    always_rebuild_rate_matrix=True)
+    # data_predictor = BackwardPredictor(StubExponential(),
+    #                                    always_rebuild_rate_matrix=False)
+
     target_data = BlinkTargetData()
-    data_path = os.path.join('./', 'stochkit_05a', 'trajectory0144.csv')
+    data_path = os.path.join('./', 'trajectory0001.csv')
     data_path = os.path.expanduser(data_path)
     target_data.load_data(data_file=data_path)
     judge = LikelihoodJudge()

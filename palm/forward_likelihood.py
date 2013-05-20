@@ -37,17 +37,19 @@ class ForwardPredictor(DataPredictor):
 
     Parameters
     ----------
+    expm_calculator : MatrixExponential
+        An object with a `compute_matrix_exp` method.
     always_rebuild_rate_matrix : bool
         Whether to rebuild rate matrix for every trajectory segment.
     archive_matrices : bool, optional
         Whether to save the intermediate results of the calculation for
         later plotting, debugging, etc.
     """
-    def __init__(self, always_rebuild_rate_matrix, archive_matrices=False):
+    def __init__(self, expm_calculator, always_rebuild_rate_matrix,
+                 archive_matrices=False):
         super(ForwardPredictor, self).__init__()
         self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
         self.archive_matrices = archive_matrices
-        expm_calculator = ScipyMatrixExponential2()
         diag_expm = DiagonalExpm()
         self.forward_calculator = ForwardCalculator(expm_calculator)
         self.diag_forward_calculator = ForwardCalculator(diag_expm)
