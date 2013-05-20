@@ -123,7 +123,6 @@ def compute_vector_matrix_product_with_ordered_indices():
     prob_matrix.balance_transition_prob()
     prob_product = vector_matrix_product(prob_vec, prob_matrix,
                                          do_alignment=False)
-    # print prob_matrix.data_frame.columns, prob_product.series.index
     npy_vec = numpy.ones( [1,3] ) / 3.
     npy_array = numpy.zeros( [3,3] )
     npy_array[0,1] = 0.5  # a,b
@@ -160,7 +159,6 @@ def compute_vector_matrix_product_with_unordered_indices():
     prob_matrix.balance_transition_prob()
     prob_product = vector_matrix_product(prob_vec, prob_matrix,
                                          do_alignment=True)
-    # print prob_matrix.data_frame.columns, prob_product.series.index
     npy_vec = numpy.ones( [1,3] ) / 3.
     npy_array = numpy.zeros( [3,3] )
     npy_array[0,1] = 0.5  # a,b
@@ -200,7 +198,6 @@ def compute_asymmetric_vector_matrix_product_with_unordered_indices():
     prob_matrix.set_probability('c', 'f', 0.00)
     prob_product = asym_vector_matrix_product(prob_vec, prob_matrix,
                                               do_alignment=True)
-    # print prob_matrix.data_frame.columns, prob_product.series.index
     npy_vec = numpy.ones( [1,3] ) / 3.
     npy_array = numpy.zeros( [3,2] )
     npy_array[0,0] = 0.01  # a,d
@@ -248,7 +245,6 @@ def compute_matrix_vector_product_with_ordered_indices():
     prob_matrix.balance_transition_prob()
     prob_product = matrix_vector_product(prob_matrix, prob_vec,
                                          do_alignment=False)
-    # print prob_matrix.data_frame.index, prob_product.series.index
     npy_vec = numpy.ones( [3,1] ) / 3.
     npy_vec[0,0] = 0.2
     npy_vec[1,0] = 0.1
@@ -265,10 +261,6 @@ def compute_matrix_vector_product_with_ordered_indices():
     nose.tools.eq_( npy_product[0,0], prob_product.get_state_probability('a') )
     nose.tools.eq_( npy_product[1,0], prob_product.get_state_probability('b') )
     nose.tools.eq_( npy_product[2,0], prob_product.get_state_probability('c') )
-    #print npy_vec
-    #print npy_array
-    #print npy_product
-    #print prob_product
 
 @nose.tools.istest
 def compute_matrix_vector_product_with_unordered_indices():
@@ -292,7 +284,6 @@ def compute_matrix_vector_product_with_unordered_indices():
     prob_matrix.balance_transition_prob()
     prob_product = matrix_vector_product(prob_matrix, prob_vec,
                                          do_alignment=True)
-    # print prob_matrix.data_frame.index, prob_product.series.index
     npy_vec = numpy.ones( [3,1] ) / 3.
     npy_array = numpy.zeros( [3,3] )
     npy_array[0,1] = 0.5  # a,b
@@ -330,7 +321,6 @@ def compute_asymmetric_matrix_vector_product_with_unordered_indices():
     prob_matrix.set_probability('c', 'f', 0.00)
     prob_product = asym_matrix_vector_product(prob_matrix, prob_vec,
                                               do_alignment=True)
-    # print prob_matrix.data_frame.index, prob_product.series.index
     npy_vec = numpy.ones( [2,1] ) / 2.
     npy_array = numpy.zeros( [3,2] )
     npy_array[0,0] = 0.01  # a,d
@@ -368,8 +358,6 @@ def compute_symmetric_matrix_matrix_product_with_ordered_indices():
     prob_matrix2.balance_transition_prob()
     prob_product = symmetric_matrix_matrix_product(
                         prob_matrix1, prob_matrix2, do_alignment=False)
-    # print prob_matrix1.data_frame.index, prob_product.data_frame.index
-    # print prob_matrix2.data_frame.columns, prob_product.data_frame.columns
     npy_array = numpy.zeros( [3,3] )
     npy_array[0,1] = 0.5  # a,b
     npy_array[1,2] = 0.1  # b,c
@@ -408,8 +396,6 @@ def compute_symmetric_matrix_matrix_product_with_unordered_indices():
     prob_matrix2.balance_transition_prob()
     prob_product = symmetric_matrix_matrix_product(
                         prob_matrix1, prob_matrix2, do_alignment=True)
-    # print prob_matrix1.data_frame.index, prob_product.data_frame.index
-    # print prob_matrix2.data_frame.columns, prob_product.data_frame.columns
     npy_array = numpy.zeros( [3,3] )
     npy_array[0,1] = 0.5  # a,b
     npy_array[1,2] = 0.1  # b,c
@@ -451,8 +437,6 @@ def compute_asymmetric_matrix_matrix_product_with_unordered_indices():
     prob_matrix2.set_probability('c', 'f', 0.00)
     prob_product = asymmetric_matrix_matrix_product(
                         prob_matrix1, prob_matrix2, do_alignment=True)
-    # print prob_matrix1.data_frame.index, prob_product.data_frame.index
-    # print prob_matrix2.data_frame.columns, prob_product.data_frame.columns
     npy_array1 = numpy.zeros( [3,3] )
     npy_array1[0,1] = 0.5  # a,b
     npy_array1[1,2] = 0.1  # b,c

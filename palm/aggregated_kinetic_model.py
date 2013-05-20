@@ -4,7 +4,6 @@ from palm.base.model import Model
 from palm.state_collection import StateIDCollection
 from palm.route_collection import RouteIDCollection
 from palm.rate_fcn import rate_from_rate_id
-from palm.graph import make_graph_from_route_collection
 from palm.rate_matrix import make_rate_matrix_from_state_ids
 from palm.probability_vector import make_prob_vec_from_state_ids
 
@@ -38,9 +37,6 @@ class AggregatedKineticModel(Model):
     state_class_by_id_dict : dict
         Aggregated class of each state, indexed by state id.
     route_collection : RouteCollection
-    route_graph : DiGraph
-        Work in progress. Would only be used for local matrix methods.
-
     """
     def __init__(self, state_enumerator, route_mapper, parameter_set,
                  fermi_activation=False):
@@ -64,8 +60,6 @@ class AggregatedKineticModel(Model):
                 self.state_class_by_id_dict[this_id] = obs_class
 
         self.route_collection = self.route_mapper(self.state_collection)
-        # self.route_graph = make_graph_from_route_collection(
-        #                         self.route_collection)
 
     def get_parameter(self, parameter_name):
         return self.parameter_set.get_parameter(parameter_name)
@@ -102,38 +96,6 @@ class AggregatedKineticModel(Model):
                         start_id_collection, end_id_collection)
         return submatrix
 
-    def get_local_matrix(self, time, start_state_series, depth):
-        # find routes to neighbor states
-        r = self._find_routes_to_local_neighbors(start_state_series, depth)
-        local_state_id_collection, local_routes = r
-
-        # build a rate matrix from neighbor routes and states
-        rate_matrix = self._build_rate_matrix_from_routes(
-                        local_state_id_collection, local_routes, time)
-        return rate_matrix
-
-    def _find_routes_to_local_neighbors(self, start_state_series, depth):
-        local_routes = self._local_routes_from_graph(start_state_series, depth)
-        local_state_id_collection = local_routes.get_unique_state_ids()
-        if len(local_state_id_collection) == 0:
-            # at the end, when only the fully photobleached state remains,
-            # this line is necessary to avoid an empty rate matrix
-            local_state_id_collection.add_state_id_list(
-                                    start_state_series.index.tolist())
-        else:
-            pass
-        return local_state_id_collection, local_routes
-
-    def _local_routes_from_graph(self, start_state_series, depth):
-        r_id_collection = RouteIDCollection()
-        for start_state_id in start_state_series.index:
-            for r_id in self.route_graph.iter_successors(
-                            start_state_id, depth):
-                r_id_collection.add_id(r_id)
-        local_routes = self.route_collection.get_subset_from_id_collection(
-                        r_id_collection)
-        return local_routes
-
     def _build_rate_matrix_from_routes(self, state_id_collection, routes, time):
         """
         Parameters
@@ -162,39 +124,3 @@ class AggregatedKineticModel(Model):
             rate_matrix.set_rate(start_id, end_id, this_rate)
         rate_matrix.balance_transition_rates()
         return rate_matrix
-
-    def get_local_submatrix(self, rate_matrix, start_class, end_class):
-        id_list = rate_matrix.get_index_id_list()
-        if len(id_list) == 1 and id_list[0] == self.final_state_id:
-            # edge case where only the photobleached state is left
-            start_id_list = end_id_list = id_list
-        else:
-            start_id_list = []
-            end_id_list = []
-            for this_id in id_list:
-                this_obs_class = self.state_class_by_id_dict[this_id]
-                if this_obs_class == start_class:
-                    start_id_list.append(this_id)
-                if this_obs_class == end_class:
-                    end_id_list.append(this_id)
-        start_id_collection = StateIDCollection()
-        start_id_collection.add_state_id_list(start_id_list)
-        end_id_collection = StateIDCollection()
-        end_id_collection.add_state_id_list(end_id_list)
-        submatrix = rate_matrix.get_submatrix(
-                        start_id_collection, end_id_collection)
-        return submatrix
-
-    def get_local_vec(self, rate_matrix, start_state_series):
-        index_list = rate_matrix.get_index_id_list()
-        state_id_collection = StateIDCollection()
-        state_id_collection.add_state_id_list(index_list)
-        local_vec = make_prob_vec_from_state_ids(state_id_collection)
-        for start_state_id in start_state_series.index:
-            state_prob = start_state_series[start_state_id]
-            try:
-                local_vec.set_state_probability(start_state_id, state_prob)
-            except KeyError:
-                print local_vec, rate_matrix
-                raise
-        return local_vec

@@ -1,5 +1,4 @@
 import nose.tools
-import mock
 import numpy
 import scipy.linalg
 from palm.util import ALMOST_ZERO, DATA_TYPE

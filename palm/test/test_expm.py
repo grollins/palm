@@ -1,67 +1,52 @@
 import nose.tools
 import numpy
 import scipy.linalg
-from palm.expm import MatrixExponential, EigenMatrixExponential
-from palm.expm import TheanoEigenMatrixExponential, DiagonalExponential
-from palm.cylib import arnoldi
+from palm.linalg import ScipyMatrixExponential, ScipyMatrixExponential2,\
+                        TheanoEigenExpm, DiagonalExpm
+from palm.rate_matrix import make_rate_matrix_from_state_ids
+from palm.state_collection import StateIDCollection
 
 @nose.tools.istest
-def computes_matrix_exponential():
+def pade_and_eigen_methods_give_same_answer():
     N = 10
-    Q = numpy.random.normal(0.0, 1.0, (N,N))
-    v = numpy.ones([N])
-    m = MatrixExponential(krylov_dimension=8)
-    results = m.expv(1.0, Q, v)
-    palm_expv = results[0]
-    pade_expv = numpy.dot(scipy.linalg.expm(Q), v)
-    # print palm_expv
-    # print pade_expv
-    nose.tools.ok_(numpy.allclose(palm_expv, pade_expv))
-    m2 = EigenMatrixExponential()
-    eigen_expv = m2.expv(1.0, Q, v)
-    nose.tools.ok_(numpy.allclose(eigen_expv, pade_expv))
-    # print eigen_expv
+    Q_array = numpy.random.normal(0.0, 1.0, (N,N))
+    state_ids = StateIDCollection()
+    state_ids.add_state_id_list(range(len(Q_array)))
+    Q = make_rate_matrix_from_state_ids(state_ids, state_ids)
+    Q.data_frame.values[:,:] = Q_array
+    m = ScipyMatrixExponential()
+    palm_expm = m.compute_matrix_exp(Q, 1.0)
+    pade_expm = scipy.linalg.expm(Q_array)
+    nose.tools.ok_(numpy.allclose(palm_expm.data_frame.values, pade_expm))
+    m2 = ScipyMatrixExponential2()
+    eigen_expm = m2.compute_matrix_exp(Q, 1.0)
+    nose.tools.ok_(numpy.allclose(eigen_expm.data_frame.values, pade_expm))
 
 @nose.tools.istest
-def computes_arnoldi():
-    krylov_dimension = 8
+def scipy_eigen_and_theano_eigen_give_same_answer():
     N = 10
-    Q = numpy.random.normal(0.0, 1.0, (N,N))
-    v = numpy.ones([N])
-    v_norm = scipy.linalg.norm(v)
-    H = numpy.zeros((krylov_dimension+2, krylov_dimension+2))
-    # Hessenberg matrix
-    H[krylov_dimension + 1, krylov_dimension] = 1.0
-    # orthonormal basis for the Krylov subspace + one extra vector
-    V = numpy.zeros((N, krylov_dimension+1))
-    V, H, j, happy = arnoldi.arnoldi_iterate(Q, V, H, v, v_norm, tol=1.0e-7,
-                                     krylov_dimension=krylov_dimension)
-    # print H.real
-    # print V.real
-
-@nose.tools.istest
-def compute_correct_exponential_from_spectral_rep():
-    N = 10
-    Q = numpy.random.normal(0.0, 1.0, (N,N))
-    v = numpy.ones([N])
-    m = EigenMatrixExponential()
-    eigen_exp = m.compute_matrix_exp(1.0, Q)
-    pade_exp = scipy.linalg.expm(Q)
-    # print eigen_exp[:,1]
-    print pade_exp[:,1]
-    nose.tools.ok_(numpy.allclose(eigen_exp, pade_exp))
-    m2 = TheanoEigenMatrixExponential()
-    theano_exp = m2.compute_matrix_exp(1.0, Q)
-    print theano_exp[:,1]
-    nose.tools.ok_(numpy.allclose(theano_exp, pade_exp))
+    Q_array = numpy.random.normal(0.0, 1.0, (N,N))
+    state_ids = StateIDCollection()
+    state_ids.add_state_id_list(range(len(Q_array)))
+    Q = make_rate_matrix_from_state_ids(state_ids, state_ids)
+    Q.data_frame.values[:,:] = Q_array
+    m = ScipyMatrixExponential2()
+    eigen_expm = m.compute_matrix_exp(Q, 1.0)
+    pade_expm = scipy.linalg.expm(Q_array)
+    nose.tools.ok_(numpy.allclose(eigen_expm.data_frame.values, pade_expm))
+    m2 = TheanoEigenExpm()
+    theano_expm = m2.compute_matrix_exp(Q, 1.0)
+    nose.tools.ok_(numpy.allclose(theano_expm.data_frame.values, pade_expm))
 
 @nose.tools.istest
 def compute_correct_exponential_for_diagonal_matrix():
     N = 10
-    Q = numpy.diag( numpy.random.normal(0.0, 1.0, (N,)) )
-    pade_exp = scipy.linalg.expm(Q)
-    m = DiagonalExponential()
-    diag_exp = m.compute_matrix_exp(1.0, Q)
-    print pade_exp.diagonal()
-    print diag_exp.diagonal()
-    nose.tools.ok_(numpy.allclose(diag_exp, pade_exp))
+    Q_array = numpy.diag( numpy.random.normal(0.0, 1.0, (N,)) )
+    state_ids = StateIDCollection()
+    state_ids.add_state_id_list(range(len(Q_array)))
+    Q = make_rate_matrix_from_state_ids(state_ids, state_ids)
+    Q.data_frame.values[:,:] = Q_array
+    pade_expm = scipy.linalg.expm(Q_array)
+    m = DiagonalExpm()
+    diag_expm = m.compute_matrix_exp(Q, 1.0)
+    nose.tools.ok_(numpy.allclose(diag_expm.data_frame.values, pade_expm))

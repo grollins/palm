@@ -468,7 +468,7 @@ class TheanoEigenExpm(object):
         D = numpy.power(self.exp_eig_val_array, dwell_time)
         VDVi = self.expm_fcn(self.eig_vecs, D, self.vec_inv)
         expQt_matrix = rate_matrix.copy()
-        expQt_matrix.data_frame.values[:,:] = VDVi
+        expQt_matrix.data_frame.values[:,:] = VDVi.real
         return expQt_matrix
 
 

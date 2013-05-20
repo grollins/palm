@@ -1,15 +1,14 @@
 import os.path
 import nose.tools
-from nose import SkipTest
 import numpy
-from palm.forward_likelihood import ForwardPredictor, LocalPredictor
+from palm.forward_likelihood import ForwardPredictor
 from palm.blink_factory import SingleDarkBlinkFactory
 from palm.blink_parameter_set import SingleDarkParameterSet
 from palm.likelihood_judge import LikelihoodJudge
 from palm.blink_target_data import BlinkTargetData
 
 @nose.tools.istest
-def local_computes_same_likelihood_as_full_predictor():
+def computes_likelihood_successfully():
     model_factory = SingleDarkBlinkFactory(MAX_A=5)
     model_parameters = SingleDarkParameterSet()
     model_parameters.set_parameter('N', 5)
@@ -27,10 +26,3 @@ def local_computes_same_likelihood_as_full_predictor():
     model = model_factory.create_model(model_parameters)
     trajectory = target_data.get_feature()
     forward_prediction = forward_predictor.predict_data(model, trajectory)
-    local_predictor = LocalPredictor(depth=5, num_tracked_states=100)
-    local_prediction = local_predictor.predict_data(model, trajectory)
-    print forward_prediction, local_prediction
-    # try:
-    #     nose.tools.ok_(abs(forward_prediction.compute_difference(local_prediction)) < 1.0)
-    # except:
-    #     raise SkipTest
