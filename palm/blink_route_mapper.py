@@ -4,7 +4,21 @@ from palm.route_collection import RouteCollectionFactory
 
 class Route(object):
     '''
-    A generic route class for aggregated kinetic models.
+    A generic route class for AggregatedKineticModels. Routes represent
+    transitions between states in such models.
+
+    Parameters
+    ----------
+    id_str : string
+        Identifier string for this route.
+    start_state_id, end_state_id : string
+        The identifier strings for the states that are connected by this route.
+    rate_id : string
+        A string that denotes the rate law that governs this route.
+    multiplicity : int
+        A combinatoric factor for this route, which is determined by
+        the number of fluorophores in the initial microstate of
+        the transition.
     '''
     def __init__(self, id_str, start_state_id, end_state_id, rate_id,
                  multiplicity):
@@ -39,6 +53,20 @@ class SingleDarkRouteMapperFactory(object):
     """
     This factory class creates a route mapper for
     a blink model with one dark state.
+
+    Attributes
+    ----------
+    transition_factory : class
+        A factory class for transitions, which are simply used as
+        helper objects when enumerating all of the routes.
+
+    Parameters
+    ----------
+    parameter_set : ParameterSet
+    route_factory : class, optional
+        A class for making Route objects.
+    max_A : int, optional
+        Number of fluorophores that can be simultaneously active.
     """
     def __init__(self, parameter_set, route_factory=Route, max_A=5):
         super(SingleDarkRouteMapperFactory, self).__init__()
@@ -48,6 +76,15 @@ class SingleDarkRouteMapperFactory(object):
         self.transition_factory = SingleDarkTransition
 
     def create_route_mapper(self):
+        """
+        Creates a method that builds a RouteCollection, made up of
+        all possible routes in the model.
+
+        Returns
+        -------
+        map_routes : callable f(state_collection)
+            A method that builds a RouteCollection.
+        """
         activation = self.transition_factory(
                            -1, 1, 0, 0, {'I':1}, 'ka')
         blinking = self.transition_factory(
@@ -59,9 +96,21 @@ class SingleDarkRouteMapperFactory(object):
         allowed_transitions_list = [activation, blinking, recovery, bleaching]
 
         def map_routes(state_collection):
+            """
+            Build a route collection, based on the states in `state_collection`.
+
+            Parameters
+            ----------
+            state_collection : StateCollection
+                States for a model with one dark state.
+
+            Returns
+            -------
+            route_collection : RouteCollection
+            """
             rc_factory = RouteCollectionFactory()
             for start_id, start_state in state_collection.iter_states():
-                route_iterator = self.enumerate_allowed_transitions(
+                route_iterator = self._enumerate_allowed_transitions(
                                     start_state, allowed_transitions_list)
                 for end_id, transition in route_iterator:
                     rate_id = transition.rate_id
@@ -74,8 +123,25 @@ class SingleDarkRouteMapperFactory(object):
             return route_collection
         return map_routes
 
-    def enumerate_allowed_transitions(self, start_state,
+    def _enumerate_allowed_transitions(self, start_state,
                                       allowed_transitions_list):
+        """
+        Iterate through possible transitions and filter out those
+        that lead to invalid states.
+
+        Parameters
+        ----------
+        start_state : State
+            Enumerate transitions that lead from this state to other states.
+        allowed_transitions_list : list
+            Possible transitions from `start_state` to other states.
+
+        Returns
+        -------
+        end_id : string
+            Transition will lead from `start_state` to the state with this id.
+        transition : SingleDarkTransition
+        """
         for transition in allowed_transitions_list:
             I2 = start_state['I'] + transition.get_dPop('I')
             A2 = start_state['A'] + transition.get_dPop('A')
@@ -91,7 +157,24 @@ class SingleDarkRouteMapperFactory(object):
 
 class SingleDarkTransition(object):
     """
-    A helper class for SingleDarkRouteMapperFactory.
+    A helper class for SingleDarkRouteMapperFactory. Represents information
+    about a transition between two states.
+
+    Attributes
+    ----------
+    dPop_dict : dict
+        The change in populations of microstates for this transition.
+
+    Parameters
+    ----------
+    dI, dA, dD, dB : int
+        Changes in microstate populations. The little 'd' here means 'delta'.
+    reacting_species_dict : dict
+        The stoichiometry of the reactants for this transition.
+        If the transition is I goes to A. Then `reacting_species_dict` will
+        be a dictionary like this {'I':1}.
+    rate_id : string
+        A string that denotes the rate law that governs this transition.
     """
     def __init__(self, dI, dA, dD, dB, reacting_species_dict, rate_id):
         self.dPop_dict = {'I':dI, 'A':dA, 'D':dD, 'B':dB}
@@ -109,7 +192,21 @@ class SingleDarkTransition(object):
         return self.dPop_dict[species_label]
 
     def is_allowed(self, state):
-        return_value = True
+        """
+        Determine whether state can undergo this transition,
+        based on whether the state has the requisite reactants
+        to undergo the transition.
+
+        Parameters
+        ----------
+        state : State
+            Starting state for the transition.
+
+        Returns
+        -------
+        is_transition_allowed : bool
+        """
+        is_transition_allowed = True
         for rs in self.reacting_species_dict.iterkeys():
             num_reactants = self.reacting_species_dict[rs]
             if rs == 'I':
@@ -122,26 +219,56 @@ class SingleDarkTransition(object):
                 species_starting_pop = state['B']
             if species_starting_pop < num_reactants:
                 # we need at least num_reactants for the transition
-                return_value = False
+                is_transition_allowed = False
                 break
-        return return_value
+        return is_transition_allowed
 
     def compute_multiplicity(self, start_state):
         return 10**self.compute_log_combinatoric_factor(start_state)
 
     def compute_log_combinatoric_factor(self, start_state):
+        """
+        Compute combinatoric factor for this transition,
+        which is based on the population of the reactant
+        species (microstate) and the stoichiometry of
+        the transition.
+
+        Parameters
+        ----------
+        state_state : State
+
+        Returns
+        -------
+        log_combinatoric_factor : float
+            Log base 10 combinatoric factor.
+        """
         # reacting_species_id = I, A, D, or B
         reacting_species_id = self.reacting_species_dict.keys()[0]
         n = start_state[reacting_species_id]
         k = abs(self.reacting_species_dict[reacting_species_id])
         combinatoric_factor = n_choose_k(n,k)
-        return numpy.log10(combinatoric_factor)
+        log_combinatoric_factor = numpy.log10(combinatoric_factor)
+        return log_combinatoric_factor
 
 
 class DoubleDarkRouteMapperFactory(object):
     """
     This factory class creates a route mapper for
     a blink model with two dark states.
+
+    Attributes
+    ----------
+    transition_factory : class
+        A factory class for transitions, which are simply used as
+        helper objects when enumerating all of the routes.
+
+    Parameters
+    ----------
+    parameter_set : ParameterSet
+    route_factory : class, optional
+        A class for making Route objects.
+    max_A : int, optional
+        Number of fluorophores that can be simultaneously active.
     """
     def __init__(self, parameter_set, route_factory=Route, max_A=5):
         super(DoubleDarkRouteMapperFactory, self).__init__()
@@ -151,6 +278,15 @@ class DoubleDarkRouteMapperFactory(object):
         self.transition_factory = DoubleDarkTransition
 
     def create_route_mapper(self):
+        """
+        Creates a method that builds a RouteCollection, made up of
+        all possible routes in the model.
+
+        Returns
+        -------
+        map_routes : callable f(state_collection)
+            A method that builds a RouteCollection.
+        """
         activation = self.transition_factory(
                            -1, 1, 0, 0, 0, {'I':1}, 'ka')
         blinking1 = self.transition_factory(
@@ -167,9 +303,21 @@ class DoubleDarkRouteMapperFactory(object):
                                     blinking2, recovery2, bleaching]
 
         def map_routes(state_collection):
+            """
+            Build a route collection, based on the states in `state_collection`.
+
+            Parameters
+            ----------
+            state_collection : StateCollection
+                States for a model with two dark states.
+
+            Returns
+            -------
+            route_collection : RouteCollection
+            """
             rc_factory = RouteCollectionFactory()
             for start_id, start_state in state_collection.iter_states():
-                route_iterator = self.enumerate_allowed_transitions(
+                route_iterator = self._enumerate_allowed_transitions(
                                     start_state, allowed_transitions_list)
                 for end_id, transition in route_iterator:
                     rate_id = transition.rate_id
@@ -182,8 +330,25 @@ class DoubleDarkRouteMapperFactory(object):
             return route_collection
         return map_routes
 
-    def enumerate_allowed_transitions(self, start_state,
+    def _enumerate_allowed_transitions(self, start_state,
                                       allowed_transitions_list):
+        """
+        Iterate through possible transitions and filter out those
+        that lead to invalid states.
+
+        Parameters
+        ----------
+        start_state : State
+            Enumerate transitions that lead from this state to other states.
+        allowed_transitions_list : list
+            Possible transitions from `start_state` to other states.
+
+        Returns
+        -------
+        end_id : string
+            Transition will lead from `start_state` to the state with this id.
+        transition : SingleDarkTransition
+        """
         for transition in allowed_transitions_list:
             end_I =  start_state['I'] + transition.get_dPop('I')
             end_A =  start_state['A'] + transition.get_dPop('A')
@@ -200,7 +365,24 @@ class DoubleDarkRouteMapperFactory(object):
 
 class DoubleDarkTransition(object):
     """
-    A helper class for DoubleDarkRouteMapperFactory.
+    A helper class for DoubleDarkRouteMapperFactory. Represents information
+    about a transition between two states.
+
+    Attributes
+    ----------
+    dPop_dict : dict
+        The change in populations of microstates for this transition.
+
+    Parameters
+    ----------
+    dI, dA, dD1, dD2, dB : int
+        Changes in microstate populations. The little 'd' here means 'delta'.
+    reacting_species_dict : dict
+        The stoichiometry of the reactants for this transition.
+        If the transition is I goes to A. Then `reacting_species_dict` will
+        be a dictionary like this {'I':1}.
+    rate_id : string
+        A string that denotes the rate law that governs this route.
     """
     def __init__(self, dI, dA, dD1, dD2, dB, reacting_species_dict, rate_id):
         self.dPop_dict = {'I':dI, 'A':dA, 'D1':dD1, 'D2':dD2, 'B':dB}
@@ -219,6 +401,20 @@ class DoubleDarkTransition(object):
         return self.dPop_dict[species_label]
 
     def is_allowed(self, start_state):
+        """
+        Determine whether state can undergo this transition,
+        based on whether the state has the requisite reactants
+        to undergo the transition.
+
+        Parameters
+        ----------
+        state : State
+            Starting state for the transition.
+
+        Returns
+        -------
+        is_transition_allowed : bool
+        """
         return_value = True
         for rs in self.reacting_species_dict.iterkeys():
             num_reactants = self.reacting_species_dict[rs]
@@ -242,6 +438,21 @@ class DoubleDarkTransition(object):
         return 10**self.compute_log_combinatoric_factor(start_state)
 
     def compute_log_combinatoric_factor(self, start_state):
+        """
+        Compute combinatoric factor for this transition,
+        which is based on the population of the reactant
+        species (microstate) and the stoichiometry of
+        the transition.
+
+        Parameters
+        ----------
+        state_state : State
+
+        Returns
+        -------
+        log_combinatoric_factor : float
+            Log base 10 combinatoric factor.
+        """
         # reacting_species_id = I, A, D1, D2, or B
         reacting_species_id = self.reacting_species_dict.keys()[0]
         n = start_state[reacting_species_id]

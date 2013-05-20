@@ -1,7 +1,10 @@
 import abc
 
 class TrajectorySegment(object):
-    """Segment is an abstract class."""
+    """
+    Segment is an abstract class. Trajectories are divided into discrete
+    segments. Each segment consists of an aggregated class and a duration.
+    """
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
@@ -14,7 +17,9 @@ class TrajectorySegment(object):
 
 
 class Trajectory(object):
-    """Trajectory is an abstract class."""
+    """
+    Trajectory is an abstract class. A Trajectory is a series of segments.
+    """
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod

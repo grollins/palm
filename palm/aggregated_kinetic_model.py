@@ -10,10 +10,37 @@ from palm.probability_vector import make_prob_vec_from_state_ids
 
 
 class AggregatedKineticModel(Model):
-    """An AggregatedKineticModel consists of states and routes.
-       The routes are transitions between states. The model is
-       aggregated in the sense that each state belongs to one
-       of several discrete observation classes (e.g. 'dark' or 'bright').
+    """
+    An AggregatedKineticModel consists of states and routes.
+    The routes are transitions between states. The model is
+    aggregated in the sense that each state belongs to one
+    of several discrete aggregated classes (e.g. 'dark' or 'bright').
+    Note that the term `class` in "aggregated class" does not refer
+    to the python concept of a class; it's a different meaning.
+
+    Parameters
+    ----------
+    state_enumerator : callable f()
+        Generates a StateCollection for the model.
+    route_mapper : callable f(state_collection)
+        Generates a RouteCollection for the model.
+    parameter_set : ParameterSet
+    fermi_activation : bool, optional
+        Whether the activation rates vary with time.
+
+    Attributes
+    ----------
+    state_collection : StateCollection
+    state_groups : pandas.DataFrame
+    state_id_collection : StateIDCollection
+    state_ids_by_class_dict : dict
+        Lists of state ids, indexed by class name.
+    state_class_by_id_dict : dict
+        Aggregated class of each state, indexed by state id.
+    route_collection : RouteCollection
+    route_graph : DiGraph
+        Work in progress. Would only be used for local matrix methods.
+
     """
     def __init__(self, state_enumerator, route_mapper, parameter_set,
                  fermi_activation=False):
@@ -37,8 +64,8 @@ class AggregatedKineticModel(Model):
                 self.state_class_by_id_dict[this_id] = obs_class
 
         self.route_collection = self.route_mapper(self.state_collection)
-        self.route_graph = make_graph_from_route_collection(
-                                self.route_collection)
+        # self.route_graph = make_graph_from_route_collection(
+        #                         self.route_collection)
 
     def get_parameter(self, parameter_name):
         return self.parameter_set.get_parameter(parameter_name)
@@ -53,12 +80,22 @@ class AggregatedKineticModel(Model):
         return len(self.route_collection)
 
     def build_rate_matrix(self, time=0.):
+        """
+        Returns
+        -------
+        rate_matrix : RateMatrix
+        """
         rate_matrix = self._build_rate_matrix_from_routes(
                             self.state_id_collection, self.route_collection,
                             time)
         return rate_matrix
 
     def get_submatrix(self, rate_matrix, start_class, end_class):
+        """
+        Returns
+        -------
+        submatrix : RateMatrix
+        """
         start_id_collection = self.state_ids_by_class_dict[start_class]
         end_id_collection = self.state_ids_by_class_dict[end_class]
         submatrix = rate_matrix.get_submatrix(
@@ -66,14 +103,11 @@ class AggregatedKineticModel(Model):
         return submatrix
 
     def get_local_matrix(self, time, start_state_series, depth):
-        # ==================================
-        # = find routes to neighbor states =
-        # ==================================
+        # find routes to neighbor states
         r = self._find_routes_to_local_neighbors(start_state_series, depth)
         local_state_id_collection, local_routes = r
-        # =======================================================
-        # = build a rate matrix from neighbor routes and states =
-        # =======================================================
+
+        # build a rate matrix from neighbor routes and states
         rate_matrix = self._build_rate_matrix_from_routes(
                         local_state_id_collection, local_routes, time)
         return rate_matrix
@@ -101,6 +135,19 @@ class AggregatedKineticModel(Model):
         return local_routes
 
     def _build_rate_matrix_from_routes(self, state_id_collection, routes, time):
+        """
+        Parameters
+        ----------
+        state_id_collection : StateIDCollection
+        routes : RouteCollection
+        time : float
+            Cumulative time since start of trajectory,
+            needed to compute time-dependent rates.
+
+        Returns
+        -------
+        rate_matrix : RateMatrix
+        """
         rate_matrix = make_rate_matrix_from_state_ids(
                         index_id_collection=state_id_collection,
                         column_id_collection=state_id_collection)

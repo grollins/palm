@@ -1,7 +1,9 @@
 import abc
 
 class Model(object):
-    """Model is an abstract class."""
+    """
+    Model is an abstract class.
+    """
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod

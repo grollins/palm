@@ -1,7 +1,10 @@
 import abc
 
 class DataPredictor(object):
-    """DataPredictor is an abstract class"""
+    """
+    DataPredictor is an abstract class. The role of DataPredictor is
+    to compute a quantity of interest given a model and data.
+    """
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod

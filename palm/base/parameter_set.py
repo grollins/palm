@@ -1,7 +1,10 @@
 import abc
 
 class ParameterSet(object):
-    """ParameterSet is an abstract class."""
+    """
+    ParameterSet is an abstract class. A ParameterSet is a collection of
+    parameters that describe a model.
+    """
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod

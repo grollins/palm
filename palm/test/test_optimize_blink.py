@@ -7,7 +7,6 @@ from palm.blink_factory import SingleDarkBlinkFactory
 from palm.blink_parameter_set import SingleDarkParameterSet
 from palm.likelihood_judge import LikelihoodJudge
 from palm.backward_likelihood import BackwardPredictor
-from palm.viterbi_predictor import ViterbiPredictor
 from palm.blink_target_data import BlinkTargetData
 from palm.scipy_optimizer import ScipyOptimizer
 

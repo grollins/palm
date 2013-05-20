@@ -2,7 +2,16 @@ import numpy
 from palm.base.trajectory import TrajectorySegment, Trajectory
 
 class DiscreteDwellSegment(TrajectorySegment):
-    """Dwells consist of an observation class and a dwell duration."""
+    """
+    Dwells consist of an aggregated class and a dwell duration.
+
+    Parameters
+    ----------
+    segment_class : string
+        The aggregated class observed during this segment of the trajectory.
+    segment_duration : float
+        The duration of this segment of the trajectory.
+    """
     def __init__(self, segment_class, segment_duration):
         super(DiscreteDwellSegment, self).__init__()
         self.segment_class = segment_class
@@ -22,8 +31,17 @@ class DiscreteDwellSegment(TrajectorySegment):
 
 class DiscreteStateTrajectory(Trajectory):
     """
-    Each segment of the trajectory corresponds to a
-    discrete observation class (e.g. dark or bright).
+    A sequence of trajectory segments. During each segment an observation
+    is made, which corresponds to one of a finite number of discrete
+    aggregated classes. Each segment lasts for a finite length of time.
+
+    Attributes
+    ----------
+    segment_list : list
+        The segments that make up the trajectory.
+    cumulative_time_list : list
+        The time elapsed since the start of the trajectory.
+        Element `i` is the time elapsed up to the end of segment `i`.
     """
     def __init__(self):
         super(DiscreteStateTrajectory, self).__init__()
@@ -56,6 +74,14 @@ class DiscreteStateTrajectory(Trajectory):
         return is_equal
 
     def add_segment(self, segment):
+        """
+        Add segment to trajectory. Assumes that this new segment comes after
+        the previously added segments.
+
+        Parameters
+        ----------
+        segment : TrajectorySegment
+        """
         self.segment_list.append(segment)
         segment_duration = segment.get_duration()
         if len(self.cumulative_time_list) == 0:
@@ -94,19 +120,26 @@ class DiscreteStateTrajectory(Trajectory):
         return csv_str
 
     def as_continuous_traj_array(self):
-        class_to_signal_dict = {'dark':0.0, 'bright':1.0}
+        """
+        Convert trajectory to a format that looks good for plotting.
+        Output format:
+        0.0 0
+        1.0 0
+        1.0 1
+        1.1 1
+        1.1 0
+        3.6 0
+        3.6 1
+        3.8 1
+        3.8 0
+
+        Returns
+        -------
+        traj_array : numpy ndarray
+        """
+        class_to_signal_dict = {'dark':0, 'bright':1}
         time_list = []
         signal_list = []
-        # desired trajectory
-        # 0.0 dark
-        # 1.0 dark
-        # 1.0 bright
-        # 1.1 bright
-        # 1.1 dark
-        # 3.6 dark
-        # 3.6 bright
-        # 3.8 bright
-        # 3.8 dark
         time_list.append(0.0)
         signal_list.append(class_to_signal_dict['dark'])
         for i, segment in enumerate(self):

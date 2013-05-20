@@ -10,7 +10,40 @@ from palm.rate_matrix import RateMatrixTrajectory
 from palm.util import ALMOST_ZERO
 
 class BackwardPredictor(DataPredictor):
-    """docstring for BackwardPredictor"""
+    """
+    Computes the log likelihood of a trajectory using the Backward algorithm.
+
+    Attributes
+    ----------
+    backward_calculator : BackwardCalculator
+        The calculator handles the linear algebra required to compute
+        the likelihood.
+    diag_backward_calculator : BackwardCalculator
+        A calculator for diagonal rate matrices. Useful for single dark
+        state models, in which the matrix of dark-to-dark transitions
+        is diagonal.
+    prediction_factory : class
+        A class that makes `Prediction` objects.
+    vector_trajectory : VectorTrajectory
+        Each intermediate step of the calculation results in a vector.
+        This data structure saves the intermediate vectors if `archive_matrices`
+        is True.
+    rate_matrix_trajectory : RateMatrixTrajectory
+        Data structure that saves the rate matrix at each intermediate step
+        of the calculation if `archive_matrices` is True.
+    scaling_factor_set : ScalingFactorSet
+        Probability vector is scaled at each step of the calculation
+        to prevent numerical underflow and the resulting scaling factors are
+        saved in this data structure.
+
+    Parameters
+    ----------
+    always_rebuild_rate_matrix : bool
+        Whether to rebuild rate matrix for every trajectory segment.
+    archive_matrices : bool, optional
+        Whether to save the intermediate results of the calculation for
+        later plotting, debugging, etc.
+    """
     def __init__(self, always_rebuild_rate_matrix, archive_matrices=False):
         super(BackwardPredictor, self).__init__()
         self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
@@ -36,6 +69,19 @@ class BackwardPredictor(DataPredictor):
         return self.prediction_factory(log_likelihood)
 
     def compute_backward_vectors(self, model, trajectory):
+        """
+        Computes backward vector for each trajectory segment, starting from
+        the final segment and working backward to the first segment.
+
+        Parameters
+        ----------
+        model : BlinkModel
+        trajectory : Trajectory
+
+        Returns
+        -------
+        scaling_factor_set : ScalingFactorSet
+        """
         if self.archive_matrices:
             self.rate_matrix_trajectory = RateMatrixTrajectory()
             self.vector_trajectory = VectorTrajectory(model.state_id_collection)
@@ -145,7 +191,14 @@ class ScalingFactorSet(object):
 
 
 class RateMatrixOrganizer(object):
-    """docstring for RateMatrixOrganizer"""
+    """
+    Helper class for building rate matrices.
+
+    Parameters
+    ----------
+    model : AggregatedKineticModel
+        The model from which to build the rate matrix.
+    """
     def __init__(self, model):
         super(RateMatrixOrganizer, self).__init__()
         self.model = model

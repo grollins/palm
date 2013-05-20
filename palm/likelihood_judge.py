@@ -1,4 +1,5 @@
 from palm.base.judge import Judge
+# import memory_profiler as mprof
 
 class LikelihoodJudge(Judge):
     """
@@ -28,6 +29,7 @@ class CollectionLikelihoodJudge(Judge):
         super(CollectionLikelihoodJudge, self).__init__()
 
     def judge_prediction(self, model, data_predictor, target_data):
+        # pdb.set_trace()
         total_log_likelihood = 0.0
         for i, trajectory in enumerate(target_data):
             prediction = data_predictor.predict_data(model, trajectory)
@@ -36,4 +38,8 @@ class CollectionLikelihoodJudge(Judge):
             total_log_likelihood += log_likelihood
         avg_log_likelihood = total_log_likelihood / len(target_data)
         score = -avg_log_likelihood
+
+        # print mprof.memory_usage()
+        # pdb.set_trace()
+
         return score

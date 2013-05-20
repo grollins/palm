@@ -6,10 +6,10 @@ from palm.discrete_state_trajectory import DiscreteStateTrajectory,\
 
 class BlinkTargetData(TargetData):
     """
-    One dwell trajectory loaded from a file. The trajectory
+    A dwell trajectory loaded from a file. The trajectory
     should be a series of dark and bright observations and
     the duration of each observation.
-    Expected format:
+    Expecting csv file with this format:
         class,dwell time
         dark,1.5
         bright,0.3
@@ -18,17 +18,37 @@ class BlinkTargetData(TargetData):
         .
         .
         .
+
+    Attributes
+    ----------
+    trajectory_factory : class
+        A class that makes Trajectory objects.
+    segment_factory : class
+        A class that makes TrajectorySegment objects.
+    trajectory : Trajectory
+        Represents a time trace of dark and bright observations.
+    filename : string
+        The trajectory data is loaded from this path.
     """
     def __init__(self):
         super(BlinkTargetData, self).__init__()
         self.trajectory_factory = DiscreteStateTrajectory
         self.segment_factory = DiscreteDwellSegment
         self.trajectory = None
+        self.filename = None
 
     def __len__(self):
         return len(self.trajectory)
 
     def load_data(self, data_file):
+        """
+        Load trajectory from file.
+
+        Parameters
+        ----------
+        data_file : string
+            Path of file to load.
+        """
         self.filename = data_file
         data_table = pandas.read_csv(data_file, header=0)
         self.trajectory = self.trajectory_factory()
@@ -54,8 +74,17 @@ class BlinkTargetData(TargetData):
 
 class BlinkCollectionTargetData(TargetData):
     """
-    An ensemble of trajectories. Each trajectory is expected
-    to be in the format described for BlinkTargetData.
+    An ensemble of trajectories.
+
+    Attributes
+    ----------
+    trajectory_data_factory : class
+        A class that makes TargetData objects.
+    target_data_collection : list
+        A list that holds the individual trajectories.
+    paths : list
+        Each trajectory is loaded from a file. `paths` is a list
+        of the paths for these files.
     """
     def __init__(self):
         super(BlinkCollectionTargetData, self).__init__()
@@ -71,11 +100,24 @@ class BlinkCollectionTargetData(TargetData):
             yield trajectory
 
     def iter_feature(self):
+        """
+        Iterate over trajectories in collection.
+
+        Returns
+        -------
+        trajectory : TargetData
+            An individual trajectory from the collection.
+        """
         for blink_target in self.target_data_collection:
             trajectory = blink_target.get_feature()
             yield trajectory
 
     def get_total_number_of_trajectory_segments(self):
+        """
+        Each trajectory is made up of segments (aka dwells).
+        This method returns the total number of segments across
+        all trajectories in the collection.
+        """
         num_segments = 0
         for traj in self:
             num_segments += len(traj)
@@ -85,6 +127,14 @@ class BlinkCollectionTargetData(TargetData):
         return self.target_data_collection[index]
 
     def load_data(self, data_file):
+        """
+        Load a trajectory and add it to the collection.
+
+        Parameters
+        ----------
+        data_file : string
+            Path of file to load.
+        """
         self.target_data_collection = []
         self.paths = []
         for traj_path in open(data_file, 'r'):
@@ -107,6 +157,20 @@ class BlinkCollectionTargetData(TargetData):
         return self.paths
 
     def make_copy_from_selection(self, inds):
+        """
+        Make a new collection with a subset of the trajectories
+        in this collection.
+
+        Parameters
+        ----------
+        inds : list
+            The indices of the trajectories to include in the subcollection.
+
+        Returns
+        -------
+        my_clone : BlinkCollectionTargetData
+            New collection which contains only the selected trajectories.
+        """
         my_clone = deepcopy(self)
         new_data_collection = []
         new_paths = []

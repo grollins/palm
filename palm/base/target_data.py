@@ -1,7 +1,11 @@
 import abc
 
 class TargetData(object):
-    """docstring for TargetData"""
+    """
+    TargetData is an abstract class. Typically, parameter optimization
+    tries to improve the agreement between a Prediction object and a
+    TargetData object.
+    """
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod

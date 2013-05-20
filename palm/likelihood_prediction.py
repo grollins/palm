@@ -4,7 +4,11 @@ from palm.base.prediction import Prediction
 class LikelihoodPrediction(Prediction):
     """
     A prediction that consists only of a likelihood,
-    which is probably calculated by a predictor class.
+    which is probably calculated by a predictor object.
+
+    Parameters
+    ----------
+    likelihood : float
     """
     def __init__(self, likelihood):
         super(LikelihoodPrediction, self).__init__()

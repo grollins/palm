@@ -4,12 +4,38 @@ from palm.base.parameter_set import ParameterSet
 
 def randomize_parameter(parameter_set, parameter_name, lower_bound,
                         upper_bound):
+    """
+    Change a parameter to a random value within the specified range.
+    `parameter_name` in `parameter_set` will be changed in-place to
+    the randomly selected value in `[lower_bound, upper_bound)`.
+
+    Parameters
+    ----------
+    parameter_set : ParameterSet
+    parameter_name : string
+    lower_bound, upper_bound : float
+
+    Returns
+    -------
+    parameter_set : ParameterSet
+    """
     new_value = random.uniform(lower_bound, upper_bound)
     parameter_set.set_parameter(parameter_name, new_value)
     return parameter_set
 
 class SingleDarkParameterSet(ParameterSet):
-    """Parameters for a blink model with one dark state."""
+    """
+    Parameters for a blink model with one dark state. The parameters are
+    `log_ka`, `log_kr`, `log_kd`, `log_kb`, `N`, `fermi_T`, and `fermi_tf`.
+
+    Attributes
+    ----------
+    parameter_dict : dict
+        Parameter values, indexed by parameter names.
+    bounds : dict
+        Bounds for parameter values (during optimization),
+        indexed by parameter names.
+    """
     def __init__(self):
         super(SingleDarkParameterSet, self).__init__()
         self.parameter_dict = {'log_ka':-1.0, 'log_kd':-1.0,
@@ -21,8 +47,6 @@ class SingleDarkParameterSet(ParameterSet):
                             'log_kb':(None, None) }
 
     def __str__(self):
-        # my_array = self.as_array()
-        # return "%s" % (my_array)
         log_ka = self.get_parameter('log_ka')
         log_kd = self.get_parameter('log_kd')
         log_kr = self.get_parameter('log_kr')
@@ -50,6 +74,13 @@ class SingleDarkParameterSet(ParameterSet):
         return self.parameter_dict[param_name]
 
     def as_array(self):
+        """
+        Converts parameter set to numpy array.
+        
+        Returns
+        -------
+        param_array : ndarray
+        """
         log_ka = self.get_parameter('log_ka')
         log_kd = self.get_parameter('log_kd')
         log_kr = self.get_parameter('log_kr')
@@ -57,12 +88,20 @@ class SingleDarkParameterSet(ParameterSet):
         N = self.get_parameter('N')
         fermi_T = self.get_parameter('fermi_T')
         fermi_tf = self.get_parameter('fermi_tf')
-        return numpy.array([log_ka, log_kd, log_kr, log_kb, N,
-                            fermi_T, fermi_tf])
+        param_array = numpy.array([log_ka, log_kd, log_kr, log_kb, N,
+                                   fermi_T, fermi_tf])
+        return param_array
 
     def update_from_array(self, parameter_array):
-        """Expected order of parameters in array:
-           log_ka, log_kd, log_kr, log_kb, N, fermi_T, fermi_tf
+        """
+        Set parameter values from a numpy array. Useful because numpy arrays
+        are the input and output type of scipy optimization methods.
+        Expected order of parameters in array:
+        `log_ka`, `log_kd`, `log_kr`, `log_kb`, `N`, `fermi_T`, `fermi_tf`
+
+        Parameters
+        ----------
+        parameter_array : ndarray
         """
         parameter_array = numpy.atleast_1d(parameter_array)
         self.set_parameter('log_ka', parameter_array[0])
@@ -94,7 +133,19 @@ class SingleDarkParameterSet(ParameterSet):
 
 
 class DoubleDarkParameterSet(ParameterSet):
-    """Parameters for a blink model with two dark states."""
+    """
+    Parameters for a blink model with one dark state. The parameters are
+    `log_ka`, `log_kr`, `log_kr_diff`, `log_kd1`, `log_kd2`, `log_kb`, `N`,
+    `fermi_T`, and `fermi_tf`.
+
+    Attributes
+    ----------
+    parameter_dict : dict
+        Parameter values, indexed by parameter names.
+    bounds : dict
+        Bounds for parameter values (during optimization),
+        indexed by parameter names.
+    """
     def __init__(self):
         super(DoubleDarkParameterSet, self).__init__()
         self.parameter_dict = {'log_ka':-1.0, 'log_kd1':-1.0,
@@ -132,6 +183,13 @@ class DoubleDarkParameterSet(ParameterSet):
         return self.parameter_dict[param_name]
 
     def as_array(self):
+        """
+        Converts parameter set to numpy array.
+        
+        Returns
+        -------
+        param_array : ndarray
+        """
         log_ka = self.get_parameter('log_ka')
         log_kd1 = self.get_parameter('log_kd1')
         log_kr1 = self.get_parameter('log_kr1')
@@ -145,9 +203,16 @@ class DoubleDarkParameterSet(ParameterSet):
                             log_kb, N, fermi_T, fermi_tf])
 
     def update_from_array(self, parameter_array):
-        """Expected order of parameters in array:
-           log_ka, log_kd1, log_kr1, log_kd2, log_kr_diff, log_kb, N,
-           fermi_T, fermi_tf
+        """
+        Set parameter values from a numpy array. Useful because numpy arrays
+        are the input and output type of scipy optimization methods.
+        Expected order of parameters in array:
+        `log_ka`, `log_kd1`, `log_kr1`, `log_kd2`, `log_kr_diff`,
+        `log_kb`, `N`, `fermi_T`, `fermi_tf`.
+
+        Parameters
+        ----------
+        parameter_array : ndarray
         """
         parameter_array = numpy.atleast_1d(parameter_array)
         self.set_parameter('log_ka', parameter_array[0])
