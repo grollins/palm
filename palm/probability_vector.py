@@ -54,7 +54,14 @@ class ProbabilityVector(object):
                               other_vec.series.values)
     def compute_norm(self):
         return scipy.linalg.norm(self.series)
-
+    def is_finite(self):
+        """
+        Returns
+        -------
+        all_finite : True if no elements of vector are inf, -inf, or nan.
+        """
+        all_finite = numpy.all(numpy.isfinite(self.series))
+        return all_finite
 
 class VectorTrajectory(object):
     """docstring for VectorTrajectory"""

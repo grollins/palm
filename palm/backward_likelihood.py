@@ -44,9 +44,12 @@ class BackwardPredictor(DataPredictor):
     archive_matrices : bool, optional
         Whether to save the intermediate results of the calculation for
         later plotting, debugging, etc.
+    noisy : bool, optional
+        Whether to print additional ouput, such as intermediate values
+        of likelihood calculation. Intended for debugging purposes.
     """
     def __init__(self, expm_calculator, always_rebuild_rate_matrix,
-                 archive_matrices=False):
+                 archive_matrices=False, noisy=False):
         super(BackwardPredictor, self).__init__()
         self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
         self.archive_matrices = archive_matrices
@@ -58,6 +61,7 @@ class BackwardPredictor(DataPredictor):
         self.vector_trajectory = None
         self.rate_matrix_trajectory = None
         self.scaling_factor_set = None
+        self.noisy = noisy
 
     def predict_data(self, model, trajectory):
         self.scaling_factor_set = self.compute_backward_vectors(
@@ -88,7 +92,9 @@ class BackwardPredictor(DataPredictor):
         else:
             pass
         # initialize probability vector
-        scaling_factor_set = ScalingFactorSet()
+        if self.noisy:
+            print 'end of trajectory'
+        scaling_factor_set = ScalingFactorSet(self.noisy)
         rate_matrix_organizer = RateMatrixOrganizer(model)
         rate_matrix_organizer.build_rate_matrix(time=trajectory.get_end_time())
         final_prob = model.get_final_probability_vector()
@@ -100,6 +106,9 @@ class BackwardPredictor(DataPredictor):
 
         # loop through trajectory segments, compute likelihood for each segment
         for segment_number, segment in trajectory.reverse_iter():
+            if self.noisy:
+                print 'segment %d' % segment_number
+
             # get current segment class and duration
             cumulative_time = trajectory.get_cumulative_time(segment_number)
             segment_duration = segment.get_duration()
@@ -119,6 +128,7 @@ class BackwardPredictor(DataPredictor):
             # skip updating the rate matrix. we should only do this when none of the rates vary with time.
             else:
                 pass
+
             rate_matrix_aa = rate_matrix_organizer.get_submatrix(
                                 start_class, start_class)
             rate_matrix_ab = rate_matrix_organizer.get_submatrix(
@@ -128,10 +138,19 @@ class BackwardPredictor(DataPredictor):
                         rate_matrix_organizer.rate_matrix)
             else:
                 pass
+
             beta = self._compute_beta( rate_matrix_aa, rate_matrix_ab,
                                        segment_number, segment_duration,
                                        start_class, end_class,
                                        next_beta)
+            if beta.is_finite():
+                pass
+            else:
+                print "Likelihood calculation failure"
+                print rate_matrix_aa
+                print rate_matrix_ab
+                print beta
+                raise RuntimeError
 
             # scale probability vector to avoid numerical underflow
             scaled_beta = scaling_factor_set.scale_vector(beta)
@@ -147,6 +166,8 @@ class BackwardPredictor(DataPredictor):
         total_beta = vector_product(init_prob_vec, next_beta, do_alignment=True)
         total_beta_vec = ProbabilityVector()
         total_beta_vec.series = pandas.Series([total_beta,])
+        if self.noisy:
+            print 'start of trajectory'
         scaled_total_beta = scaling_factor_set.scale_vector(total_beta_vec)
         if self.archive_matrices:
             self.vector_trajectory.add_vector(0.0, scaled_total_beta)
@@ -166,8 +187,9 @@ class BackwardPredictor(DataPredictor):
 
 
 class ScalingFactorSet(object):
-    def __init__(self):
+    def __init__(self, noisy):
         self.factor_list = []
+        self.noisy = noisy
     def __len__(self):
         return len(self.factor_list)
     def __str__(self):
@@ -187,6 +209,10 @@ class ScalingFactorSet(object):
             this_scaling_factor = 1./vector_sum
         vector.scale_vector(this_scaling_factor)
         self.append(this_scaling_factor)
+        if self.noisy:
+            print 'vector'
+            print vector
+            print 'scaling_factor:', this_scaling_factor
         return vector
 
 
