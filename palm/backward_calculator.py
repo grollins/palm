@@ -44,16 +44,6 @@ class BackwardCalculator(object):
                         rate_matrix_ab, next_prob_vec, do_alignment=True)
         else:
             bwd_vec = next_prob_vec
-
-        if type(self.expm_calculator) == QitMatrixExponential:
-            bwd_vec = self.expm_calculator.compute_matrix_expv(
-                        rate_matrix_aa, dwell_time, bwd_vec)
-        elif type(self.expm_calculator) == StubExponential:
-            bwd_vec = self.expm_calculator.compute_matrix_expv(
-                        rate_matrix_aa, dwell_time, bwd_vec)
-        else:
-            expQt = self.expm_calculator.compute_matrix_exp(
-                        rate_matrix_aa, dwell_time)
-            bwd_vec = matrix_vector_product(
-                        expQt, bwd_vec, do_alignment=True)
+        bwd_vec = self.expm_calculator.compute_matrix_expv(
+                          rate_matrix_aa, dwell_time, bwd_vec)
         return bwd_vec

@@ -228,7 +228,7 @@ class ScipyMatrixExponential(object):
     def __init__(self):
         super(ScipyMatrixExponential, self).__init__()
         print "Warning: scipy.linalg.expm appears to leak memory,"\
-              "as of version 0.13"
+              "as of version 0.13. ScipyMatrixExponential2 is preferred."
 
     def compute_matrix_exp(self, rate_matrix, dwell_time):
         """
@@ -384,6 +384,24 @@ class DiagonalExpm(object):
         expQt_matrix.data_frame.values[:,:] = expQt
         return expQt_matrix
 
+    def compute_matrix_expv(self, rate_matrix, dwell_time, vec):
+        """
+        Computes ``exp(Qt) * vec``
+
+        Parameters
+        ----------
+        rate_matrix : RateMatrix
+        dwell_time : float
+        vec : ProbabilityVector
+
+        Returns
+        -------
+        expv : ProbabilityVector
+        """
+        expQt_matrix = self.compute_matrix_exp(rate_matrix, dwell_time)
+        expv = matrix_vector_product(expQt_matrix, vec, do_alignment=True)
+        return expv
+
 
 class TheanoEigenExpm(object):
     """
@@ -470,6 +488,24 @@ class TheanoEigenExpm(object):
         expQt_matrix = rate_matrix.copy()
         expQt_matrix.data_frame.values[:,:] = VDVi.real
         return expQt_matrix
+
+    def compute_matrix_expv(self, rate_matrix, dwell_time, vec):
+        """
+        Computes ``exp(Qt) * vec``
+
+        Parameters
+        ----------
+        rate_matrix : RateMatrix
+        dwell_time : float
+        vec : ProbabilityVector
+
+        Returns
+        -------
+        expv : ProbabilityVector
+        """
+        expQt_matrix = self.compute_matrix_exp(rate_matrix, dwell_time)
+        expv = matrix_vector_product(expQt_matrix, vec, do_alignment=True)
+        return expv
 
 
 class CUDAMatrixExponential(object):
