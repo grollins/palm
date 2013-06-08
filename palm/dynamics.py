@@ -1,4 +1,4 @@
-from palm.linalg import ScipyMatrixExponential
+from palm.linalg import ScipyMatrixExponential2
 from palm.linalg import vector_matrix_product
 from palm.probability_vector import VectorTrajectory
 from palm.probability_vector import make_prob_vec_from_state_ids
@@ -6,13 +6,11 @@ from palm.probability_vector import make_prob_vec_from_state_ids
 class Dynamics(object):
     """docstring for Dynamics"""
     def __init__(self, noisy=False):
-        self.expm = ScipyMatrixExponential()
+        self.expm = ScipyMatrixExponential2()
         self.noisy = noisy
 
     def compute_trajectory(self, model, time_array):
-        # init_prob_vec = model.get_initial_probability_vector()
-        init_prob_vec = make_prob_vec_from_state_ids(model.state_id_collection)
-        init_prob_vec.set_state_probability(model.all_inactive_state_id, 1.0)
+        init_prob_vec = model.get_initial_probability_vector()
         Q = model.build_rate_matrix(0.0)
 
         if self.noisy:
