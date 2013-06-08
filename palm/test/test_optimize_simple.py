@@ -44,7 +44,8 @@ class TestComputeLikelihoodOfSimpleModelWithShortTrajectory(object):
         model_parameters.set_parameter('log_k2', 0.0)
         expm_calculator = ScipyMatrixExponential2()
         data_predictor = BackwardPredictor(
-                            expm_calculator, always_rebuild_rate_matrix=False)
+                            expm_calculator, always_rebuild_rate_matrix=False,
+                            noisy=True)
         target_data = SimpleTargetData()
         target_data.load_data(data_file="./palm/test/test_data/simple_2state_traj.csv")
         model = model_factory.create_model(model_parameters)

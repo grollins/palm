@@ -138,7 +138,7 @@ class SimpleModelFactory(ModelFactory):
             A.set_initial_state_flag()
             B = self.state_factory('B', 'orange')
             initial_state_id = 'A'
-            final_state_id = 'A'
+            final_state_id = 'B'
             sc_factory.add_state(A)
             sc_factory.add_state(B)
             state_collection = sc_factory.make_state_collection()
@@ -183,15 +183,33 @@ class SimpleModel(AggregatedKineticModel):
     def get_initial_probability_vector(self):
         """
         Creates a vector with probability density localized to
-        the all-inactive state.
+        the initial state.
 
         Returns
         -------
         initial_prob_vec : ProbabilityVector
         """
-        initial_prob_vec = make_prob_vec_from_state_ids(self.state_id_collection)
+        green_state_id_collection = self.state_ids_by_class_dict['green']
+        initial_prob_vec = make_prob_vec_from_state_ids(
+                                green_state_id_collection)
         initial_prob_vec.set_state_probability(self.initial_state_id, 1.0)
         return initial_prob_vec
+
+    def get_final_probability_vector(self):
+        """
+        Creates a vector with probability density localized to
+        the final state.
+
+        Returns
+        -------
+        final_prob_vec : ProbabilityVector
+        """
+        orange_state_id_collection = self.state_ids_by_class_dict['orange']
+        final_prob_vec = make_prob_vec_from_state_ids(
+                                orange_state_id_collection)
+        final_prob_vec.set_state_probability(self.final_state_id, 1.0)
+        return final_prob_vec
+
 
 class SimpleTargetData(TargetData):
     """

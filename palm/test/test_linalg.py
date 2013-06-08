@@ -299,6 +299,27 @@ def compute_matrix_vector_product_with_unordered_indices():
     nose.tools.eq_( npy_product[2,0], prob_product.get_state_probability('c') )
 
 @nose.tools.istest
+def compute_matrix_vector_product_is_nan():
+    """
+    This test was motivated by an issue with simple_model.py, in which
+    computing a matrix_vector product resulted in NaN. The reason is
+    that if the vector ids don't match the matrix ids, then the product
+    vector will have NaN for the extra ids that the matrix didn't have.
+    """
+    A_and_B_ids = StateIDCollection()
+    A_and_B_ids.add_id('A')
+    A_and_B_ids.add_id('B')
+    B_only_id = StateIDCollection()
+    B_only_id.add_id('B')
+    prob_matrix = make_prob_matrix_from_state_ids(B_only_id)
+    prob_matrix.set_probability('B', 'B', 0.9)
+    prob_vec = make_prob_vec_from_state_ids(A_and_B_ids)
+    prob_vec.set_state_probability('A', 0.0)
+    prob_vec.set_state_probability('B', 1.0)
+    product_vec = matrix_vector_product(prob_matrix, prob_vec, do_alignment=True)
+    nose.tools.ok_(product_vec.is_finite() == False, "%s" % product_vec)
+
+@nose.tools.istest
 def compute_asymmetric_matrix_vector_product_with_unordered_indices():
     state_ids = StateIDCollection()
     state_ids.add_id('d')

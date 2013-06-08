@@ -2,7 +2,7 @@ import nose.tools
 import numpy
 import scipy.linalg
 from palm.util import ALMOST_ZERO, DATA_TYPE
-from palm.linalg import ScipyMatrixExponential
+from palm.linalg import ScipyMatrixExponential2
 from palm.blink_factory import SingleDarkBlinkFactory
 from palm.blink_parameter_set import SingleDarkParameterSet
 from palm.backward_calculator import BackwardCalculator
@@ -23,13 +23,11 @@ def computes_full_expm():
     next_prob_vec = make_prob_vec_from_state_ids( b_id_collection )
     next_prob_vec.set_uniform_state_probability()
     dwell_time = 0.1
-    expm_calculator = ScipyMatrixExponential()
+    expm_calculator = ScipyMatrixExponential2()
     bwd_calculator = BackwardCalculator(expm_calculator)
     bwd_vec = bwd_calculator.compute_backward_vector(
                     next_prob_vec, Q_dd, Q_db, dwell_time)
-    ml_state_series_from_bwd_vec = bwd_vec.get_ml_state_series(1)
-    ml_state_from_bwd_vec = ml_state_series_from_bwd_vec.index[0]
-    print bwd_vec, ml_state_from_bwd_vec
+    print bwd_vec
 
 @nose.tools.istest
 def computes_full_expm_without_next_matrix():
@@ -44,10 +42,8 @@ def computes_full_expm_without_next_matrix():
     d_id_collection.add_state_id_list( Q_dd.get_column_id_list() )
     final_prob_vec = m.get_final_probability_vector()
     dwell_time = 0.1
-    expm_calculator = ScipyMatrixExponential()
+    expm_calculator = ScipyMatrixExponential2()
     bwd_calculator = BackwardCalculator(expm_calculator)
     bwd_vec = bwd_calculator.compute_backward_vector(
                     final_prob_vec, Q_dd, Q_db, dwell_time)
-    ml_state_series_from_bwd_vec = bwd_vec.get_ml_state_series(1)
-    ml_state_from_bwd_vec = ml_state_series_from_bwd_vec.index[0]
-    print bwd_vec, ml_state_from_bwd_vec
+    print bwd_vec
