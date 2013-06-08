@@ -8,7 +8,9 @@ from palm.base.target_data import TargetData
 from palm.aggregated_kinetic_model import AggregatedKineticModel
 from palm.discrete_state_trajectory import DiscreteStateTrajectory,\
                                            DiscreteDwellSegment
-
+from palm.state_collection import StateCollectionFactory
+from palm.route_collection import RouteCollectionFactory
+from palm.probability_vector import make_prob_vec_from_state_ids
 
 class State(object):
     def __init__(self, id_str, observation_class):
@@ -29,6 +31,7 @@ class State(object):
         self.initial_state_flag = True
     def as_dict(self):
         return {'observation_class':self.get_class()}
+
 
 class Route(object):
     '''
@@ -61,6 +64,7 @@ class Route(object):
                 'end_state':self.end_state_id,
                 'rate_id':self.rate_id,
                 'multiplicity':self.multiplicity}
+
 
 class SimpleParameterSet(ParameterSet):
     """
@@ -129,13 +133,16 @@ class SimpleModelFactory(ModelFactory):
 
     def state_enumerator_factory(self):
         def enumerate_states():
-            state_list = []
+            sc_factory = StateCollectionFactory()
             A = self.state_factory('A', 'green')
             A.set_initial_state_flag()
             B = self.state_factory('B', 'orange')
-            state_list.append(A)
-            state_list.append(B)
-            return state_list
+            initial_state_id = 'A'
+            final_state_id = 'A'
+            sc_factory.add_state(A)
+            sc_factory.add_state(B)
+            state_collection = sc_factory.make_state_collection()
+            return state_collection, initial_state_id, final_state_id
         return enumerate_states
 
     def log_k1_factory(self):
@@ -151,15 +158,17 @@ class SimpleModelFactory(ModelFactory):
         return log_k2_fcn
 
     def route_mapper_factory(self):
-        def map_routes(states, state_index_dict):
+        def map_routes(state_collection):
+            rc_factory = RouteCollectionFactory()
             log_k1_fcn = self.log_k1_factory()
             log_k2_fcn = self.log_k2_factory()
-            A_to_B = self.route_factory('A', 'B', log_k1_fcn)
-            B_to_A = self.route_factory('B', 'A', log_k2_fcn)
+            A_to_B = self.route_factory('A_to_B', 'A', 'B', 'A_to_B', 1)
+            B_to_A = self.route_factory('B_to_A', 'B', 'A', 'B_to_A', 1)
             route_list = []
-            route_list.append(A_to_B)
-            route_list.append(B_to_A)
-            return route_list
+            rc_factory.add_route(A_to_B)
+            rc_factory.add_route(B_to_A)
+            route_collection = rc_factory.make_route_collection()
+            return route_collection
         return map_routes
 
 
@@ -171,10 +180,18 @@ class SimpleModel(AggregatedKineticModel):
         super(SimpleModel, self).__init__(state_enumerator, route_mapper,
                                           parameter_set)
 
-    def get_initial_population_array(self):
-        initial_population_array = numpy.zeros([1, self.get_num_states('green')])
-        initial_population_array[0,0] = 1.0
-        return initial_population_array
+    def get_initial_probability_vector(self):
+        """
+        Creates a vector with probability density localized to
+        the all-inactive state.
+
+        Returns
+        -------
+        initial_prob_vec : ProbabilityVector
+        """
+        initial_prob_vec = make_prob_vec_from_state_ids(self.state_id_collection)
+        initial_prob_vec.set_state_probability(self.initial_state_id, 1.0)
+        return initial_prob_vec
 
 class SimpleTargetData(TargetData):
     """

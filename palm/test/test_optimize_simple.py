@@ -6,10 +6,11 @@ from palm.simple_model import SimpleParameterSet, SimpleModelFactory,\
 from palm.likelihood_judge import LikelihoodJudge
 from palm.backward_likelihood import BackwardPredictor
 from palm.scipy_optimizer import ScipyOptimizer
+from palm.linalg import ScipyMatrixExponential2
 
 EPSILON = 0.1
 
-@nose.tools.nottest
+@nose.tools.istest
 class TestComputeLikelihoodOfSimpleModelWithShortTrajectory(object):
     def compute_log_likelihood(self, parameter_set):
         log_k1 = parameter_set.get_parameter('log_k1')
@@ -32,7 +33,7 @@ class TestComputeLikelihoodOfSimpleModelWithShortTrajectory(object):
         log_likelihood = numpy.log10(likelihood)
         return log_likelihood
 
-    @nose.tools.nottest
+    @nose.tools.istest
     def computes_correct_likelihood_of_short_trajectory(self):
         '''This example computes the likelihood of a trajectory
            for a simple 2-state model.
@@ -41,7 +42,9 @@ class TestComputeLikelihoodOfSimpleModelWithShortTrajectory(object):
         model_parameters = SimpleParameterSet()
         model_parameters.set_parameter('log_k1', -0.5)
         model_parameters.set_parameter('log_k2', 0.0)
-        data_predictor = BackwardPredictor()
+        expm_calculator = ScipyMatrixExponential2()
+        data_predictor = BackwardPredictor(
+                            expm_calculator, always_rebuild_rate_matrix=False)
         target_data = SimpleTargetData()
         target_data.load_data(data_file="./palm/test/test_data/simple_2state_traj.csv")
         model = model_factory.create_model(model_parameters)
