@@ -13,6 +13,9 @@ class CutoffPrediction(Prediction):
         return self.num_bundles == other_cutoff_prediction.num_bundles
     def as_array(self):
         return numpy.array([self.num_bundles,])
+    def compute_difference(self, other_num_bundles):
+        return self.num_bundles - other_num_bundles
+
 
 class CutoffPredictor(DataPredictor):
     """Dark dwells longer than tau signify activation events.
@@ -21,14 +24,13 @@ class CutoffPredictor(DataPredictor):
        the consecutive bright dwells are bundled together and
        attributed to the same fluorophore.
     """
-    def __init__(self, tau):
+    def __init__(self):
         super(CutoffPredictor, self).__init__()
-        self.tau = tau  # seconds
 
-    def predict_data(self, trajectory):
-        return self.count_bundles(trajectory)
+    def predict_data(self, trajectory, tau):
+        return self.count_bundles(trajectory, tau)
 
-    def count_bundles(self, trajectory):
+    def count_bundles(self, trajectory, tau):
         dark_dwell_list = []
         # loop through trajectory segments, save dark dwell durations
         for segment_number, segment in enumerate(trajectory):
@@ -46,6 +48,6 @@ class CutoffPredictor(DataPredictor):
                 else:
                     continue
         dd_array = numpy.array(dark_dwell_list)
-        num_bundles = len(numpy.where(dd_array > self.tau)[0])
+        num_bundles = len(numpy.where(dd_array > tau)[0])
         num_bundles += 1  # trajectory starts with a dark dwell and an activation event
         return CutoffPrediction(num_bundles)
