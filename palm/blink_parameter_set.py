@@ -1,27 +1,5 @@
 import numpy
-import random
 from palm.base.parameter_set import ParameterSet
-
-def randomize_parameter(parameter_set, parameter_name, lower_bound,
-                        upper_bound):
-    """
-    Change a parameter to a random value within the specified range.
-    `parameter_name` in `parameter_set` will be changed in-place to
-    the randomly selected value in `[lower_bound, upper_bound)`.
-
-    Parameters
-    ----------
-    parameter_set : ParameterSet
-    parameter_name : string
-    lower_bound, upper_bound : float
-
-    Returns
-    -------
-    parameter_set : ParameterSet
-    """
-    new_value = random.uniform(lower_bound, upper_bound)
-    parameter_set.set_parameter(parameter_name, new_value)
-    return parameter_set
 
 class SingleDarkParameterSet(ParameterSet):
     """
