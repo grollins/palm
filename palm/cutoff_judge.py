@@ -11,7 +11,8 @@ class CutoffJudge(Judge):
 
     def judge_prediction(self, model, data_predictor, target_data):
         trajectory = target_data.get_feature()
-        cutoff_prediction = data_predictor.predict_data(trajectory)
+        tau = model.get_parameter('tau')
+        cutoff_prediction = data_predictor.predict_data(trajectory, tau)
         N = model.get_parameter('N')
         score = abs(cutoff_prediction.compute_difference(N))
         return score
