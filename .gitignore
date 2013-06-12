@@ -1,0 +1,27 @@
+# Python
+*.py[cod]
+
+# C extensions
+*.so
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+
+# Sphinx Docs
+docs/_build
+
+# Data files
+*.h5
+*.csv
+*.npy
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Installer logs
+pip-log.txt

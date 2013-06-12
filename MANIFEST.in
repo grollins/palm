@@ -1,0 +1,18 @@
+include MANIFEST.in
+include *.txt
+# Top-level build script
+include setup.py
+# All source files
+recursive-include palm *
+# All data files
+recursive-include data *
+# All documentation
+recursive-include doc *
+# All scripts
+recursive-include scripts *
+# Exclude what we don't want to include
+prune doc/build
+prune doc/source/generated
+prune palm/ipython_manager.py
+prune palm/test/test_ipython_manager.py
+global-exclude *.pyc *~ *.bak *.swp *.pyo
