@@ -12,6 +12,7 @@ palm is open-source software for analyzing data from
 super-resolution microscopy.
 
 The palm library depends on:
+
 * numpy
 
 * scipy
