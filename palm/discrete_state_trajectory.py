@@ -162,3 +162,40 @@ class DiscreteStateTrajectory(Trajectory):
         traj_array = numpy.array([time_list, signal_list]).T
         assert traj_array.shape[1] == 2
         return traj_array
+
+    def get_bright_time_distribution(self):
+        t_dist = []
+        for segment in self:
+            if segment.get_class() == 'bright':
+                t_dist.append(segment.get_duration())
+        return t_dist
+
+    def get_dark_time_distribution(self, excluded_dwells=[0,]):
+        t_dist = []
+        for i, segment in enumerate(self):
+            if i in excluded_dwells:
+                continue
+            else:
+                pass
+            if segment.get_class() == 'dark':
+                t_dist.append(segment.get_duration())
+            else:
+                pass
+        return t_dist
+
+    def get_num_blink(self, excluded_dwells=[0,]):
+        num_blink = len(self.get_dark_time_distribution(excluded_dwells))
+        return num_blink
+
+    def get_bleach_time(self):
+        activation_time = self.get_activation_time()
+        final_segment = self.get_segment(self.get_last_segment_number())
+        assert final_segment.get_class() == 'dark'
+        post_bleach_time = final_segment.get_duration()
+        bleach_time = self.get_end_time() - activation_time - post_bleach_time
+        return bleach_time
+
+    def get_activation_time(self):
+        first_segment = self.get_segment(0)
+        assert first_segment.get_class() == 'dark'
+        return first_segment.get_duration()

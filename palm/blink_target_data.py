@@ -193,3 +193,51 @@ class BlinkCollectionTargetData(TargetData):
             else:
                 continue
         return is_found
+
+    def get_bright_time_distribution(self):
+        t_dist = []
+        for traj in self:
+            this_dist = traj.get_bright_time_distribution()
+            t_dist += this_dist
+        return pandas.Series(t_dist)
+
+    def get_dark_time_distribution(self, exclude_first_dwell=True,
+                                   exclude_last_dwell=True):
+        t_dist = []
+        for traj in self:
+            excluded_dwells = []
+            if exclude_first_dwell:
+                excluded_dwells.append(0)
+            if exclude_last_dwell:
+                excluded_dwells.append(traj.get_last_segment_number())
+            this_dist = traj.get_dark_time_distribution(excluded_dwells)
+            t_dist += this_dist
+        return pandas.Series(t_dist)
+
+    def get_num_blink_distribution(self, exclude_first_dwell=True,
+                                   exclude_last_dwell=True):
+        num_blink_dist = []
+        for traj in self:
+            excluded_dwells = []
+            if exclude_first_dwell:
+                excluded_dwells.append(0)
+            if exclude_last_dwell:
+                excluded_dwells.append(traj.get_last_segment_number())
+            this_num_blink = traj.get_num_blink(excluded_dwells)
+            num_blink_dist.append(this_num_blink)
+        return pandas.Series(num_blink_dist)
+
+    def get_bleach_time_distribution(self):
+        t_dist = []
+        for traj in self:
+            this_bleach_time = traj.get_bleach_time()
+            t_dist.append(this_bleach_time)
+        return pandas.Series(t_dist)            
+
+    def get_activation_time_distribution(self):
+        t_dist = []
+        for traj in self:
+            this_activation_time = traj.get_activation_time()
+            t_dist.append(this_activation_time)
+        return pandas.Series(t_dist)            
+
