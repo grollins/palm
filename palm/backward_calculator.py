@@ -1,6 +1,5 @@
 import numpy
-from palm.linalg import asym_matrix_vector_product, matrix_vector_product,\
-                        QitMatrixExponential, StubExponential
+from palm.linalg import asym_matrix_vector_product, matrix_vector_product
 from palm.util import ALMOST_ZERO
 
 class BackwardCalculator(object):

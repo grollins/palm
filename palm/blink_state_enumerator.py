@@ -250,3 +250,4 @@ class DoubleDarkStateEnumeratorFactory(object):
             state_collection = sc_factory.make_state_collection()
             return state_collection, initial_state_id, final_state_id
         return enumerate_states
+

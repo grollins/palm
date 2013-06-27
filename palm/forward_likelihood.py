@@ -46,10 +46,11 @@ class ForwardPredictor(DataPredictor):
         later plotting, debugging, etc.
     """
     def __init__(self, expm_calculator, always_rebuild_rate_matrix,
-                 archive_matrices=False):
+                 archive_matrices=False, diagonal_dark=False):
         super(ForwardPredictor, self).__init__()
         self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
         self.archive_matrices = archive_matrices
+        self.diagonal_dark = diagonal_dark
         diag_expm = DiagonalExpm()
         self.forward_calculator = ForwardCalculator(expm_calculator)
         self.diag_forward_calculator = ForwardCalculator(diag_expm)
@@ -151,7 +152,7 @@ class ForwardPredictor(DataPredictor):
 
     def _compute_alpha(self, rate_matrix_aa, rate_matrix_ab, segment_number,
                        segment_duration, start_class, end_class, prev_alpha):
-        if start_class == 'dark':
+        if self.diagonal_dark and start_class == 'dark':
             alpha = self.diag_forward_calculator.compute_forward_vector(
                         prev_alpha, rate_matrix_aa, rate_matrix_ab,
                         segment_duration)

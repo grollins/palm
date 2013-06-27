@@ -459,3 +459,115 @@ class DoubleDarkTransition(object):
         k = abs(self.reacting_species_dict[reacting_species_id])
         combinatoric_factor = n_choose_k(n,k)
         return numpy.log10(combinatoric_factor)
+
+
+class ConnectedDarkRouteMapperFactory(object):
+    """
+    This factory class creates a route mapper for
+    a blink model with two, connected dark states.
+
+    Attributes
+    ----------
+    transition_factory : class
+        A factory class for transitions, which are simply used as
+        helper objects when enumerating all of the routes.
+
+    Parameters
+    ----------
+    parameter_set : ParameterSet
+    route_factory : class, optional
+        A class for making Route objects.
+    max_A : int, optional
+        Number of fluorophores that can be simultaneously active.
+    """
+    def __init__(self, parameter_set, route_factory=Route, max_A=5):
+        super(ConnectedDarkRouteMapperFactory, self).__init__()
+        self.parameter_set = parameter_set
+        self.route_factory = route_factory
+        self.max_A = max_A
+        self.transition_factory = DoubleDarkTransition
+
+    def create_route_mapper(self):
+        """
+        Creates a method that builds a RouteCollection, made up of
+        all possible routes in the model.
+
+        Returns
+        -------
+        map_routes : callable f(state_collection)
+            A method that builds a RouteCollection.
+        """
+        activation = self.transition_factory(
+                           -1, 1, 0, 0, 0, {'I':1}, 'ka')
+        blinking1 = self.transition_factory(
+                            0, -1, 1, 0, 0, {'A':1}, 'kd1')
+        recovery1 = self.transition_factory(
+                            0, 1, -1, 0, 0, {'D1':1}, 'kr1')
+        blinking2 = self.transition_factory(
+                            0, 0, -1, 1, 0, {'D1':1}, 'kd2')
+        recovery2 = self.transition_factory(
+                            0, 0, 1, -1, 0, {'D2':1}, 'kr2b')
+        bleaching = self.transition_factory(
+                            0, -1, 0, 0, 1, {'A':1}, 'kb')
+        allowed_transitions_list = [activation, blinking1, recovery1,
+                                    blinking2, recovery2, bleaching]
+
+        def map_routes(state_collection):
+            """
+            Build a route collection, based on the states in `state_collection`.
+
+            Parameters
+            ----------
+            state_collection : StateCollection
+                States for a model with two dark states.
+
+            Returns
+            -------
+            route_collection : RouteCollection
+            """
+            rc_factory = RouteCollectionFactory()
+            for start_id, start_state in state_collection.iter_states():
+                route_iterator = self._enumerate_allowed_transitions(
+                                    start_state, allowed_transitions_list)
+                for end_id, transition in route_iterator:
+                    rate_id = transition.rate_id
+                    multiplicity = transition.compute_multiplicity(start_state)
+                    route_id = "%s__%s" % (start_id, end_id)
+                    new_route = self.route_factory(route_id, start_id, end_id,
+                                                   rate_id, multiplicity)
+                    rc_factory.add_route(new_route)
+            route_collection = rc_factory.make_route_collection()
+            return route_collection
+        return map_routes
+
+    def _enumerate_allowed_transitions(self, start_state,
+                                      allowed_transitions_list):
+        """
+        Iterate through possible transitions and filter out those
+        that lead to invalid states.
+
+        Parameters
+        ----------
+        start_state : State
+            Enumerate transitions that lead from this state to other states.
+        allowed_transitions_list : list
+            Possible transitions from `start_state` to other states.
+
+        Returns
+        -------
+        end_id : string
+            Transition will lead from `start_state` to the state with this id.
+        transition : SingleDarkTransition
+        """
+        for transition in allowed_transitions_list:
+            end_I =  start_state['I'] + transition.get_dPop('I')
+            end_A =  start_state['A'] + transition.get_dPop('A')
+            end_D1 = start_state['D1'] + transition.get_dPop('D1')
+            end_D2 = start_state['D2'] + transition.get_dPop('D2')
+            end_B =  start_state['B'] + transition.get_dPop('B')
+            end_state_array = numpy.array([end_I, end_A, end_D1, end_D2, end_B])
+            no_negative_pop = len(numpy.where(end_state_array < 0)[0]) == 0
+            if end_A <= self.max_A and no_negative_pop and\
+              transition.is_allowed(start_state):
+                end_id = "%d_%d_%d_%d_%d" % (end_I, end_A, end_D1, end_D2, end_B)
+                yield end_id, transition

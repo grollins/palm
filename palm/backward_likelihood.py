@@ -49,10 +49,12 @@ class BackwardPredictor(DataPredictor):
         of likelihood calculation. Intended for debugging purposes.
     """
     def __init__(self, expm_calculator, always_rebuild_rate_matrix,
-                 archive_matrices=False, noisy=False):
+                 archive_matrices=False, diagonal_dark=False,
+                 noisy=False):
         super(BackwardPredictor, self).__init__()
         self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
         self.archive_matrices = archive_matrices
+        self.diagonal_dark = diagonal_dark
         diag_expm = DiagonalExpm()
         # diag_expm = StubExponential()
         self.backward_calculator = BackwardCalculator(expm_calculator)
@@ -175,7 +177,7 @@ class BackwardPredictor(DataPredictor):
 
     def _compute_beta(self, rate_matrix_aa, rate_matrix_ab, segment_number,
                        segment_duration, start_class, end_class, next_beta):
-        if start_class == 'dark':
+        if self.diagonal_dark and start_class == 'dark':
             beta = self.diag_backward_calculator.compute_backward_vector(
                         next_beta, rate_matrix_aa, rate_matrix_ab,
                         segment_duration)

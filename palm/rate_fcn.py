@@ -2,7 +2,8 @@ import numpy
 
 PARAM_NAME_DICT = {'ka':'log_ka', 'kd':'log_kd', 'kd1':'log_kd1',
                    'kd2':'log_kd2', 'kr':'log_kr', 'kr1':'log_kr1',
-                   'kb':'log_kb', 'A_to_B':'log_k1', 'B_to_A':'log_k2'}
+                   'kr2b':'log_kr2', 'kb':'log_kb', 'A_to_B':'log_k1',
+                   'B_to_A':'log_k2'}
 
 def rate_from_rate_id(rate_id, t, parameter_set, fermi_activation):
     if rate_id == 'ka' and fermi_activation:

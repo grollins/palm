@@ -16,6 +16,7 @@ Download from https://pypi.python.org/pypi/pip/
 
 10. Download qit library from:
 http://sourceforge.net/projects/qit/
+svn checkout svn://svn.code.sf.net/p/qit/code/python/trunk qit
 Install qit by navigating to python/trunk and type
 python setup.py install
 
