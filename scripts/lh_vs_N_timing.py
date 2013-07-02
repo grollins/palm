@@ -7,6 +7,7 @@ from palm.backward_likelihood import BackwardPredictor
 from palm.blink_target_data import BlinkTargetData
 from palm.score_function import ScoreFunction
 from palm.util import Timer
+from palm.linalg import QitMatrixExponential
 
 def bwd_lh(N):
     model_factory = SingleDarkBlinkFactory(MAX_A=10)
@@ -16,7 +17,8 @@ def bwd_lh(N):
     model_parameters.set_parameter('log_kd', -0.5)
     model_parameters.set_parameter('log_kr', -0.5)
     model_parameters.set_parameter('log_kb', -0.5)
-    data_predictor = BackwardPredictor(always_rebuild_rate_matrix=False)
+    data_predictor = BackwardPredictor(QitMatrixExponential(),
+                                       always_rebuild_rate_matrix=False)
     target_data = BlinkTargetData()
     data_path = os.path.join('./', 'trajectory0001.csv')
     data_path = os.path.expanduser(data_path)
@@ -33,7 +35,8 @@ def bwd_lh(N):
 
 def main():
     lh_fcn = bwd_lh
-    for N in [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35]:
+    # for N in [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35]:
+    for N in [5,]:
         with Timer() as t:
             Q_size, num_segments = lh_fcn(N)
         time_elapsed = t.interval
