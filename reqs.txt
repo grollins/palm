@@ -1,0 +1,12 @@
+Theano==0.6.0rc3
+ipython==0.13
+matplotlib==1.2.x
+mock==1.0.1
+networkx==1.7
+nose==1.2.1
+numpy==1.7.0
+numpydoc==0.4
+pandas==0.11.0
+qit==0.9.12
+scikit-learn==0.13.1
+scipy==0.12.0
