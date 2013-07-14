@@ -4,6 +4,9 @@
 # C extensions
 *.so
 
+# mac cruft
+.DS_Store
+
 # Packages
 *.egg
 *.egg-info
@@ -11,12 +14,7 @@ dist
 build
 
 # Sphinx Docs
-docs/_build
-
-# Data files
-*.h5
-*.csv
-*.npy
+doc/_build
 
 # Unit test / coverage reports
 .coverage
