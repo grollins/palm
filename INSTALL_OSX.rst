@@ -1,5 +1,5 @@
-Installing palm on Ubuntu 12.04 64-bit
-######################################
+Installing palm on OS X (Lion)
+##############################
 
 The instructions are based on this page_. It may be a useful reference.
 
