@@ -1,41 +1,41 @@
 Installing dependencies:
 ------------------------
-1. distutils
-sudo apt-get install python-distutils
+1. Install python2.7 with pip, virtualenv, and virtualenvwrapper according to
+the instructions on these pages:
 
-2. pip
-Download from https://pypi.python.org/pypi/pip/
+    + OSX_
+    + Linux_ (CentOS)
+    + Windows_
 
-3. pip install numpy
-4. pip install scipy
-5. pip install pandas
-6. pip install theano
-7. pip install nose
-8. pip install matplotlib
-9. pip install scikit-learn
+2. Create a virtualenv::
 
-10. Download qit library from:
-http://sourceforge.net/projects/qit/
-svn checkout svn://svn.code.sf.net/p/qit/code/python/trunk qit
-Install qit by navigating to python/trunk and type
-python setup.py install
+    mkvirtualenv palm_env
+
+3. Load virtualenv::
+
+    workon palm_env
+
+4. Install dependencies::
+
+    pip install -r reqs.txt
+
+5. Download qit library from::
+
+    svn checkout svn://svn.code.sf.net/p/qit/code/python/trunk qit
+    cd qit
+    python setup.py install
 
 Installing palm
 ---------------
 After dependencies have been installed, run this command in the
-the top directory:
-python setup.py install
+the top directory of palm::
 
-Tests are run by typing this command within the top directory:
-nosetests
+    python setup.py install
 
-Version numbers
----------------
-numpy 1.7.1
-scipy 0.12.0
-pandas 0.11.0
-theano 0.6.0rc3
-nose 1.3.0
-matplotlib 1.2.1
-scikit-learn (aka sklearn) 0.13.1
-qit 0.9.13a1
+Tests are run by typing this command within the top directory::
+
+    nosetests
+
+.. _OSX: http://www.lowindata.com/2013/installing-scientific-python-on-mac-os-x/
+.. _Linux: http://toomuchdata.com/2012/06/25/how-to-install-python-2-7-3-on-centos-6-2/
+.. _Windows: https://code.google.com/p/winpython/wiki/Installation

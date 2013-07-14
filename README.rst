@@ -11,26 +11,6 @@ What is palm?
 palm is open-source software for analyzing data from
 super-resolution microscopy.
 
-The palm library depends on:
-
-* numpy
-
-* scipy
-
-* pandas
-
-* scikit-learn
-
-* ratespec
-
-* nose
-
-* theano
-
-* matplotlib
-
-* qit
-
 palm structure
 ---------------
 
