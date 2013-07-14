@@ -8,8 +8,7 @@ palm
 What is palm?
 --------------
 
-palm is open-source software for analyzing data from
-super-resolution microscopy.
+palm is open-source software for analyzing data from super-resolution microscopy.
 
 palm structure
 ---------------
@@ -18,8 +17,11 @@ palm
 
 Currently palm consists of the following files and directories:
 
-  INSTALL.txt
-    An installation guide
+  INSTALL_OSX.txt
+    Mac installation guide
+
+  INSTALL_UBUNTU.txt
+    Ubuntu installation guide
 
   setup.py
     Script for building and installing palm.
@@ -29,6 +31,13 @@ Currently palm consists of the following files and directories:
 
   palm/
     Contains palm __init__.py and the directories of palm modules.
+
+  examples
+    Contains simulated time traces and scripts for fitting a blinking model
+    to the data.
+
+  scripts
+    Simple scripts for profiling palm likelihood calculations.
 
 Documentation
 -------------
