@@ -17,7 +17,6 @@ Running example
 
     1. To run ml_fit, first unzip the directories::
 
-        tar xzf ml_fit.tgz
         tar xzf simulated_data_N5a.tgz
         tar xzf simulated_data_N5b.tgz
         tar xzf simulated_data_N5c.tgz
