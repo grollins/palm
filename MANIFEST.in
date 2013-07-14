@@ -1,5 +1,6 @@
 include MANIFEST.in
 include *.txt
+include *.rst
 # Top-level build script
 include setup.py
 # All source files
