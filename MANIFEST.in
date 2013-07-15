@@ -11,6 +11,7 @@ recursive-include data *
 recursive-include doc *
 # All scripts
 recursive-include scripts *
+recursive-include examples *
 # Exclude what we don't want to include
 prune doc/build
 prune doc/source/generated
