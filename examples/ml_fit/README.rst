@@ -1,23 +1,18 @@
 Instructions
 ------------
 
-1. python make_traj_path_file.py
-2. python bootstrap_ml_fit.py 1
-3. python gather_best_params.py
-4. python plot_histograms.py
+1. mkdir bootstrap_files; mkdir params; mkdir histograms
+2. python make_traj_path_file.py
+3. python run_job.py
+4. python gather_best_params.py <value of BOOTSTRAP_SIZE from bootstrap_ml_fit.py>
+5. python plot_histograms.py <value of BOOTSTRAP_SIZE from bootstrap_ml_fit.py>
 
 High level explanation
 ----------------------
 
-The goal is to fit a kinetic model of fluorophore blinking to a set of time traces (trajectories). The inputs are time traces and initial guesses for the
-kinetic model parameters, and the outputs are likelihoods (probability densities) and optimized values for the kinetic model parameters.
+The goal is to fit a kinetic model of fluorophore blinking to a set of time traces (trajectories). The inputs are time traces and initial guesses for the kinetic model parameters, and the outputs are likelihoods (probability densities) and optimized values for the kinetic model parameters.
 
-In order to determine error bars around our estimates of the model parameters,
-we carry out multiple optimization runs. Each run randomly selects a subset of
-the available trajectories (we refer to this as bootstrapping). After many runs,
-we can plot a histogram for each parameter in the model. The center of the
-histogram is our best guess and we can compute a 95% confidence interval from
-the percentiles of the histogram.
+In order to determine error bars around our estimates of the model parameters, we carry out multiple optimization runs. Each run randomly selects a subset of the available trajectories (we refer to this as bootstrapping). After many runs, we can plot a histogram for each parameter in the model. The center of the histogram is our best guess and we can compute a 95% confidence interval from the percentiles of the histogram.
 
 Lower level explanation
 -----------------------

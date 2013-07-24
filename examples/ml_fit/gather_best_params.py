@@ -24,7 +24,7 @@ def main():
               "\tthe value of BOOTSTRAP_SIZE in bootstrap_ml_fit.py\n"
         raise
     psd_factory = ParamSetDistFactory()
-    prev_run_files = glob.glob("params/%03d_*_params.pkl") % bootstrap_size
+    prev_run_files = glob.glob("params/%03d_*_params.pkl" % bootstrap_size)
     for p in prev_run_files:
         prev_psd = load_previous_run(p)
         best_scoring_series = get_best_series(prev_psd)
