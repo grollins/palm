@@ -1,0 +1,422 @@
+%PDF-1.4
+%“Œ‹ž ReportLab Generated PDF document http://www.reportlab.com
+% 'BasicFonts': class PDFDictionary 
+1 0 obj
+% The standard fonts dictionary
+<< /F1 2 0 R
+ /F2 3 0 R >>
+endobj
+% 'F1': class PDFType1Font 
+2 0 obj
+% Font Helvetica
+<< /BaseFont /Helvetica
+ /Encoding /WinAnsiEncoding
+ /Name /F1
+ /Subtype /Type1
+ /Type /Font >>
+endobj
+% 'F2': class PDFType1Font 
+3 0 obj
+% Font Helvetica-Bold
+<< /BaseFont /Helvetica-Bold
+ /Encoding /WinAnsiEncoding
+ /Name /F2
+ /Subtype /Type1
+ /Type /Font >>
+endobj
+% 'Page1': class PDFPage 
+4 0 obj
+% Page dictionary
+<< /Contents 12 0 R
+ /MediaBox [ 0
+ 0
+ 595.2756
+ 841.8898 ]
+ /Parent 11 0 R
+ /Resources << /Font 1 0 R
+ /ProcSet [ /PDF
+ /Text
+ /ImageB
+ /ImageC
+ /ImageI ] >>
+ /Rotate 0
+ /Trans <<  >>
+ /Type /Page >>
+endobj
+% 'R5': class PDFCatalog 
+5 0 obj
+% Document Root
+<< /Outlines 7 0 R
+ /PageLabels 13 0 R
+ /PageMode /UseNone
+ /Pages 11 0 R
+ /Type /Catalog >>
+endobj
+% 'R6': class PDFInfo 
+6 0 obj
+<< /Author ()
+ /CreationDate (D:20130714143113+08'00')
+ /Creator (\(unspecified\))
+ /Keywords ()
+ /Producer (ReportLab PDF Library - www.reportlab.com)
+ /Subject (\(unspecified\))
+ /Title () >>
+endobj
+% 'R7': class PDFOutlines 
+7 0 obj
+<< /Count 3
+ /First 8 0 R
+ /Last 10 0 R
+ /Type /Outlines >>
+endobj
+% 'Outline.0': class OutlineEntryObject 
+8 0 obj
+<< /Dest [ 4 0 R
+ /XYZ
+ 62.69291
+ 765.0236
+ 0 ]
+ /Next 9 0 R
+ /Parent 7 0 R
+ /Title (Instructions) >>
+endobj
+% 'Outline.1': class OutlineEntryObject 
+9 0 obj
+<< /Dest [ 4 0 R
+ /XYZ
+ 62.69291
+ 654.0236
+ 0 ]
+ /Next 10 0 R
+ /Parent 7 0 R
+ /Prev 8 0 R
+ /Title (High level explanation) >>
+endobj
+% 'Outline.2': class OutlineEntryObject 
+10 0 obj
+<< /Dest [ 4 0 R
+ /XYZ
+ 62.69291
+ 513.0236
+ 0 ]
+ /Parent 7 0 R
+ /Prev 9 0 R
+ /Title (Lower level explanation) >>
+endobj
+% 'R11': class PDFPages 
+11 0 obj
+% page tree
+<< /Count 1
+ /Kids [ 4 0 R ]
+ /Type /Pages >>
+endobj
+% 'R12': class PDFStream 
+12 0 obj
+% page stream
+<< /Length 6654 >>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 744.0236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Instructions) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 732.0236 cm
+Q
+q
+1 0 0 1 62.69291 732.0236 cm
+Q
+q
+1 0 0 1 62.69291 720.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (1.) Tj T* -5.66 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (python make_traj_path_file.py) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 714.0236 cm
+Q
+q
+1 0 0 1 62.69291 702.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (2.) Tj T* -5.66 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (python bootstrap_ml_fit.py 1) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 696.0236 cm
+Q
+q
+1 0 0 1 62.69291 684.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (3.) Tj T* -5.66 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (python gather_best_params.py) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 678.0236 cm
+Q
+q
+1 0 0 1 62.69291 666.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (4.) Tj T* -5.66 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (python plot_histograms.py) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 666.0236 cm
+Q
+q
+1 0 0 1 62.69291 633.0236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (High level explanation) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 591.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 26 Tm /F1 10 Tf 12 TL .123488 Tw (The goal is to fit a kinetic model of fluorophore blinking to a set of time traces \(trajectories\). The inputs are) Tj T* 0 Tw 3.510697 Tw (time traces and initial guesses for the kinetic model parameters, and the outputs are likelihoods) Tj T* 0 Tw (\(probability densities\) and optimized values for the kinetic model parameters.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 525.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 50 Tm /F1 10 Tf 12 TL 1.61436 Tw (In order to determine error bars around our estimates of the model parameters, we carry out multiple) Tj T* 0 Tw 1.474985 Tw (optimization runs. Each run randomly selects a subset of the available trajectories \(we refer to this as) Tj T* 0 Tw .569398 Tw (bootstrapping\). After many runs, we can plot a histogram for each parameter in the model. The center of) Tj T* 0 Tw .012209 Tw (the histogram is our best guess and we can compute a 95% confidence interval from the percentiles of the) Tj T* 0 Tw (histogram.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 492.0236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Lower level explanation) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 450.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 26 Tm /F1 10 Tf 12 TL 1.138555 Tw (-make_traj_path_file.py looks for .csv files in a specified directory. It outputs a text file \("traj_paths.txt"\).) Tj T* 0 Tw 1.200941 Tw (Each line of the text file has a path for a csv file. This text file is used for the bootstrapping procedure) Tj T* 0 Tw (described above.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 432.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (-bootstrap_ml_fit.py does several things:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 426.0236 cm
+Q
+q
+1 0 0 1 62.69291 300.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 120 cm
+Q
+q
+1 0 0 1 20 120 cm
+Q
+q
+1 0 0 1 20 84 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (1.) Tj T* -5.66 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 26 Tm /F1 10 Tf 12 TL .037356 Tw (It selects a random subset of the csv files listed in "traj_paths.txt". Then, it saves a new .txt file in) Tj T* 0 Tw .28686 Tw (bootstrap_files. The format of the new .txt file is the same as "traj_paths.txt", but it only contains) Tj T* 0 Tw (the paths for the random subset of trajectories.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 78 cm
+Q
+q
+1 0 0 1 20 42 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (2.) Tj T* -5.66 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 26 Tm /F1 10 Tf 12 TL 2.505814 Tw (It calls run_optimization from the opt_fcn.py module. This is the major workhorse function.) Tj T* 0 Tw .894147 Tw (run_optimization reads the .txt path file in "bootstrap_files", runs the maximum likelihood fitting) Tj T* 0 Tw (procedure, and then returns the results to bootstrap_ml_fit.py.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 36 cm
+Q
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (3.) Tj T* -5.66 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 26 Tm /F1 10 Tf 12 TL 1.584597 Tw (Finally, it saves the parameters determined by run_optimization and repeats step 2 for other) Tj T* 0 Tw .361163 Tw (values of N \(the number of fluorophores\). The output is saved in the params directory as both a) Tj T* 0 Tw (pickel archive and as a human-readable html file \(for convenience\).) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 300.0236 cm
+Q
+q
+1 0 0 1 62.69291 282.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (-run_job.py is a simple helper script. It calls bootstrap_ml_fit.py many times.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 228.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 38 Tm /F1 10 Tf 12 TL 1.534983 Tw (-gather_best_params.py looks at each parameter file in the "params" directory and creates a new .pkl) Tj T* 0 Tw .374692 Tw (\(and .html\) with only the best scoring \(highest likelihood\) parameters from each run. The idea here is that) Tj T* 0 Tw .813735 Tw (bootstrap_ml_fit.py usually calls run_optimization for a range of N values, but we only want to retain the) Tj T* 0 Tw (best N from each run for our histogram plotting.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 174.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 38 Tm /F1 10 Tf 12 TL 1.843555 Tw (-plot_histograms.py reads the best parameters .pkl file and plots histograms of the parameters in the) Tj T* 0 Tw .298735 Tw (directory "histograms". These plots represent the final output that we want. As stated above, the center of) Tj T* 0 Tw .847485 Tw (each histogram is our best guess for that parameter and the 95% confidence interval for that parameter) Tj T* 0 Tw (comes from the percentiles of the histogram.) Tj T* ET
+Q
+Q
+ 
+endstream
+endobj
+% 'R13': class PDFPageLabels 
+13 0 obj
+% Document Root
+<< /Nums [ 0
+ 14 0 R ] >>
+endobj
+% 'R14': class PDFPageLabel 
+14 0 obj
+% None
+<< /S /D
+ /St 1 >>
+endobj
+xref
+0 15
+0000000000 65535 f
+0000000113 00000 n
+0000000221 00000 n
+0000000386 00000 n
+0000000559 00000 n
+0000000838 00000 n
+0000000994 00000 n
+0000001240 00000 n
+0000001363 00000 n
+0000001532 00000 n
+0000001726 00000 n
+0000001891 00000 n
+0000001998 00000 n
+0000008755 00000 n
+0000008848 00000 n
+trailer
+<< /ID 
+ % ReportLab generated PDF document -- digest (http://www.reportlab.com) 
+ [(m\001L\203\213w/j3\355\007<\251\334\007C) (m\001L\203\213w/j3\355\007<\251\334\007C)] 
+
+ /Info 6 0 R
+ /Root 5 0 R
+ /Size 15 >>
+startxref
+8895
+%%EOF
