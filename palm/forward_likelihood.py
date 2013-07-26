@@ -46,7 +46,8 @@ class ForwardPredictor(DataPredictor):
         later plotting, debugging, etc.
     """
     def __init__(self, expm_calculator, always_rebuild_rate_matrix,
-                 archive_matrices=False, diagonal_dark=False):
+                 archive_matrices=False, diagonal_dark=False,
+                 noisy=False):
         super(ForwardPredictor, self).__init__()
         self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
         self.archive_matrices = archive_matrices
@@ -58,6 +59,7 @@ class ForwardPredictor(DataPredictor):
         self.vector_trajectory = None
         self.rate_matrix_trajectory = None
         self.scaling_factor_set = None
+        self.noisy = noisy
 
     def predict_data(self, model, trajectory):
         self.scaling_factor_set = self.compute_forward_vectors(
@@ -88,7 +90,7 @@ class ForwardPredictor(DataPredictor):
         else:
             pass
         # initialize probability vector
-        scaling_factor_set = ScalingFactorSet()
+        scaling_factor_set = ScalingFactorSet(self.noisy)
         rate_matrix_organizer = RateMatrixOrganizer(model)
         rate_matrix_organizer.build_rate_matrix(time=0.0)
         init_prob = model.get_initial_probability_vector()
@@ -99,6 +101,9 @@ class ForwardPredictor(DataPredictor):
 
         # loop through trajectory segments, compute likelihood for each segment
         for segment_number, segment in enumerate(trajectory):
+            if self.noisy:
+                print 'segment %d' % segment_number
+
             # get current segment class and duration
             cumulative_time = trajectory.get_cumulative_time(segment_number)
             segment_duration = segment.get_duration()
@@ -134,6 +139,21 @@ class ForwardPredictor(DataPredictor):
 
             # scale probability vector to avoid numerical underflow
             scaled_alpha = scaling_factor_set.scale_vector(alpha)
+
+            if scaled_alpha.is_finite() and scaled_alpha.is_positive():
+                pass
+            else:
+                print "Likelihood calculation failure"
+                print rate_matrix_aa
+                print rate_matrix_ab
+                print scaled_alpha
+                if self.archive_matrices:
+                    df = self.vector_trajectory.convert_to_df()
+                    output_csv = 'archived_vecs_from_crash.csv'
+                    df.to_csv(output_csv, index=False)
+                    print "Wrote", output_csv
+                raise RuntimeError
+
             # store handle to current alpha vector for next iteration
             prev_alpha = scaled_alpha
             if self.archive_matrices:
@@ -164,8 +184,9 @@ class ForwardPredictor(DataPredictor):
 
 
 class ScalingFactorSet(object):
-    def __init__(self):
+    def __init__(self, noisy):
         self.factor_list = []
+        self.noisy = noisy
     def __len__(self):
         return len(self.factor_list)
     def __str__(self):
@@ -185,6 +206,10 @@ class ScalingFactorSet(object):
             this_scaling_factor = 1./vector_sum
         vector.scale_vector(this_scaling_factor)
         self.append(this_scaling_factor)
+        if self.noisy:
+            print 'vector'
+            print vector
+            print 'scaling_factor:', this_scaling_factor
         return vector
 
 

@@ -152,6 +152,11 @@ class BackwardPredictor(DataPredictor):
                 print rate_matrix_aa
                 print rate_matrix_ab
                 print beta
+                if self.archive_matrices:
+                    df = self.vector_trajectory.convert_to_df()
+                    output_csv = 'archived_vecs_from_crash.csv'
+                    df.to_csv(output_csv, index=False)
+                    print "Wrote", output_csv
                 raise RuntimeError
 
             # scale probability vector to avoid numerical underflow
