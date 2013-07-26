@@ -20,7 +20,7 @@ class RateMatrix(object):
     """docstring for RateMatrix"""
     def __init__(self):
         super(RateMatrix, self).__init__()
-        self.date_frame = None
+        self.data_frame = None
     def __len__(self):
         return len(self.data_frame)
     def __str__(self):
@@ -71,6 +71,14 @@ class RateMatrix(object):
         nonzero_values.sort()
         reversed_nonzero_values = nonzero_values[::-1]
         print reversed_nonzero_values[:min(len(self),30)]
+    def is_finite(self):
+        """
+        Returns
+        -------
+        all_finite : True if no elements of vector are inf, -inf, or nan.
+        """
+        all_finite = numpy.all(numpy.isfinite(self.data_frame))
+        return all_finite
 
 
 class RateMatrixTrajectory(object):
