@@ -62,6 +62,15 @@ class ProbabilityVector(object):
         """
         all_finite = numpy.all(numpy.isfinite(self.series))
         return all_finite
+    def is_positive(self):
+        """
+        Returns
+        -------
+        all_positive : True if no elements of vector are less than zero.
+        """
+        all_positive = numpy.all(self.series >= 0.0)
+        return all_positive
+
 
 class VectorTrajectory(object):
     """docstring for VectorTrajectory"""
