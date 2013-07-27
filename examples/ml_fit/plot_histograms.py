@@ -46,7 +46,7 @@ def plot_N_hist(N_array, plot_name):
     xaxis_label = r"$\mathbf{N}$"
     yaxis_label = r"$\mathbf{counts}$"
     bins = numpy.arange(0.5, 5.5, 1.0)
-    x_lim = (0, 5)
+    x_lim = (0, 11)
     x_ticks = range(0, 11)
     y_lim = (0, 300)
     y_ticks = [100, 200, 300]
