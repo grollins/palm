@@ -11,6 +11,7 @@ DATA = os.path.expanduser("./params")
 COLOR_SCHEME = ["#EAB086", "#EAC786", "#7995C6", "#6FC2B9", '0.65']
 LIMIT = 1.5
 DELTA = 1.0
+TRUE_N = 5
 
 def load_psd(filename):
     psd = ParameterSetDistribution()
@@ -46,10 +47,9 @@ def plot_N_hist(N_array, plot_name):
     yaxis_label = r"$\mathbf{counts}$"
     bins = numpy.arange(0.5, 5.5, 1.0)
     x_lim = (0, 5)
-    x_ticks = range(0, 6)
+    x_ticks = range(0, 11)
     y_lim = (0, 300)
     y_ticks = [100, 200, 300]
-    true_val = 1
 
     mp = MultipanelPlot(1, 1, figsize=(6,6))
     ax = mp.get_new_ax()
@@ -57,7 +57,7 @@ def plot_N_hist(N_array, plot_name):
     ax.axis["right"].set_visible(False)
     ax.hist( N_array, bins=bins, normed=False, color=COLOR_SCHEME[-1],
              edgecolor='k', lw=0.3, alpha=0.8)
-    ax.plot([true_val, true_val], [0, y_lim[1]], 'k--', lw=1)
+    ax.plot([TRUE_N, TRUE_N], [0, y_lim[1]], 'k--', lw=1)
     ax.set_xlabel(xaxis_label)
     ax.set_ylabel(yaxis_label)
     ax.set_xticks(x_ticks)
