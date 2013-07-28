@@ -45,7 +45,7 @@ def plot_N_hist(N_array, plot_name):
     print "N", mean_estimate, std_estimate, CI
     xaxis_label = r"$\mathbf{N}$"
     yaxis_label = r"$\mathbf{counts}$"
-    bins = numpy.arange(0.5, 5.5, 1.0)
+    bins = numpy.arange(0.5, 10.5, 1.0)
     x_lim = (0, 11)
     x_ticks = range(0, 11)
     y_lim = (0, 300)
