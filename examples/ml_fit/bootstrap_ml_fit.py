@@ -28,7 +28,7 @@ def main():
                                 filename)
     psd_factory = ParamSetDistFactory()
 
-    for N in xrange(1, 6, 1):
+    for N in xrange(1, 8, 1):
         print N
         r = run_optimization(N, filename)
         this_N, this_score, this_param_set = r

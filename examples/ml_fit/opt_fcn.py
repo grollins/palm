@@ -2,10 +2,11 @@ from palm.blink_factory import SingleDarkBlinkFactory
 from palm.likelihood_judge import CollectionLikelihoodJudge
 from palm.scipy_optimizer import ScipyOptimizer
 from palm.backward_likelihood import BackwardPredictor
+from palm.forward_likelihood import ForwardPredictor
 from palm.blink_target_data import BlinkCollectionTargetData
 from palm.blink_parameter_set import SingleDarkParameterSet
 from palm.score_function import ScoreFunction
-from palm.linalg import ScipyMatrixExponential2
+from palm.linalg import ScipyMatrixExponential
 from palm.util import randomize_parameter
 
 def run_optimization(N, traj_filename):
@@ -42,9 +43,10 @@ def run_optimization(N, traj_filename):
     # =======================================================================
     # = Initialize model factory, likelihood predictor and likelihood judge =
     # =======================================================================
-    model_factory = SingleDarkBlinkFactory(fermi_activation=False, MAX_A=5)
-    likelihood_predictor = BackwardPredictor(ScipyMatrixExponential2(),
-                                             always_rebuild_rate_matrix=False)
+    model_factory = SingleDarkBlinkFactory(fermi_activation=False, MAX_A=10)
+    likelihood_predictor = ForwardPredictor(ScipyMatrixExponential(),
+                                             always_rebuild_rate_matrix=False,
+                                             diagonal_dark=True)
     likelihood_judge = CollectionLikelihoodJudge()
 
     # =========================
