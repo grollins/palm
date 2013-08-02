@@ -1,6 +1,7 @@
 import gc
 import numpy
 import pandas
+import scipy
 import scipy.linalg
 import theano
 from theano.sandbox.linalg.ops import matrix_dot
@@ -227,8 +228,9 @@ class ScipyMatrixExponential(object):
     """
     def __init__(self):
         super(ScipyMatrixExponential, self).__init__()
-        print "Warning: scipy.linalg.expm appears to leak memory,"\
-              "as of version 0.13. ScipyMatrixExponential2 is preferred."
+        if scipy.__version__ == 0.13:
+            print "Warning: scipy.linalg.expm appears to leak memory,"\
+                  "in version 0.13."
 
     def compute_matrix_exp(self, rate_matrix, dwell_time):
         """
