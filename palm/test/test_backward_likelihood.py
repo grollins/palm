@@ -7,7 +7,7 @@ from palm.blink_factory import SingleDarkBlinkFactory
 from palm.blink_parameter_set import SingleDarkParameterSet
 from palm.likelihood_judge import LikelihoodJudge
 from palm.blink_target_data import BlinkTargetData
-from palm.linalg import QitMatrixExponential, ScipyMatrixExponential2
+from palm.linalg import QitMatrixExponential, ScipyMatrixExponential
 
 @nose.tools.istest
 def backward_computes_same_likelihood_as_forward_predictor():
@@ -18,10 +18,12 @@ def backward_computes_same_likelihood_as_forward_predictor():
     model_parameters.set_parameter('log_kd',  1.0)
     model_parameters.set_parameter('log_kr', -1.0)
     model_parameters.set_parameter('log_kb',  0.0)
-    backward_predictor = BackwardPredictor(QitMatrixExponential(),
-                                           always_rebuild_rate_matrix=False)
-    forward_predictor = ForwardPredictor(ScipyMatrixExponential2(),
-                                         always_rebuild_rate_matrix=False)
+    backward_predictor = BackwardPredictor(ScipyMatrixExponential(),
+                                           always_rebuild_rate_matrix=False,
+                                           diagonal_dark=True)
+    forward_predictor = ForwardPredictor(ScipyMatrixExponential(),
+                                         always_rebuild_rate_matrix=False,
+                                         diagonal_dark=True)
     target_data = BlinkTargetData()
     data_path = os.path.join("palm", "test", "test_data",
                              "blink_model_05.psc_TimeSim5.csv")
