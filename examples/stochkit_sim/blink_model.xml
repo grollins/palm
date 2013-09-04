@@ -1,0 +1,94 @@
+<Model>
+  <NumberOfReactions>4</NumberOfReactions>
+  <NumberOfSpecies>4</NumberOfSpecies>
+
+  <ParametersList>
+    <Parameter>
+      <Id>ka</Id>
+      <Expression>0.5</Expression>
+    </Parameter>
+    <Parameter>
+      <Id>kd</Id>
+      <Expression>3.0</Expression>
+    </Parameter>
+    <Parameter>
+      <Id>kb</Id>
+      <Expression>1.0</Expression>
+    </Parameter>
+    <Parameter>
+      <Id>kr</Id>
+      <Expression>0.1</Expression>
+    </Parameter>
+  </ParametersList>
+
+  <ReactionsList>
+     <Reaction>
+       <Id>Activation</Id>
+       <Description> I -> A </Description>
+       <Type>mass-action</Type>
+       <Rate>ka</Rate>
+       <Reactants>
+           <SpeciesReference id="I" stoichiometry="1"/>
+       </Reactants>
+       <Products>
+           <SpeciesReference id="A" stoichiometry="1"/>
+       </Products>
+     </Reaction>
+     <Reaction>
+       <Id>Blink</Id>
+       <Description> A -> D </Description>
+       <Type>mass-action</Type>
+       <Rate>kd</Rate>
+       <Reactants>
+           <SpeciesReference id="A" stoichiometry="1"/>
+       </Reactants>
+       <Products>
+           <SpeciesReference id="D" stoichiometry="1"/>
+       </Products>
+     </Reaction>
+     <Reaction>
+       <Id>Recover</Id>
+       <Description> D -> A </Description>
+       <Type>mass-action</Type>
+       <Rate>kr</Rate>
+       <Reactants>
+           <SpeciesReference id="D" stoichiometry="1"/>
+       </Reactants>
+       <Products>
+           <SpeciesReference id="A" stoichiometry="1"/>
+       </Products>
+     </Reaction>
+     <Reaction>
+       <Id>Bleach</Id>
+       <Description> A -> B </Description>
+       <Type>mass-action</Type>
+       <Rate>kb</Rate>
+       <Reactants>
+           <SpeciesReference id="A" stoichiometry="1"/>
+       </Reactants>
+       <Products>
+           <SpeciesReference id="B" stoichiometry="1"/>
+       </Products>
+     </Reaction>
+  </ReactionsList>
+
+  <SpeciesList>
+     <Species>
+       <Id>I</Id>
+       <InitialPopulation>5</InitialPopulation>
+     </Species>
+     <Species>
+       <Id>A</Id>
+       <InitialPopulation>0</InitialPopulation>
+     </Species>
+     <Species>
+       <Id>D</Id>
+       <InitialPopulation>0</InitialPopulation>
+     </Species>
+     <Species>
+       <Id>B</Id>
+       <InitialPopulation>0</InitialPopulation>
+     </Species>
+  </SpeciesList>
+
+</Model>
