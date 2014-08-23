@@ -1,6 +1,7 @@
 import numpy
-from palm.util import n_choose_k
-from palm.route_collection import RouteCollectionFactory
+from .util import n_choose_k
+from .route_collection import RouteCollectionFactory
+
 
 class Route(object):
     '''

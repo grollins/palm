@@ -1,10 +1,11 @@
 import nose.tools
 import numpy
 import scipy.linalg
-from palm.linalg import ScipyMatrixExponential, ScipyMatrixExponential2,\
+from ..linalg import ScipyMatrixExponential, ScipyMatrixExponential2,\
                         DiagonalExpm
-from palm.rate_matrix import make_rate_matrix_from_state_ids
-from palm.state_collection import StateIDCollection
+from ..rate_matrix import make_rate_matrix_from_state_ids
+from ..state_collection import StateIDCollection
+
 
 @nose.tools.istest
 def pade_and_eigen_methods_give_same_answer():

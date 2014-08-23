@@ -1,8 +1,9 @@
 import pandas
 from copy import deepcopy
-from palm.base.target_data import TargetData
-from palm.discrete_state_trajectory import DiscreteStateTrajectory,\
+from .base.target_data import TargetData
+from .discrete_state_trajectory import DiscreteStateTrajectory,\
                                            DiscreteDwellSegment
+
 
 class BlinkTargetData(TargetData):
     """

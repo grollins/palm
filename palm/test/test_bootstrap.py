@@ -1,6 +1,7 @@
 import nose.tools
-from palm.blink_target_data import BlinkCollectionTargetData
-from palm.bootstrap_selector import BootstrapSelector
+from ..blink_target_data import BlinkCollectionTargetData
+from ..bootstrap_selector import BootstrapSelector
+
 
 @nose.tools.istest
 def resampled_target_data_has_expected_size():

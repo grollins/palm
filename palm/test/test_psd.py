@@ -1,7 +1,8 @@
 import nose.tools
-from palm.parameter_set_distribution import ParameterSetDistribution
-from palm.parameter_set_distribution import ParamSetDistFactory
-from palm.blink_parameter_set import SingleDarkParameterSet
+from ..parameter_set_distribution import ParameterSetDistribution
+from ..parameter_set_distribution import ParamSetDistFactory
+from ..blink_parameter_set import SingleDarkParameterSet
+
 
 @nose.tools.istest
 def param_set_distribution_can_be_saved_and_loaded():

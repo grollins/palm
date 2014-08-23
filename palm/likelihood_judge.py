@@ -1,5 +1,5 @@
-from palm.base.judge import Judge
-# import memory_profiler as mprof
+from .base.judge import Judge
+
 
 class LikelihoodJudge(Judge):
     """

@@ -1,13 +1,12 @@
 import os.path
 import nose.tools
-import numpy
-from palm.forward_likelihood import ForwardPredictor
-from palm.backward_likelihood import BackwardPredictor
-from palm.blink_factory import SingleDarkBlinkFactory
-from palm.blink_parameter_set import SingleDarkParameterSet
-from palm.likelihood_judge import LikelihoodJudge
-from palm.blink_target_data import BlinkTargetData
-from palm.linalg import QitMatrixExponential, ScipyMatrixExponential
+from ..forward_likelihood import ForwardPredictor
+from ..backward_likelihood import BackwardPredictor
+from ..blink_factory import SingleDarkBlinkFactory
+from ..blink_parameter_set import SingleDarkParameterSet
+from ..blink_target_data import BlinkTargetData
+from ..linalg import ScipyMatrixExponential
+
 
 @nose.tools.istest
 def backward_computes_same_likelihood_as_forward_predictor():

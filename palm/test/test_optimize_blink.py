@@ -3,13 +3,12 @@ from nose import SkipTest
 import numpy
 import scipy.linalg
 import pandas
-from palm.blink_factory import SingleDarkBlinkFactory
-from palm.blink_parameter_set import SingleDarkParameterSet
-from palm.likelihood_judge import LikelihoodJudge
-from palm.backward_likelihood import BackwardPredictor
-from palm.blink_target_data import BlinkTargetData
-from palm.scipy_optimizer import ScipyOptimizer
-from palm.linalg import QitMatrixExponential
+from ..blink_factory import SingleDarkBlinkFactory
+from ..blink_parameter_set import SingleDarkParameterSet
+from ..backward_likelihood import BackwardPredictor
+from ..blink_target_data import BlinkTargetData
+from ..linalg import ScipyMatrixExponential
+
 
 EPSILON = 0.1
 
@@ -81,7 +80,7 @@ class TestComputeLikelihoodOfBlinkModelWithShortTrajectory(object):
         model_parameters.set_parameter('log_kd', -0.5)
         model_parameters.set_parameter('log_kr', -0.5)
         model_parameters.set_parameter('log_kb', -0.5)
-        data_predictor = BackwardPredictor(QitMatrixExponential(),
+        data_predictor = BackwardPredictor(ScipyMatrixExponential(),
                                            always_rebuild_rate_matrix=True)
         target_data = BlinkTargetData()
         target_data.load_data(data_file="./palm/test/test_data/short_blink_traj.csv")

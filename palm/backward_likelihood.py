@@ -1,12 +1,13 @@
 import numpy
 import pandas
-from palm.base.data_predictor import DataPredictor
-from palm.likelihood_prediction import LikelihoodPrediction
-from palm.backward_calculator import BackwardCalculator
-from palm.linalg import DiagonalExpm, vector_product
-from palm.probability_vector import VectorTrajectory, ProbabilityVector
-from palm.rate_matrix import RateMatrixTrajectory
-from palm.util import ALMOST_ZERO
+from .base.data_predictor import DataPredictor
+from .likelihood_prediction import LikelihoodPrediction
+from .backward_calculator import BackwardCalculator
+from .linalg import DiagonalExpm, vector_product
+from .probability_vector import VectorTrajectory, ProbabilityVector
+from .rate_matrix import RateMatrixTrajectory
+from .util import ALMOST_ZERO
+
 
 class BackwardPredictor(DataPredictor):
     """

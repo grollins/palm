@@ -1,6 +1,6 @@
 import numpy
 from pandas import DataFrame
-from collections import defaultdict
+
 
 def make_prob_matrix_from_state_ids(index_id_collection,
                                     column_id_collection=None):

@@ -1,12 +1,12 @@
 import nose.tools
-from palm.blink_factory import SingleDarkBlinkFactory,\
+from ..blink_factory import SingleDarkBlinkFactory,\
                                DoubleDarkBlinkFactory,\
                                ConnectedDarkBlinkFactory
-from palm.blink_model import BlinkModel
-from palm.blink_parameter_set import SingleDarkParameterSet,\
+from ..blink_parameter_set import SingleDarkParameterSet,\
                                      DoubleDarkParameterSet,\
                                      ConnectedDarkParameterSet
-from palm.util import n_choose_k
+from ..util import n_choose_k
+
 
 @nose.tools.istest
 def SingleDarkModelHasCorrectNumberOfStatesAndRoutes():

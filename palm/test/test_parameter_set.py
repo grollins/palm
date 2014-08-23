@@ -1,7 +1,8 @@
 import nose.tools
 import cPickle
-from palm.blink_parameter_set import SingleDarkParameterSet
-from palm.blink_parameter_set import DoubleDarkParameterSet
+from ..blink_parameter_set import SingleDarkParameterSet
+from ..blink_parameter_set import DoubleDarkParameterSet
+
 
 @nose.tools.istest
 def single_dark_parameter_set_is_picklable():

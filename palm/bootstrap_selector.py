@@ -1,5 +1,6 @@
 from sklearn.cross_validation import Bootstrap
-from palm.base.data_selector import DataSelector
+from .base.data_selector import DataSelector
+
 
 class BootstrapSelector(DataSelector):
     """Randomly samples a data set with replacement."""

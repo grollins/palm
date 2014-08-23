@@ -1,18 +1,17 @@
 import nose.tools
 import numpy
-from palm.probability_vector import make_prob_vec_from_state_ids,\
-                                    make_prob_vec_from_panda_series
-from palm.probability_matrix import make_prob_matrix_from_state_ids,\
-                                    make_prob_matrix_from_panda_data_frame
-from palm.rate_matrix import make_rate_matrix_from_state_ids
-from palm.blink_model import StateIDCollection
-from palm.linalg import vector_product, vector_matrix_product,\
+from ..probability_vector import make_prob_vec_from_state_ids
+from ..probability_matrix import make_prob_matrix_from_state_ids
+from ..rate_matrix import make_rate_matrix_from_state_ids
+from ..state_collection import StateIDCollection
+from ..linalg import vector_product, vector_matrix_product,\
                         asym_vector_matrix_product,\
                         symmetric_matrix_matrix_product,\
                         asymmetric_matrix_matrix_product,\
                         ScipyMatrixExponential,\
                         matrix_vector_product, asym_matrix_vector_product
-from palm.util import ALMOST_ZERO
+from ..util import ALMOST_ZERO
+
 
 @nose.tools.istest
 def computes_vector_product_with_ordered_indices():

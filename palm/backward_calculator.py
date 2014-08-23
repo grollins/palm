@@ -1,6 +1,5 @@
-import numpy
-from palm.linalg import asym_matrix_vector_product, matrix_vector_product
-from palm.util import ALMOST_ZERO
+from .linalg import asym_matrix_vector_product
+
 
 class BackwardCalculator(object):
     """

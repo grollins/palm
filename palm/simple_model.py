@@ -1,16 +1,16 @@
 import numpy
 import pandas
 
-from palm.base.model import Model
-from palm.base.model_factory import ModelFactory
-from palm.base.parameter_set import ParameterSet
-from palm.base.target_data import TargetData
-from palm.aggregated_kinetic_model import AggregatedKineticModel
-from palm.discrete_state_trajectory import DiscreteStateTrajectory,\
+from .base.model_factory import ModelFactory
+from .base.parameter_set import ParameterSet
+from .base.target_data import TargetData
+from .aggregated_kinetic_model import AggregatedKineticModel
+from .discrete_state_trajectory import DiscreteStateTrajectory,\
                                            DiscreteDwellSegment
-from palm.state_collection import StateCollectionFactory
-from palm.route_collection import RouteCollectionFactory
-from palm.probability_vector import make_prob_vec_from_state_ids
+from .state_collection import StateCollectionFactory
+from .route_collection import RouteCollectionFactory
+from .probability_vector import make_prob_vec_from_state_ids
+
 
 class State(object):
     def __init__(self, id_str, observation_class):

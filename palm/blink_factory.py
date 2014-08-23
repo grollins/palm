@@ -1,10 +1,9 @@
-import numpy
-from palm.base.model_factory import ModelFactory
-from palm.blink_model import BlinkModel
-from palm.blink_state_enumerator import SingleDarkState, DoubleDarkState,\
+from .base.model_factory import ModelFactory
+from .blink_model import BlinkModel
+from .blink_state_enumerator import SingleDarkState, DoubleDarkState,\
                                         SingleDarkStateEnumeratorFactory,\
                                         DoubleDarkStateEnumeratorFactory
-from palm.blink_route_mapper import Route, SingleDarkRouteMapperFactory,\
+from .blink_route_mapper import Route, SingleDarkRouteMapperFactory,\
                                     DoubleDarkRouteMapperFactory,\
                                     ConnectedDarkRouteMapperFactory
 

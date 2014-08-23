@@ -1,6 +1,7 @@
 import numpy
-from palm.base.data_predictor import DataPredictor
-from palm.base.prediction import Prediction
+from .base.data_predictor import DataPredictor
+from .base.prediction import Prediction
+
 
 class CutoffPrediction(Prediction):
     """docstring for CutoffPrediction"""

@@ -1,7 +1,6 @@
-import numpy
-from palm.aggregated_kinetic_model import AggregatedKineticModel
-from palm.probability_vector import make_prob_vec_from_state_ids
-from palm.state_collection import StateIDCollection
+from .aggregated_kinetic_model import AggregatedKineticModel
+from .probability_vector import make_prob_vec_from_state_ids
+
 
 class BlinkModel(AggregatedKineticModel):
     """

@@ -1,4 +1,5 @@
-from palm.base.judge import Judge
+from .base.judge import Judge
+
 
 class CutoffJudge(Judge):
     """

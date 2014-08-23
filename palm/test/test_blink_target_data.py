@@ -1,5 +1,6 @@
 import nose.tools
-from palm.blink_target_data import BlinkTargetData, BlinkCollectionTargetData
+from ..blink_target_data import BlinkTargetData, BlinkCollectionTargetData
+
 
 @nose.tools.istest
 def loads_single_trajectory_with_correct_number_of_segments():

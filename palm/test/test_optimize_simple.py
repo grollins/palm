@@ -1,12 +1,13 @@
 import nose.tools
 import numpy
 import pandas
-from palm.simple_model import SimpleParameterSet, SimpleModelFactory,\
-                              SimpleModel, SimpleTargetData
-from palm.likelihood_judge import LikelihoodJudge
-from palm.backward_likelihood import BackwardPredictor
-from palm.scipy_optimizer import ScipyOptimizer
-from palm.linalg import ScipyMatrixExponential2
+from ..simple_model import SimpleParameterSet, SimpleModelFactory,\
+                           SimpleTargetData
+from ..likelihood_judge import LikelihoodJudge
+from ..backward_likelihood import BackwardPredictor
+from ..scipy_optimizer import ScipyOptimizer
+from ..linalg import ScipyMatrixExponential
+
 
 EPSILON = 0.1
 
@@ -42,7 +43,7 @@ class TestComputeLikelihoodOfSimpleModelWithShortTrajectory(object):
         model_parameters = SimpleParameterSet()
         model_parameters.set_parameter('log_k1', -0.5)
         model_parameters.set_parameter('log_k2', 0.0)
-        expm_calculator = ScipyMatrixExponential2()
+        expm_calculator = ScipyMatrixExponential()
         data_predictor = BackwardPredictor(
                             expm_calculator, always_rebuild_rate_matrix=False,
                             noisy=True)

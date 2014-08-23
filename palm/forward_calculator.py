@@ -1,5 +1,5 @@
-import numpy
-from palm.linalg import asym_vector_matrix_product, vector_matrix_product
+from .linalg import asym_vector_matrix_product, vector_matrix_product
+
 
 class ForwardCalculator(object):
     """

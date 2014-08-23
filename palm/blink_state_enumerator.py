@@ -1,6 +1,7 @@
 from types import IntType
-from palm.util import multichoose
-from palm.state_collection import StateCollectionFactory
+from .util import multichoose
+from .state_collection import StateCollectionFactory
+
 
 class SingleDarkState(object):
     """

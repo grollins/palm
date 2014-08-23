@@ -1,7 +1,7 @@
 import numpy
 import scipy.linalg
 from pandas import DataFrame
-from palm.util import DATA_TYPE
+
 
 def make_rate_matrix_from_state_ids(index_id_collection, column_id_collection):
     rm = RateMatrix()

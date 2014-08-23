@@ -1,10 +1,11 @@
 import nose.tools
-from palm.blink_target_data import BlinkTargetData
-from palm.cutoff_parameter_set import CutoffParameterSet
-from palm.cutoff_predictor import CutoffPredictor, CutoffPrediction
-from palm.cutoff_judge import CutoffJudge
-from palm.score_function import CutoffScoreFunction
-from palm.cutoff_model import CutoffModelFactory
+from ..blink_target_data import BlinkTargetData
+from ..cutoff_parameter_set import CutoffParameterSet
+from ..cutoff_predictor import CutoffPredictor, CutoffPrediction
+from ..cutoff_judge import CutoffJudge
+from ..score_function import CutoffScoreFunction
+from ..cutoff_model import CutoffModelFactory
+
 
 @nose.tools.istest
 def score_cutoff_prediction():

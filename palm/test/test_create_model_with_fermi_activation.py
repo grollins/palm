@@ -1,12 +1,8 @@
 import nose.tools
 import numpy
-from palm.blink_parameter_set import SingleDarkParameterSet,\
-                                     DoubleDarkParameterSet
-from palm.blink_factory import SingleDarkBlinkFactory,\
-                               DoubleDarkBlinkFactory
-from palm.blink_route_mapper import SingleDarkRouteMapperFactory,\
-                                    DoubleDarkRouteMapperFactory
-from palm.rate_fcn import rate_from_rate_id
+from ..blink_parameter_set import SingleDarkParameterSet
+from ..blink_factory import SingleDarkBlinkFactory
+
 
 EPSILON = 0.01
 

@@ -1,11 +1,7 @@
-import numpy
-from collections import defaultdict
-from palm.base.model import Model
-from palm.state_collection import StateIDCollection
-from palm.route_collection import RouteIDCollection
-from palm.rate_fcn import rate_from_rate_id
-from palm.rate_matrix import make_rate_matrix_from_state_ids
-from palm.probability_vector import make_prob_vec_from_state_ids
+from .base.model import Model
+from .state_collection import StateIDCollection
+from .rate_fcn import rate_from_rate_id
+from .rate_matrix import make_rate_matrix_from_state_ids
 
 
 class AggregatedKineticModel(Model):

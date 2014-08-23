@@ -1,12 +1,11 @@
 import os.path
 import nose.tools
-import numpy
-from palm.forward_likelihood import ForwardPredictor
-from palm.blink_factory import SingleDarkBlinkFactory
-from palm.blink_parameter_set import SingleDarkParameterSet
-from palm.likelihood_judge import LikelihoodJudge
-from palm.blink_target_data import BlinkTargetData
-from palm.linalg import ScipyMatrixExponential2
+from ..forward_likelihood import ForwardPredictor
+from ..blink_factory import SingleDarkBlinkFactory
+from ..blink_parameter_set import SingleDarkParameterSet
+from ..blink_target_data import BlinkTargetData
+from ..linalg import ScipyMatrixExponential
+
 
 @nose.tools.istest
 def computes_likelihood_successfully():
@@ -17,7 +16,7 @@ def computes_likelihood_successfully():
     model_parameters.set_parameter('log_kd',  1.0)
     model_parameters.set_parameter('log_kr', -1.0)
     model_parameters.set_parameter('log_kb',  0.0)
-    forward_predictor = ForwardPredictor(ScipyMatrixExponential2(),
+    forward_predictor = ForwardPredictor(ScipyMatrixExponential(),
                                          always_rebuild_rate_matrix=True)
     target_data = BlinkTargetData()
     data_path = os.path.join("palm", "test", "test_data",

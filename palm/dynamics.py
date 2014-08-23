@@ -1,7 +1,7 @@
-from palm.linalg import ScipyMatrixExponential2
-from palm.linalg import vector_matrix_product
-from palm.probability_vector import VectorTrajectory
-from palm.probability_vector import make_prob_vec_from_state_ids
+from .linalg import ScipyMatrixExponential2
+from .linalg import vector_matrix_product
+from .probability_vector import VectorTrajectory
+
 
 class Dynamics(object):
     """docstring for Dynamics"""

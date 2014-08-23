@@ -1,11 +1,9 @@
 import nose.tools
-import numpy
-import scipy.linalg
-from palm.util import ALMOST_ZERO, DATA_TYPE
-from palm.linalg import ScipyMatrixExponential
-from palm.blink_factory import SingleDarkBlinkFactory
-from palm.blink_parameter_set import SingleDarkParameterSet
-from palm.forward_calculator import ForwardCalculator
+from ..linalg import ScipyMatrixExponential
+from ..blink_factory import SingleDarkBlinkFactory
+from ..blink_parameter_set import SingleDarkParameterSet
+from ..forward_calculator import ForwardCalculator
+
 
 @nose.tools.istest
 def most_likely_state_correctly_selected_from_full_expm():

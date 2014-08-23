@@ -1,5 +1,6 @@
-from palm.base.model_factory import ModelFactory
-from palm.base.model import Model
+from .base.model_factory import ModelFactory
+from .base.model import Model
+
 
 class CutoffModelFactory(ModelFactory):
     """CutoffModelFactory"""

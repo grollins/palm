@@ -1,8 +1,8 @@
 import numpy
 from scipy.linalg import expm, expm2
 from pandas import Series
-from palm.probability_vector import make_prob_vec_from_panda_series
-from palm.probability_matrix import make_prob_matrix_from_panda_data_frame
+from .probability_vector import make_prob_vec_from_panda_series
+from .probability_matrix import make_prob_matrix_from_panda_data_frame
 
 
 def vector_product(vec1, vec2, do_alignment=True):

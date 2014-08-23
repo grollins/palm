@@ -1,5 +1,6 @@
 import scipy.optimize
-from palm.base.parameter_optimizer import ParameterOptimizer
+from .base.parameter_optimizer import ParameterOptimizer
+
 
 class ScipyOptimizer(ParameterOptimizer):
     """

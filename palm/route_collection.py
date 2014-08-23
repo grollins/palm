@@ -1,5 +1,6 @@
 import pandas
-from palm.state_collection import StateIDCollection
+from .state_collection import StateIDCollection
+
 
 class RouteCollectionFactory(object):
     """docstring for RouteCollectionFactory"""

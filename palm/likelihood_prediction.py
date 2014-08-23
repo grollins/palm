@@ -1,5 +1,6 @@
 import numpy
-from palm.base.prediction import Prediction
+from .base.prediction import Prediction
+
 
 class LikelihoodPrediction(Prediction):
     """

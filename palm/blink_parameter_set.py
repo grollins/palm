@@ -1,5 +1,6 @@
 import numpy
-from palm.base.parameter_set import ParameterSet
+from .base.parameter_set import ParameterSet
+
 
 class SingleDarkParameterSet(ParameterSet):
     """

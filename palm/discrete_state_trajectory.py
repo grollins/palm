@@ -1,5 +1,6 @@
 import numpy
-from palm.base.trajectory import TrajectorySegment, Trajectory
+from .base.trajectory import TrajectorySegment, Trajectory
+
 
 class DiscreteDwellSegment(TrajectorySegment):
     """
