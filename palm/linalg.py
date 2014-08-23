@@ -1,19 +1,9 @@
-import gc
 import numpy
-import pandas
-import scipy
-import scipy.linalg
-import theano
-from theano.sandbox.linalg.ops import matrix_dot
+from scipy.linalg import expm, expm2
 from pandas import Series
-import qit.utils
 from palm.probability_vector import make_prob_vec_from_panda_series
 from palm.probability_matrix import make_prob_matrix_from_panda_data_frame
-from palm.util import DATA_TYPE
 
-# UNCOMMENT AFTER IMPLEMENTING PYCUDA CLASS
-# from pycuda import driver, compiler, gpuarray, tools
-# import pycuda.autoinit
 
 def vector_product(vec1, vec2, do_alignment=True):
     """
@@ -228,9 +218,6 @@ class ScipyMatrixExponential(object):
     """
     def __init__(self):
         super(ScipyMatrixExponential, self).__init__()
-        if scipy.__version__ == 0.13:
-            print "Warning: scipy.linalg.expm appears to leak memory,"\
-                  "in version 0.13."
 
     def compute_matrix_exp(self, rate_matrix, dwell_time):
         """
@@ -246,7 +233,7 @@ class ScipyMatrixExponential(object):
         expQt_matrix : RateMatrix
         """
         Q = rate_matrix.as_npy_array()
-        expQt = scipy.linalg.expm(Q * dwell_time)
+        expQt = expm(Q * dwell_time)
         expQt_matrix = rate_matrix.copy()
         expQt_matrix.data_frame.values[:,:] = expQt
         return expQt_matrix
@@ -292,7 +279,7 @@ class ScipyMatrixExponential2(object):
         expQt_matrix : RateMatrix
         """
         Q = rate_matrix.as_npy_array()
-        expQt = scipy.linalg.expm2(Q * dwell_time)
+        expQt = expm2(Q * dwell_time)
         expQt_matrix = rate_matrix.copy()
         expQt_matrix.data_frame.values[:,:] = expQt
         return expQt_matrix
@@ -314,48 +301,6 @@ class ScipyMatrixExponential2(object):
         expQt_matrix = self.compute_matrix_exp(rate_matrix, dwell_time)
         expv = matrix_vector_product(expQt_matrix, vec, do_alignment=True)
         return expv
-
-
-class QitMatrixExponential(object):
-    """
-    Compute matrix exponential via qit.util.expv.
-    This class can only compute the matrix exponential
-    multiplied by a vector because qit doesn't implement
-    the calculation of just the matrix exponential.
-    """
-    def __init__(self):
-        super(QitMatrixExponential, self).__init__()
-
-    def compute_matrix_expv(self, rate_matrix, dwell_time, vec):
-        """
-        Computes ``exp(Qt) * vec``
-
-        Parameters
-        ----------
-        rate_matrix : RateMatrix
-        dwell_time : float
-        vec : ProbabilityVector
-
-        Returns
-        -------
-        expv : ProbabilityVector
-        """
-        alignment_results = rate_matrix.data_frame.align(
-                                vec.series, axis=1, join='right')
-        aligned_frame, aligned_series = alignment_results
-        v = numpy.array(aligned_series)
-        Q = aligned_frame.values
-        try:
-            r = qit.utils.expv(dwell_time, Q, v)
-        except:
-            print "norm of Q:", scipy.linalg.norm(Q, numpy.inf)
-            print "norm of v:", scipy.linalg.norm(v)
-            raise
-        expv = r[0].ravel() # reshapes 2d array (1,n) to 1d array (n,)
-        expv = expv.real
-        expv_series = pandas.Series(expv, index=aligned_frame.index)
-        expv_vec = make_prob_vec_from_panda_series(expv_series)
-        return expv_vec
 
 
 class DiagonalExpm(object):
@@ -403,145 +348,3 @@ class DiagonalExpm(object):
         expQt_matrix = self.compute_matrix_exp(rate_matrix, dwell_time)
         expv = matrix_vector_product(expQt_matrix, vec, do_alignment=True)
         return expv
-
-
-class TheanoEigenExpm(object):
-    """
-    Compute matrix exponential using eigen decomposition approach,
-    implemented using theano.
-
-    ``exp(Qt) = V * D * V_i``
-    where `Q` is the rate matrix, `V` is matrix of eigen vectors,
-    `D` is a diagonal matrix with the eigen values of `Q` on the diagonal,
-    and `V_i` is the inverse of `V`.
-
-    Attributes
-    ----------
-    expm_fcn : theano function
-        A precompiled function that tells theano how to compute ``V * D * V_i``.
-    eig_vecs : numpy ndarray
-        2d array, i-th column corresponds to i-th eigen value.
-    eig_vals : numpy ndarray
-        1d array of eigen values.
-    dim : int
-        Size of rate matrix (number of eigen values/vectors).
-    is_first_run : bool
-        Only need to calculate eigen values and vectors the first time,
-        unless `force_decomposition` says otherwise.
-    vec_inv : numpy ndarray
-        Inverse of the `eigen_vecs` array.
-    exp_eig_val_array : numpy ndarray
-        Eigen value array after element-wise exponentiation.
-
-    Parameters
-    ----------
-    force_decomposition : bool, optional
-        Whether eigen decomposition should be computed every time
-        `compute_matrix_exp` is called or only the first time it is called.
-    """
-    def __init__(self, force_decomposition=False):
-        self.force_decomposition = force_decomposition
-        self.eig_vecs = None
-        self.eig_vals = None
-        self.dim = 0
-        self.is_first_run = True
-        self.vec_inv = None
-        self.exp_eig_val_array = None
-        V = theano.tensor.zmatrix()
-        D = theano.tensor.zmatrix()
-        Vi = theano.tensor.zmatrix()
-        VDVi = matrix_dot(V, D, Vi)
-        self.expm_fcn = theano.function([V,D,Vi], VDVi)
-
-    def _decompose_matrix(self, rate_matrix):
-        """
-        Calculate eigen vectors and values of rate_matrix.
-
-        Parameters
-        ----------
-        rate_matrix : RateMatrix
-        """
-        Q = rate_matrix.as_npy_array()
-        self.eig_vals, self.eig_vecs = scipy.linalg.eig(Q)
-        self.dim = self.eig_vecs.shape[0]
-        self.vec_inv = scipy.linalg.inv(self.eig_vecs)
-        self.exp_eig_val_array = numpy.diag(numpy.exp(self.eig_vals))
-
-    def compute_matrix_exp(self, rate_matrix, dwell_time):
-        """
-        Computes ``exp(Qt)``
-
-        Parameters
-        ----------
-        rate_matrix : RateMatrix
-        dwell_time : float
-
-        Returns
-        -------
-        expQt_matrix : RateMatrix
-        """
-        if self.is_first_run or self.force_decomposition:
-            self._decompose_matrix(rate_matrix)
-            self.is_first_run = False
-        else:
-            pass
-        D = numpy.power(self.exp_eig_val_array, dwell_time)
-        VDVi = self.expm_fcn(self.eig_vecs, D, self.vec_inv)
-        expQt_matrix = rate_matrix.copy()
-        expQt_matrix.data_frame.values[:,:] = VDVi.real
-        return expQt_matrix
-
-    def compute_matrix_expv(self, rate_matrix, dwell_time, vec):
-        """
-        Computes ``exp(Qt) * vec``
-
-        Parameters
-        ----------
-        rate_matrix : RateMatrix
-        dwell_time : float
-        vec : ProbabilityVector
-
-        Returns
-        -------
-        expv : ProbabilityVector
-        """
-        expQt_matrix = self.compute_matrix_exp(rate_matrix, dwell_time)
-        expv = matrix_vector_product(expQt_matrix, vec, do_alignment=True)
-        return expv
-
-
-class CUDAMatrixExponential(object):
-    """FOR BOB"""
-    def __init__(self):
-        super(CUDAMatrixExponential, self).__init__()
-
-    def compute_matrix_exp(self, rate_matrix, dwell_time):
-        """
-        Computes ``exp(Qt)``
-
-        Parameters
-        ----------
-        rate_matrix : RateMatrix
-        dwell_time : float
-        """
-        Q = rate_matrix.as_npy_array()
-        # do something to compute exp(Q * dwell_time)
-        return None
-
-    def compute_matrix_expv(self, rate_matrix, dwell_time, vec):
-        """
-        Computes ``exp(Qt) * vec``
-
-        Parameters
-        ----------
-        rate_matrix : RateMatrix
-        dwell_time : float
-        vec : ProbabilityVector
-        """
-        alignment_results = rate_matrix.data_frame.align(
-                                vec.series, axis=1, join='right')
-        aligned_frame, aligned_series = alignment_results
-        v = numpy.array(aligned_series)
-        Q = aligned_frame.values
-        # do something to compute exp(Q * dwell_time) * v
-        return None
