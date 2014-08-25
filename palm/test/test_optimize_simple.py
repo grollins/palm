@@ -4,7 +4,7 @@ import pandas
 from ..simple_model import SimpleParameterSet, SimpleModelFactory,\
                            SimpleTargetData
 from ..likelihood_judge import LikelihoodJudge
-from ..backward_likelihood import BackwardPredictor
+from ..forward_likelihood import ForwardPredictor
 from ..scipy_optimizer import ScipyOptimizer
 from ..linalg import ScipyMatrixExponential
 
@@ -44,9 +44,9 @@ class TestComputeLikelihoodOfSimpleModelWithShortTrajectory(object):
         model_parameters.set_parameter('log_k1', -0.5)
         model_parameters.set_parameter('log_k2', 0.0)
         expm_calculator = ScipyMatrixExponential()
-        data_predictor = BackwardPredictor(
-                            expm_calculator, always_rebuild_rate_matrix=False,
-                            noisy=True)
+        data_predictor = \
+            ForwardPredictor(expm_calculator, always_rebuild_rate_matrix=False,
+                             noisy=True)
         target_data = SimpleTargetData()
         target_data.load_data(data_file="./palm/test/test_data/simple_2state_traj.csv")
         model = model_factory.create_model(model_parameters)
@@ -98,7 +98,7 @@ class TestComputeLikelihoodOfSimpleModelWithLongTrajectory(object):
         model_parameters = SimpleParameterSet()
         model_parameters.set_parameter('log_k1', -0.5)
         model_parameters.set_parameter('log_k2', 0.0)
-        data_predictor = BackwardPredictor()
+        data_predictor = ForwardPredictor()
         target_data = SimpleTargetData()
         target_data.load_data(
             data_file="./palm/test/test_data/stochpy_2state_traj.csv")
@@ -138,7 +138,7 @@ class TestOptimizeSimpleModel(object):
         initial_parameters = SimpleParameterSet()
         initial_parameters.set_parameter('log_k1', -0.5)
         initial_parameters.set_parameter('log_k2', -0.5)
-        data_predictor = BackwardPredictor()
+        data_predictor = ForwardPredictor()
         judge = LikelihoodJudge()
         target_data = SimpleTargetData()
         target_data.load_data(data_file="./palm/test/test_data/stochpy_2state_traj.csv")

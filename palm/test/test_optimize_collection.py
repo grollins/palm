@@ -6,7 +6,7 @@ import pandas
 from ..blink_factory import SingleDarkBlinkFactory
 from ..blink_parameter_set import SingleDarkParameterSet
 from ..likelihood_judge import CollectionLikelihoodJudge
-from ..backward_likelihood import BackwardPredictor
+from ..forward_likelihood import ForwardPredictor
 from ..blink_target_data import BlinkCollectionTargetData
 from ..linalg import ScipyMatrixExponential
 
@@ -83,15 +83,15 @@ class TestComputeLikelihoodOfBlinkCollectionWithShortTrajectories(object):
         model_parameters.set_parameter('log_kd', -0.5)
         model_parameters.set_parameter('log_kr', -0.5)
         model_parameters.set_parameter('log_kb', -0.5)
-        data_predictor = BackwardPredictor(ScipyMatrixExponential(),
-                                           always_rebuild_rate_matrix=False)
+        data_predictor = \
+            ForwardPredictor(ScipyMatrixExponential(),
+                             always_rebuild_rate_matrix=False)
         target_data = BlinkCollectionTargetData()
         target_data.load_data(data_file="./palm/test/test_data/traj_directory.txt")
         model = model_factory.create_model(model_parameters)
         judge = CollectionLikelihoodJudge()
         score = judge.judge_prediction(model, data_predictor, target_data)
         log_likelihood = -score
-        num_trajs = len(target_data)
         expected_log_likelihood = self.compute_log_likelihood(model_parameters,
                                     "./palm/test/test_data/short_blink_traj.csv")
         delta_LL = expected_log_likelihood - log_likelihood

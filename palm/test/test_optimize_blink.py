@@ -5,7 +5,7 @@ import scipy.linalg
 import pandas
 from ..blink_factory import SingleDarkBlinkFactory
 from ..blink_parameter_set import SingleDarkParameterSet
-from ..backward_likelihood import BackwardPredictor
+from ..forward_likelihood import ForwardPredictor
 from ..blink_target_data import BlinkTargetData
 from ..linalg import ScipyMatrixExponential
 
@@ -80,8 +80,9 @@ class TestComputeLikelihoodOfBlinkModelWithShortTrajectory(object):
         model_parameters.set_parameter('log_kd', -0.5)
         model_parameters.set_parameter('log_kr', -0.5)
         model_parameters.set_parameter('log_kb', -0.5)
-        data_predictor = BackwardPredictor(ScipyMatrixExponential(),
-                                           always_rebuild_rate_matrix=True)
+        data_predictor = \
+            ForwardPredictor(ScipyMatrixExponential(),
+                             always_rebuild_rate_matrix=True)
         target_data = BlinkTargetData()
         target_data.load_data(data_file="./palm/test/test_data/short_blink_traj.csv")
         model = model_factory.create_model(model_parameters)
