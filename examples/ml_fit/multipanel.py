@@ -7,6 +7,7 @@ matplotlib.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 import matplotlib.pyplot as plt
 import mpl_toolkits.axisartist as AA
 
+
 class MultipanelPlot(object):
     def __init__(self, rows, cols, figsize=(6,6)):
         self.F = plt.figure(figsize=figsize)

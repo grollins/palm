@@ -5,8 +5,10 @@ from palm.blink_target_data import BlinkCollectionTargetData
 from palm.parameter_set_distribution import ParamSetDistFactory
 from opt_fcn import run_optimization
 
+
 DIRECTORY_FILE = os.path.abspath('./traj_paths.txt')
 BOOTSTRAP_SIZE = 20  # number of trajectories per maximum likelihood fit
+
 
 def make_bs_file(traj_data, bs_selector, size, filename):
     resampled_traj_data = bs_selector.select_data(traj_data, size=size)

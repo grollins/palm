@@ -2,16 +2,15 @@ import sys
 import os.path
 import numpy
 from multipanel import MultipanelPlot
-from palm.blink_target_data import BlinkCollectionTargetData
-from palm.parameter_set_distribution import ParamSetDistFactory,\
-                                            ParameterSetDistribution
-from palm.blink_parameter_set import SingleDarkParameterSet
+from palm.parameter_set_distribution import ParameterSetDistribution
+
 
 DATA = os.path.expanduser("./params")
 COLOR_SCHEME = ["#EAB086", "#EAC786", "#7995C6", "#6FC2B9", '0.65']
 LIMIT = 1.5
 DELTA = 1.0
 TRUE_N = 5
+
 
 def load_psd(filename):
     psd = ParameterSetDistribution()

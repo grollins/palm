@@ -1,10 +1,10 @@
 import sys
 import os.path
 import glob
-from palm.blink_target_data import BlinkCollectionTargetData
 from palm.parameter_set_distribution import ParamSetDistFactory,\
                                             ParameterSetDistribution
 from palm.blink_parameter_set import SingleDarkParameterSet
+
 
 def load_previous_run(prev_run_filename):
     prev_psd = ParameterSetDistribution()

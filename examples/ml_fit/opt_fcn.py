@@ -1,13 +1,13 @@
 from palm.blink_factory import SingleDarkBlinkFactory
 from palm.likelihood_judge import CollectionLikelihoodJudge
 from palm.scipy_optimizer import ScipyOptimizer
-from palm.backward_likelihood import BackwardPredictor
 from palm.forward_likelihood import ForwardPredictor
 from palm.blink_target_data import BlinkCollectionTargetData
 from palm.blink_parameter_set import SingleDarkParameterSet
 from palm.score_function import ScoreFunction
 from palm.linalg import ScipyMatrixExponential
 from palm.util import randomize_parameter
+
 
 def run_optimization(N, traj_filename):
     # ============================
