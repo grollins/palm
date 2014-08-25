@@ -19,6 +19,8 @@ class SingleDarkBlinkFactory(ModelFactory):
         Whether the activation rates vary with time.
     MAX_A : int, optional
         Number of fluorophores that can be simultaneously active.
+    observable_bright_classes: int
+        Number of discrete intensity levels that can be distinguished.
 
     Attributes
     ----------
@@ -27,11 +29,13 @@ class SingleDarkBlinkFactory(ModelFactory):
     route_factory : class
         Factory class for Route objects.
     '''
-    def __init__(self, fermi_activation=False, MAX_A=10):
+    def __init__(self, fermi_activation=False, MAX_A=10,
+                 observable_bright_classes=1):
         self.state_factory = SingleDarkState
         self.route_factory = Route
         self.fermi_activation = fermi_activation
         self.MAX_A = MAX_A
+        self.observable_bright_classes = observable_bright_classes
 
     def create_model(self, parameter_set):
         """
@@ -47,8 +51,9 @@ class SingleDarkBlinkFactory(ModelFactory):
         new_model : BlinkModel
         """
         N = parameter_set.get_parameter('N')
-        state_enumerator_factory = SingleDarkStateEnumeratorFactory(
-                                        N, self.state_factory, self.MAX_A)
+        state_enumerator_factory = \
+            SingleDarkStateEnumeratorFactory(N, self.state_factory, self.MAX_A,
+                                             self.observable_bright_classes)
         state_enumerator = state_enumerator_factory.create_state_enumerator()
         route_mapper_factory = SingleDarkRouteMapperFactory(
                                 parameter_set=parameter_set,
@@ -71,6 +76,8 @@ class DoubleDarkBlinkFactory(ModelFactory):
         Whether the activation rates vary with time.
     MAX_A : int, optional
         Number of fluorophores that can be simultaneously active.
+    observable_bright_classes: int
+        Number of discrete intensity levels that can be distinguished.
 
     Attributes
     ----------
@@ -79,11 +86,13 @@ class DoubleDarkBlinkFactory(ModelFactory):
     route_factory : class
         Factory class for Route objects.
     '''
-    def __init__(self, fermi_activation=False, MAX_A=10):
+    def __init__(self, fermi_activation=False, MAX_A=10,
+                 observable_bright_classes=1):
         self.state_factory = DoubleDarkState
         self.route_factory = Route
         self.fermi_activation = fermi_activation
         self.MAX_A = MAX_A
+        self.observable_bright_classes = observable_bright_classes
 
     def create_model(self, parameter_set):
         """
@@ -99,8 +108,9 @@ class DoubleDarkBlinkFactory(ModelFactory):
         new_model : BlinkModel
         """
         N = parameter_set.get_parameter('N')
-        state_enumerator_factory = DoubleDarkStateEnumeratorFactory(
-                                        N, self.state_factory, self.MAX_A)
+        state_enumerator_factory = \
+            DoubleDarkStateEnumeratorFactory(N, self.state_factory, self.MAX_A,
+                                             self.observable_bright_classes)
         state_enumerator = state_enumerator_factory.create_state_enumerator()
         route_mapper_factory = DoubleDarkRouteMapperFactory(
                                 parameter_set=parameter_set,
@@ -123,6 +133,8 @@ class ConnectedDarkBlinkFactory(ModelFactory):
         Whether the activation rates vary with time.
     MAX_A : int, optional
         Number of fluorophores that can be simultaneously active.
+    observable_bright_classes: int
+        Number of discrete intensity levels that can be distinguished.
 
     Attributes
     ----------
@@ -131,11 +143,13 @@ class ConnectedDarkBlinkFactory(ModelFactory):
     route_factory : class
         Factory class for Route objects.
     '''
-    def __init__(self, fermi_activation=False, MAX_A=10):
+    def __init__(self, fermi_activation=False, MAX_A=10,
+                 observable_bright_classes=1):
         self.state_factory = DoubleDarkState
         self.route_factory = Route
         self.fermi_activation = fermi_activation
         self.MAX_A = MAX_A
+        self.observable_bright_classes = observable_bright_classes
 
     def create_model(self, parameter_set):
         """
@@ -151,8 +165,9 @@ class ConnectedDarkBlinkFactory(ModelFactory):
         new_model : BlinkModel
         """
         N = parameter_set.get_parameter('N')
-        state_enumerator_factory = DoubleDarkStateEnumeratorFactory(
-                                        N, self.state_factory, self.MAX_A)
+        state_enumerator_factory = \
+            DoubleDarkStateEnumeratorFactory(N, self.state_factory, self.MAX_A,
+                                             self.observable_bright_classes)
         state_enumerator = state_enumerator_factory.create_state_enumerator()
         route_mapper_factory = ConnectedDarkRouteMapperFactory(
                                 parameter_set=parameter_set,
