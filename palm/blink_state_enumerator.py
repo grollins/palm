@@ -116,12 +116,16 @@ class SingleDarkStateEnumeratorFactory(object):
         Factory class for State objects.
     max_A : int
         Number of fluorophores that can be simultaneously active.
+    observable_bright_classes: int
+        Number of discrete intensity levels that can be distinguished.
     """
-    def __init__(self, N, state_factory=SingleDarkState, max_A=5):
+    def __init__(self, N, state_factory=SingleDarkState, max_A=5,
+                 observable_bright_classes=1):
         assert type(N) is IntType
         self.N = N
         self.state_factory = state_factory
         self.max_A = max_A
+        self.observable_bright_classes = max(1, observable_bright_classes)
         self.num_microstates = len(['I', 'A', 'D', 'B'])
 
     def create_state_enumerator(self):
@@ -157,8 +161,11 @@ class SingleDarkStateEnumeratorFactory(object):
                 if A > self.max_A:
                     continue
                 else:
-                    if A > 0:
+                    if A == 1:
                         obs_class = 'bright'
+                    elif A > 1:
+                        obs_class = \
+                            'bright_%d' % min(A, self.observable_bright_classes)
                     else:
                         obs_class = 'dark'
                     id_str = "%d_%d_%d_%d" % (I, A, D, B)
@@ -192,12 +199,16 @@ class DoubleDarkStateEnumeratorFactory(object):
         Factory class for State objects.
     max_A : int
         Number of fluorophores that can be simultaneously active.
+    observable_bright_classes: int
+        Number of discrete intensity levels that can be distinguished.
     """
-    def __init__(self, N, state_factory=DoubleDarkState, max_A=5):
+    def __init__(self, N, state_factory=DoubleDarkState, max_A=5,
+                 observable_bright_classes=1):
         assert type(N) is IntType
         self.N = N
         self.state_factory = state_factory
         self.max_A = max_A
+        self.observable_bright_classes = max(1, observable_bright_classes)
         self.num_microstates = len(['I', 'A', 'D1', 'D2', 'B'])
 
     def create_state_enumerator(self):
@@ -234,8 +245,11 @@ class DoubleDarkStateEnumeratorFactory(object):
                 if A > self.max_A:
                     continue
                 else:
-                    if A > 0:
+                    if A == 1:
                         obs_class = 'bright'
+                    elif A > 1:
+                        obs_class = \
+                            'bright_%d' % min(A, self.observable_bright_classes)
                     else:
                         obs_class = 'dark'
                     id_str = "%d_%d_%d_%d_%d" % (I, A, D1, D2, B)

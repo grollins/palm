@@ -2,6 +2,22 @@ import numpy
 from .base.trajectory import TrajectorySegment, Trajectory
 
 
+def convert_class_to_signal(obs_class_name):
+    """
+    Input         Output
+    dark          0
+    bright        1
+    bright_2      2
+    bright_3      3
+    """
+    class_to_signal_dict = {'dark':0, 'bright':1}
+    elements = obs_class_name.split('_')
+    if len(elements) > 1:
+        return int(elements[1])
+    else:
+        return class_to_signal_dict[elements[0]]
+
+
 class DiscreteDwellSegment(TrajectorySegment):
     """
     Dwells consist of an aggregated class and a dwell duration.
@@ -138,17 +154,16 @@ class DiscreteStateTrajectory(Trajectory):
         -------
         traj_array : numpy ndarray
         """
-        class_to_signal_dict = {'dark':0, 'bright':1}
         time_list = []
         signal_list = []
         time_list.append(0.0)
-        signal_list.append(class_to_signal_dict['dark'])
+        signal_list.append(convert_class_to_signal('dark'))
         for i, segment in enumerate(self):
             if i >= len(self)-1:
                 break
             this_class = segment.get_class()
-            this_signal = class_to_signal_dict[this_class]
-            next_signal = class_to_signal_dict[self.get_segment(i+1).get_class()]
+            this_signal = convert_class_to_signal(this_class)
+            next_signal = convert_class_to_signal(self.get_segment(i+1).get_class())
             this_cumulative_time = self.get_cumulative_time(i)
             time_list.append(this_cumulative_time)
             signal_list.append(this_signal)
@@ -156,7 +171,7 @@ class DiscreteStateTrajectory(Trajectory):
             signal_list.append(next_signal)
         last_segment = self.get_segment(len(self)-1)
         last_class = last_segment.get_class()
-        last_signal = class_to_signal_dict[last_class]
+        last_signal = convert_class_to_signal(last_class)
         last_cumulative_time = self.get_cumulative_time(len(self)-1)
         time_list.append(last_cumulative_time)
         signal_list.append(last_signal)
