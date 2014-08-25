@@ -8,6 +8,7 @@ from .probability_vector import VectorTrajectory, ProbabilityVector
 from .rate_matrix import RateMatrixTrajectory
 from .util import ALMOST_ZERO
 
+
 class ForwardPredictor(DataPredictor):
     """
     Computes the log likelihood of a trajectory using the Forward algorithm.
@@ -139,13 +140,12 @@ class ForwardPredictor(DataPredictor):
 
             # scale probability vector to avoid numerical underflow
             scaled_alpha = scaling_factor_set.scale_vector(alpha)
+            scaled_alpha.fill_na(0.)
 
             if scaled_alpha.is_finite() and scaled_alpha.is_positive():
                 pass
             else:
                 print "Likelihood calculation failure"
-                print rate_matrix_aa
-                print rate_matrix_ab
                 print scaled_alpha
                 if self.archive_matrices:
                     df = self.vector_trajectory.convert_to_df()
