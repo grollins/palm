@@ -161,11 +161,12 @@ class SingleDarkStateEnumeratorFactory(object):
                 if A > self.max_A:
                     continue
                 else:
-                    if A == 1:
-                        obs_class = 'bright'
-                    elif A > 1:
-                        obs_class = \
-                            'bright_%d' % min(A, self.observable_bright_classes)
+                    if A >= 1:
+                        class_number = min(A, self.observable_bright_classes)
+                        if class_number == 1:
+                            obs_class = 'bright'
+                        else:
+                            obs_class = 'bright_%d' % class_number
                     else:
                         obs_class = 'dark'
                     id_str = "%d_%d_%d_%d" % (I, A, D, B)
@@ -245,11 +246,12 @@ class DoubleDarkStateEnumeratorFactory(object):
                 if A > self.max_A:
                     continue
                 else:
-                    if A == 1:
-                        obs_class = 'bright'
-                    elif A > 1:
-                        obs_class = \
-                            'bright_%d' % min(A, self.observable_bright_classes)
+                    if A >= 1:
+                        class_number = min(A, self.observable_bright_classes)
+                        if class_number == 1:
+                            obs_class = 'bright'
+                        else:
+                            obs_class = 'bright_%d' % class_number
                     else:
                         obs_class = 'dark'
                     id_str = "%d_%d_%d_%d_%d" % (I, A, D1, D2, B)
