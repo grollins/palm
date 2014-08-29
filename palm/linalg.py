@@ -1,5 +1,5 @@
 import numpy
-from scipy.linalg import expm, expm2
+from scipy.linalg import expm, expm2, inv
 from pandas import Series
 from .probability_vector import make_prob_vec_from_panda_series
 from .probability_matrix import make_prob_matrix_from_panda_data_frame
@@ -192,6 +192,24 @@ def asymmetric_matrix_matrix_product(matrix1, matrix2, do_alignment=True):
     product_matrix = make_prob_matrix_from_panda_data_frame(product_frame)
     return product_matrix
 
+def compute_inverse(matrix):
+    """
+    Compute the inverse of a matrix.
+
+    Parameters
+    ----------
+    matrix : RateMatrix or ProbabilityMatrix
+
+    Returns
+    -------
+    inv_matrix : RateMatrix or ProbabilityMatrix
+    """
+    Q = matrix.as_npy_array()
+    invQ = inv(Q)
+    inv_matrix = matrix.copy()
+    inv_matrix.data_frame.values[:,:] = invQ
+    return inv_matrix
+
 
 class StubExponential(object):
     """
@@ -237,6 +255,25 @@ class ScipyMatrixExponential(object):
         expQt_matrix = rate_matrix.copy()
         expQt_matrix.data_frame.values[:,:] = expQt
         return expQt_matrix
+
+    def compute_missed_events_matrix_exp(self, rate_matrix_aa, rate_matrix_ab,
+        rate_matrix_ba, rate_matrix_bb, dwell_time, dead_time):
+        Qaa = rate_matrix_aa.as_npy_array()
+        Qab = rate_matrix_ab.as_npy_array()
+        Qba = rate_matrix_ba.as_npy_array()
+        Qbb = rate_matrix_bb.as_npy_array()
+        invQbb = inv(Qbb)
+        dead_time_expQt = self.compute_matrix_exp(
+                            rate_matrix_aa, dead_time)
+        exp_Qaatd = dead_time_expQt.as_npy_array()
+        I = numpy.identity(Qaa.shape[0])
+        partial_result = numpy.dot(Qab, (I - exp_Qaatd))
+        partial_result = numpy.dot(partial_result, invQbb)
+        partial_result = numpy.dot(partial_result, Qba)
+        missed_events_rate_matrix = rate_matrix_aa.copy()
+        missed_events_rate_matrix.data_frame.values[:,:] = partial_result
+        return self.compute_matrix_exp(missed_events_rate_matrix, 
+                                       (dwell_time - dead_time)) 
 
     def compute_matrix_expv(self, rate_matrix, dwell_time, vec):
         """
