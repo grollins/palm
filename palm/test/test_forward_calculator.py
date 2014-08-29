@@ -29,3 +29,25 @@ def most_likely_state_correctly_selected_from_full_expm():
     # print ml_state_from_fwd_vec, ml_state
     nose.tools.eq_( ml_state_from_fwd_vec, ml_state, error_message )
 
+@nose.tools.istest
+def computes_missed_events_expm():
+    ps = SingleDarkParameterSet()
+    ps.set_parameter('N', 3)
+    model_factory = SingleDarkBlinkFactory()
+    m = model_factory.create_model(ps)
+    Q = m.build_rate_matrix(time=0.0)
+    init_prob = m.get_initial_probability_vector()
+    Q_dd = m.get_submatrix(Q, 'dark', 'dark')
+    Q_db = m.get_submatrix(Q, 'dark', 'bright')
+    Q_bd = m.get_submatrix(Q, 'bright', 'dark')
+    Q_bb = m.get_submatrix(Q, 'bright', 'bright')
+    dwell_time = 10.0
+    dead_time = 0.05
+    expm_calculator = ScipyMatrixExponential()
+    fwd_calculator = ForwardCalculator(expm_calculator, dead_time)
+    fwd_vec = fwd_calculator.compute_forward_vector(init_prob, Q_dd, Q_db,
+                dwell_time)
+    fwd_vec2 = fwd_calculator.compute_forward_vector_with_missed_events(init_prob,
+                Q_dd, Q_db, Q_bd, Q_bb, dwell_time)
+    print fwd_vec
+    print fwd_vec2

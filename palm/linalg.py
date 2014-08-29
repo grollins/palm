@@ -258,16 +258,19 @@ class ScipyMatrixExponential(object):
 
     def compute_missed_events_matrix_exp(self, rate_matrix_aa, rate_matrix_ab,
         rate_matrix_ba, rate_matrix_bb, dwell_time, dead_time):
-        Qaa = rate_matrix_aa.as_npy_array()
         Qab = rate_matrix_ab.as_npy_array()
         Qba = rate_matrix_ba.as_npy_array()
         Qbb = rate_matrix_bb.as_npy_array()
-        invQbb = inv(Qbb)
+        try:
+            invQbb = inv(Qbb)
+        except:
+            print Qbb
+            raise
         dead_time_expQt = self.compute_matrix_exp(
-                            rate_matrix_aa, dead_time)
-        exp_Qaatd = dead_time_expQt.as_npy_array()
-        I = numpy.identity(Qaa.shape[0])
-        partial_result = numpy.dot(Qab, (I - exp_Qaatd))
+                            rate_matrix_bb, dead_time)
+        exp_Qbbtd = dead_time_expQt.as_npy_array()
+        I = numpy.identity(Qbb.shape[0])
+        partial_result = numpy.dot(Qab, (I - exp_Qbbtd))
         partial_result = numpy.dot(partial_result, invQbb)
         partial_result = numpy.dot(partial_result, Qba)
         missed_events_rate_matrix = rate_matrix_aa.copy()

@@ -56,7 +56,7 @@ class ForwardCalculator(object):
                         fwd_vec, rate_matrix_ab, do_alignment=True)
         return fwd_vec
 
-    def compute_forward_vector_with_missed_transitions(self, init_prob,
+    def compute_forward_vector_with_missed_events(self, init_prob,
             rate_matrix_aa, rate_matrix_ab, rate_matrix_ba, rate_matrix_bb,
             dwell_time):
         """

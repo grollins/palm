@@ -62,16 +62,16 @@ class ForwardPredictor(DataPredictor):
         self.scaling_factor_set = None
         self.noisy = noisy
 
-    def predict_data(self, model, trajectory):
+    def predict_data(self, model, trajectory, missed_events=False):
         self.scaling_factor_set = self.compute_forward_vectors(
-                                    model, trajectory)
+                                    model, trajectory, missed_events)
         likelihood = 1./(self.scaling_factor_set.compute_product())
         if likelihood < ALMOST_ZERO:
             likelihood = ALMOST_ZERO
         log_likelihood = numpy.log10(likelihood)
         return self.prediction_factory(log_likelihood)
 
-    def compute_forward_vectors(self, model, trajectory):
+    def compute_forward_vectors(self, model, trajectory, missed_events):
         """
         Computes forward vector for each trajectory segment, starting from
         the first segment and working forward toward the last segment.
@@ -80,6 +80,7 @@ class ForwardPredictor(DataPredictor):
         ----------
         model : BlinkModel
         trajectory : Trajectory
+        missed_events : bool, set `True` to correct for missed events
 
         Returns
         -------
@@ -133,14 +134,25 @@ class ForwardPredictor(DataPredictor):
                         rate_matrix_organizer.rate_matrix)
             else:
                 pass
-            alpha = self._compute_alpha( rate_matrix_aa, rate_matrix_ab,
-                                         segment_number, segment_duration,
-                                         start_class, end_class,
-                                         prev_alpha)
+
+            if missed_events and start_class == 'dark' and end_class:
+                rate_matrix_ba = rate_matrix_organizer.get_submatrix(
+                                    end_class, start_class)
+                rate_matrix_bb = rate_matrix_organizer.get_submatrix(
+                                    end_class, end_class)
+                alpha = self._compute_missed_events_alpha(rate_matrix_aa,
+                            rate_matrix_ab, rate_matrix_ba, rate_matrix_bb,
+                            segment_duration, prev_alpha)
+            else:
+                alpha = self._compute_alpha( rate_matrix_aa, rate_matrix_ab,
+                                             segment_number, segment_duration,
+                                             start_class, end_class,
+                                             prev_alpha )
 
             # scale probability vector to avoid numerical underflow
             scaled_alpha = scaling_factor_set.scale_vector(alpha)
             scaled_alpha.fill_na(0.)
+            scaled_alpha.fill_negative(0.)
 
             if scaled_alpha.is_finite() and scaled_alpha.is_positive():
                 pass
@@ -180,6 +192,14 @@ class ForwardPredictor(DataPredictor):
             alpha = self.forward_calculator.compute_forward_vector(
                         prev_alpha, rate_matrix_aa, rate_matrix_ab,
                         segment_duration)
+        return alpha
+
+    def _compute_missed_events_alpha(self, rate_matrix_aa, rate_matrix_ab,
+                                     rate_matrix_ba, rate_matrix_bb,
+                                     segment_duration, prev_alpha):
+        alpha = self.forward_calculator.compute_forward_vector_with_missed_events(
+                    prev_alpha, rate_matrix_aa, rate_matrix_ab, rate_matrix_ba,
+                    rate_matrix_bb, segment_duration)
         return alpha
 
 
