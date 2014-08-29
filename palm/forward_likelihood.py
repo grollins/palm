@@ -45,10 +45,12 @@ class ForwardPredictor(DataPredictor):
     archive_matrices : bool, optional
         Whether to save the intermediate results of the calculation for
         later plotting, debugging, etc.
+    missed_events : bool, optional
+        set `True` to correct for missed events
     """
     def __init__(self, expm_calculator, always_rebuild_rate_matrix,
                  archive_matrices=False, diagonal_dark=False,
-                 noisy=False):
+                 missed_events=False, noisy=False):
         super(ForwardPredictor, self).__init__()
         self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
         self.archive_matrices = archive_matrices
@@ -60,18 +62,19 @@ class ForwardPredictor(DataPredictor):
         self.vector_trajectory = None
         self.rate_matrix_trajectory = None
         self.scaling_factor_set = None
+        self.missed_events = missed_events
         self.noisy = noisy
 
-    def predict_data(self, model, trajectory, missed_events=False):
-        self.scaling_factor_set = self.compute_forward_vectors(
-                                    model, trajectory, missed_events)
+    def predict_data(self, model, trajectory):
+        self.scaling_factor_set = \
+            self.compute_forward_vectors(model, trajectory)
         likelihood = 1./(self.scaling_factor_set.compute_product())
         if likelihood < ALMOST_ZERO:
             likelihood = ALMOST_ZERO
         log_likelihood = numpy.log10(likelihood)
         return self.prediction_factory(log_likelihood)
 
-    def compute_forward_vectors(self, model, trajectory, missed_events):
+    def compute_forward_vectors(self, model, trajectory):
         """
         Computes forward vector for each trajectory segment, starting from
         the first segment and working forward toward the last segment.
@@ -80,7 +83,6 @@ class ForwardPredictor(DataPredictor):
         ----------
         model : BlinkModel
         trajectory : Trajectory
-        missed_events : bool, set `True` to correct for missed events
 
         Returns
         -------
@@ -135,7 +137,7 @@ class ForwardPredictor(DataPredictor):
             else:
                 pass
 
-            if missed_events and start_class == 'dark' and end_class:
+            if self.missed_events and start_class == 'dark' and end_class:
                 rate_matrix_ba = rate_matrix_organizer.get_submatrix(
                                     end_class, start_class)
                 rate_matrix_bb = rate_matrix_organizer.get_submatrix(

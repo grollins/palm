@@ -56,13 +56,13 @@ def computes_likelihood_with_missed_events():
     model_parameters.set_parameter('log_kr', -1.0)
     model_parameters.set_parameter('log_kb',  0.0)
     forward_predictor = ForwardPredictor(ScipyMatrixExponential(),
-                                         always_rebuild_rate_matrix=False)
+                                         always_rebuild_rate_matrix=False,
+                                         missed_events=True)
     target_data = BlinkTargetData()
     data_path = os.path.join("palm", "test", "test_data",
                              "blink_model_05.psc_TimeSim5.csv")
     target_data.load_data(data_file=data_path)
     model = model_factory.create_model(model_parameters)
     trajectory = target_data.get_feature()
-    forward_prediction = forward_predictor.predict_data(model, trajectory,
-                                                        missed_events=True)
+    forward_prediction = forward_predictor.predict_data(model, trajectory)
     print forward_prediction
