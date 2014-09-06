@@ -12,7 +12,7 @@ class ForwardCalculator(object):
         A matrix exponential calculator object.
     dead_time : float
         The temporal resolution of the data. Necessary for correcting rate
-        matrices for missed transitions.
+        matrices for missed transitions. Units: seconds.
     """
     def __init__(self, expm_calculator, dead_time=0.05):
         super(ForwardCalculator, self).__init__()

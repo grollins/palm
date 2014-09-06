@@ -47,16 +47,20 @@ class ForwardPredictor(DataPredictor):
         later plotting, debugging, etc.
     missed_events : bool, optional
         set `True` to correct for missed events
+    dead_time : float
+        The temporal resolution of the data. Necessary for correcting rate
+        matrices for missed transitions. Units: seconds.
     """
     def __init__(self, expm_calculator, always_rebuild_rate_matrix,
                  archive_matrices=False, diagonal_dark=False,
-                 missed_events=False, noisy=False):
+                 missed_events=False, dead_time=0.05, noisy=False):
         super(ForwardPredictor, self).__init__()
         self.always_rebuild_rate_matrix = always_rebuild_rate_matrix
         self.archive_matrices = archive_matrices
         self.diagonal_dark = diagonal_dark
         diag_expm = DiagonalExpm()
-        self.forward_calculator = ForwardCalculator(expm_calculator)
+        self.forward_calculator = \
+            ForwardCalculator(expm_calculator, dead_time=dead_time)
         self.diag_forward_calculator = ForwardCalculator(diag_expm)
         self.prediction_factory = LikelihoodPrediction
         self.vector_trajectory = None
